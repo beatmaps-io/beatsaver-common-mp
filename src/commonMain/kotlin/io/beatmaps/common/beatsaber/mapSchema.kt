@@ -24,7 +24,7 @@ data class BSObstacle(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _lineIndex: Int = Int.MIN_VALUE,
     val _type: Int = Int.MIN_VALUE,
-    val _duration: Int = Int.MIN_VALUE,
+    val _duration: Long = Long.MIN_VALUE,
     val _width: Int = Int.MIN_VALUE,
     val _customData: Any?
 )
