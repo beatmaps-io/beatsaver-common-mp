@@ -1,17 +1,14 @@
 plugins {
-    kotlin("multiplatform") version "1.5.10"
-    kotlin("plugin.serialization") version "1.5.10"
+    kotlin("multiplatform") version "1.5.21"
+    kotlin("plugin.serialization") version "1.5.21"
+    id("maven-publish")
 }
 
 group = "io.beatmaps"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    jcenter()
     mavenCentral()
-    maven { url = uri("https://dl.bintray.com/kotlin/kotlin-js-wrappers") }
-    maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
-    maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
     maven { url = uri("https://jitpack.io") }
 }
 
@@ -34,6 +31,19 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
             }
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "reposilite"
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+            url = uri("https://artifactory.kirkstall.top-cat.me/")
         }
     }
 }
