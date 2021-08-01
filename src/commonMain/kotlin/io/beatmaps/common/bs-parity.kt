@@ -110,21 +110,20 @@ fun Float.toFixed(numOfDec: Int): String {
     val floatDigits = ((this - integerDigits) * 10f.pow(numOfDec)).roundToInt()
 
     return when {
-        floatDigits >= 100 -> "${integerDigits+1}"
+        floatDigits >= 100 -> "${integerDigits + 1}"
         floatDigits <= 0 -> "$integerDigits"
-        else -> "${integerDigits}.${floatDigits}"
+        else -> "$integerDigits.$floatDigits"
     }
 }
 
 fun Float.padTime() = this.toInt().toString().padStart(2, '0')
 
-fun Float.formatTime() = (
-        if (this > 3600) {
-            "${(this / 3600).toInt()}:${((this / 60) % 60).padTime()}"
-        } else {
-            "${(this / 60).toInt()}"
-        }
-    ) + ":${(this % 60).padTime()}"
+fun Float.formatTime() =
+    if (this > 3600) {
+        "${(this / 3600).toInt()}:${((this / 60) % 60).padTime()}"
+    } else {
+        "${(this / 60).toInt()}"
+    }.let { it + ":${(this % 60).padTime()}" }
 
 /**
  * prints a fancy error message to the screen, supports both notes and raw text
@@ -240,8 +239,8 @@ fun checkParity(map: BSDifficulty): Result {
 
             // for each saber: ignore the bomb if it"s within bombMinTime after a note or own-side bomb that says otherwise
             val setParity = mutableMapOf(
-                    Types.Red to true,
-                    Types.Blue to true
+                Types.Red to true,
+                Types.Blue to true
             )
             bombReset(i - 1, note, setParity)
 
