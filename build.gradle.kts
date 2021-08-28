@@ -1,6 +1,9 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     kotlin("multiplatform") version "1.5.30-RC"
     kotlin("plugin.serialization") version "1.5.30-RC"
+    id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
     id("maven-publish")
 }
 
@@ -32,6 +35,12 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
             }
         }
+    }
+}
+
+ktlint {
+    reporters {
+        reporter(ReporterType.CHECKSTYLE)
     }
 }
 
