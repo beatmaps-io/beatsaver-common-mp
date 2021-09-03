@@ -1,12 +1,14 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    kotlin("multiplatform") version "1.5.30-RC"
-    kotlin("plugin.serialization") version "1.5.30-RC"
+    kotlin("multiplatform") version "1.5.30"
+    kotlin("plugin.serialization") version "1.5.30"
     id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
     id("maven-publish")
 }
 
+val exposedVersion: String by project
+val ktorVersion: String by project
 group = "io.beatmaps"
 version = System.getenv("BUILD_NUMBER")?.let { "1.0.$it" } ?: "1.0-SNAPSHOT"
 
@@ -33,6 +35,51 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+            }
+        }
+        val jvmMain by getting {
+            repositories {
+                mavenCentral()
+                maven { url = uri("https://jitpack.io") }
+                maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
+            }
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+
+                // Database library
+                implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
+
+                implementation("io.ktor:ktor-client-apache:$ktorVersion")
+                implementation("io.ktor:ktor-client-serialization:$ktorVersion")
+                implementation("io.ktor:ktor-client-jackson:$ktorVersion")
+
+                implementation("org.postgresql:postgresql:42.1.4")
+                implementation("com.github.JUtupe:ktor-rabbitmq:0.2.0")
+                implementation("com.rabbitmq:amqp-client:5.9.0")
+
+                implementation("org.apache.commons:commons-email:1.5")
+
+                // Serialization
+                implementation("io.ktor:ktor-jackson:$ktorVersion")
+                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.1")
+
+                // Metrics
+                implementation("io.ktor:ktor-metrics-micrometer:$ktorVersion")
+                implementation("io.micrometer:micrometer-registry-influx:latest.release")
+                implementation("nl.basjes.parse.useragent:yauaa:6.0")
+                implementation("org.apache.logging.log4j:log4j-api:2.14.1") // Required by yauaa at runtime
+
+                // Multimedia
+                implementation("org.jaudiotagger:jaudiotagger:2.0.1")
+                implementation("net.coobird:thumbnailator:0.4.13")
+                implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.6.1")
+                implementation("org.sejda.imageio:webp-imageio:0.1.6")
+                implementation("nwaldispuehl:java-lame:3.98.4")
+
+                implementation("org.valiktor:valiktor-core:0.12.0")
             }
         }
     }
