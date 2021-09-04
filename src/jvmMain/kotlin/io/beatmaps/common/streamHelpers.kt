@@ -30,7 +30,7 @@ suspend fun InputStream.copyToSuspend(
             bytesCopied += bytes
             bytesAfterYield += bytes
 
-            if (sizeLimit in 1 until bytesCopied) { throw CopyException("Zip file too big") }
+            if (sizeLimit in 0 until bytesCopied) { throw CopyException("Zip file too big") }
         }
         return@withContext bytesCopied
     }

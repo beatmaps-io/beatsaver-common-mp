@@ -31,8 +31,8 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
                 this
             }
         }
-    fun ColumnSet.joinUploader() = join(User, JoinType.INNER, onColumn = uploader, otherColumn = id)
-    fun ColumnSet.joinCurator() = join(curatorAlias, JoinType.LEFT, onColumn = curator, otherColumn = curatorAlias[id])
+    fun ColumnSet.joinUploader() = join(User, JoinType.INNER, onColumn = uploader, otherColumn = User.id)
+    fun ColumnSet.joinCurator() = join(curatorAlias, JoinType.LEFT, onColumn = curator, otherColumn = curatorAlias[User.id])
 
     val name = text("name")
     val description = text("description")
