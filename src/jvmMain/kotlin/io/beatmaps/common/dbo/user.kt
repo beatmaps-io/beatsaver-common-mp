@@ -50,6 +50,7 @@ object User : IntIdTable("uploader", "id") {
     val active = bool("active")
     val uniqueName = citext("uniqueName").nullable()
     val createdAt = timestamp("createdAt")
+    val renamedAt = timestamp("renamedAt")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {

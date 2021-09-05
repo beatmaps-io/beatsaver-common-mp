@@ -107,3 +107,10 @@ class DistinctOn<T>(private val expr: Column<T>, private val columns: Array<out 
         +expr
     }
 }
+
+class DateMinusDays(val dateExp: Expression<Instant>, val d: Int) : Expression<Instant>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +dateExp
+        +" - INTERVAL '$d DAYS'"
+    }
+}
