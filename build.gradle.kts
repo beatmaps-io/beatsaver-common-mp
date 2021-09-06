@@ -68,7 +68,8 @@ kotlin {
 
                 // Metrics
                 implementation("io.ktor:ktor-metrics-micrometer:$ktorVersion")
-                implementation("io.micrometer:micrometer-registry-influx:latest.release")
+                implementation("io.micrometer:micrometer-core:1.8.0-SNAPSHOT")
+                implementation("io.micrometer:micrometer-registry-influx:1.8.0-SNAPSHOT") // Version with extra field values enabled
                 implementation("nl.basjes.parse.useragent:yauaa:6.0")
                 implementation("org.apache.logging.log4j:log4j-api:2.14.1") // Required by yauaa at runtime
 

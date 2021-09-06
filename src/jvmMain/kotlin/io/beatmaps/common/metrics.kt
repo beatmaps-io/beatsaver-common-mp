@@ -12,7 +12,9 @@ import io.ktor.util.AttributeKey
 import io.micrometer.core.instrument.Clock
 import io.micrometer.influx.InfluxConfig
 import io.micrometer.influx.InfluxMeterRegistry
+import io.micrometer.influx.InfluxTagMapper
 import nl.basjes.parse.useragent.UserAgentAnalyzer
+
 
 fun Application.installMetrics() {
     val config: InfluxConfig = object : InfluxConfig {
@@ -53,7 +55,13 @@ fun Application.installMetrics() {
         "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole"
     )
 
-    val appMicrometerRegistry = InfluxMeterRegistry(config, Clock.SYSTEM)
+    val fieldNames = listOf("agentClass", "agentMajor", "osMajor", "throwable", "country", "continent")
+    val mapper = InfluxTagMapper { _, tag ->
+        // Fields get mapped instead of being tagged
+        fieldNames.contains(tag.key)
+    }
+
+    val appMicrometerRegistry = InfluxMeterRegistry.builder(config).clock(Clock.SYSTEM).tagMapper(mapper).build()
     appMicrometerRegistry.config().commonTags("host", System.getenv("HOSTNAME") ?: "unknown")
 
     install(MicrometerMetrics) {
