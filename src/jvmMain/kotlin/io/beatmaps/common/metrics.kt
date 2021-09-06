@@ -19,6 +19,7 @@ import nl.basjes.parse.useragent.UserAgentAnalyzer
 fun Application.installMetrics() {
     val config: InfluxConfig = object : InfluxConfig {
         val config = mapOf(
+            "org" to (System.getenv("INFLUX_ORG") ?: ""),
             "autoCreateDb" to "false",
             "batchSize" to "10000",
             "compressed" to "true",
@@ -32,7 +33,8 @@ fun Application.installMetrics() {
             "retentionPolicy" to (System.getenv("INFLUX_RP") ?: "two_weeks"),
             "step" to (System.getenv("INFLUX_STEP") ?: "1m"),
             "uri" to (System.getenv("INFLUX_URI") ?: "http://localhost:8086"),
-            "userName" to (System.getenv("INFLUX_USER") ?: "myusername")
+            "userName" to (System.getenv("INFLUX_USER") ?: "myusername"),
+            "token" to (System.getenv("INFLUX_TOKEN") ?: "token")
         )
 
         override fun prefix() = "influx"
