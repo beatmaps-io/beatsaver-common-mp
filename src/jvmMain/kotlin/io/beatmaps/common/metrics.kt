@@ -15,7 +15,6 @@ import io.micrometer.influx.InfluxMeterRegistry
 import io.micrometer.influx.InfluxTagMapper
 import nl.basjes.parse.useragent.UserAgentAnalyzer
 
-
 fun Application.installMetrics() {
     val config: InfluxConfig = object : InfluxConfig {
         val config = mapOf(
