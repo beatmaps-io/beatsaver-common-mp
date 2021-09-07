@@ -10,13 +10,25 @@ import io.ktor.request.userAgent
 import io.ktor.response.ApplicationSendPipeline
 import io.ktor.util.AttributeKey
 import io.micrometer.core.instrument.Clock
+import io.micrometer.elastic.ElasticConfig
+import io.micrometer.elastic.ElasticMeterRegistry
 import io.micrometer.influx.InfluxConfig
 import io.micrometer.influx.InfluxMeterRegistry
-import io.micrometer.influx.InfluxTagMapper
 import nl.basjes.parse.useragent.UserAgentAnalyzer
 
 fun Application.installMetrics() {
-    val config: InfluxConfig = object : InfluxConfig {
+    val esConfig: ElasticConfig = object : ElasticConfig {
+        val config = mapOf(
+            "host" to (System.getenv("ES_HOST") ?: "http://localhost:9200"),
+            "userName" to (System.getenv("ES_USER") ?: "myusername"),
+            "password" to (System.getenv("ES_PASS") ?: "token")
+        )
+
+        override fun prefix() = "es"
+        override fun get(k: String): String? = config[k.removePrefix("es.")]
+    }
+
+    val influxConfig: InfluxConfig = object : InfluxConfig {
         val config = mapOf(
             "org" to (System.getenv("INFLUX_ORG") ?: ""),
             "autoCreateDb" to "false",
@@ -56,13 +68,14 @@ fun Application.installMetrics() {
         "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole"
     )
 
-    val fieldNames = listOf("agentClass", "agentMajor", "osMajor", "throwable", "country", "continent")
-    val mapper = InfluxTagMapper { _, tag ->
-        // Fields get mapped instead of being tagged
-        fieldNames.contains(tag.key)
+    val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
+        InfluxMeterRegistry.builder(influxConfig).clock(Clock.SYSTEM).build()
+    } else if (System.getenv("ES_ENABLED") != null) {
+        ElasticMeterRegistry.builder(esConfig).clock(Clock.SYSTEM).build()
+    } else {
+        return
     }
 
-    val appMicrometerRegistry = InfluxMeterRegistry.builder(config).clock(Clock.SYSTEM).tagMapper(mapper).build()
     appMicrometerRegistry.config().commonTags("host", System.getenv("HOSTNAME") ?: "unknown")
 
     install(MicrometerMetrics) {
