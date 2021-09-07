@@ -22,7 +22,7 @@ fun Application.installMetrics() {
             "host" to (System.getenv("ES_HOST") ?: "http://localhost:9200"),
             "userName" to (System.getenv("ES_USER") ?: "myusername"),
             "password" to (System.getenv("ES_PASS") ?: "token"),
-            "indexDateFormat" to "yyyy-MM-dd"
+            "indexDateFormat" to "yyyy-ww"
         )
 
         override fun prefix() = "es"
