@@ -22,6 +22,10 @@ fun Application.installMetrics() {
             "host" to (System.getenv("ES_HOST") ?: "http://localhost:9200"),
             "userName" to (System.getenv("ES_USER") ?: "myusername"),
             "password" to (System.getenv("ES_PASS") ?: "token"),
+            "step" to (System.getenv("ES_STEP") ?: "1m"),
+            "batchSize" to "10000",
+            "connectTimeout" to "5s",
+            "readTimeout" to "10s",
             "indexDateFormat" to "yyyy-ww"
         )
 
@@ -39,7 +43,6 @@ fun Application.installMetrics() {
             "consistency" to "one",
             "db" to (System.getenv("INFLUX_DB") ?: "telegraf"),
             "enabled" to (System.getenv("INFLUX_ENABLED") ?: "false"),
-            "numThreads" to "2",
             "password" to (System.getenv("INFLUX_PASS") ?: "mysecret"),
             "readTimeout" to "10s",
             "retentionPolicy" to (System.getenv("INFLUX_RP") ?: "two_weeks"),
