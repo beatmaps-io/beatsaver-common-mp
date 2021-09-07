@@ -1,10 +1,15 @@
 package io.beatmaps.common
 
+import com.maxmind.db.CHMCache
+import com.maxmind.geoip2.DatabaseReader
+import com.maxmind.geoip2.exception.GeoIp2Exception
+import com.maxmind.geoip2.model.CountryResponse
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.origin
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.request.userAgent
 import io.ktor.response.ApplicationSendPipeline
@@ -16,6 +21,34 @@ import io.micrometer.elastic.ElasticMeterRegistry
 import io.micrometer.influx.InfluxConfig
 import io.micrometer.influx.InfluxMeterRegistry
 import nl.basjes.parse.useragent.UserAgentAnalyzer
+import java.io.File
+import java.net.InetAddress
+
+val geodbFilePath = System.getenv("GEOIP_PATH") ?: "geolite2.mmdb"
+val geoIp = DatabaseReader.Builder(File(geodbFilePath)).withCache(CHMCache()).build()
+private val countryResponseAttr = AttributeKey<CountryInfo>("countryResponse")
+
+data class CountryInfo(val success: Boolean, val countryCode: String, val continentCode: String) {
+    constructor(cr: CountryResponse) : this(cr.country.isoCode != null, cr.country.isoCode ?: "", cr.continent.code ?: "")
+    constructor() : this(false, "", "")
+}
+
+fun ApplicationCall.getCountry(): CountryInfo {
+    if (!attributes.contains(countryResponseAttr)) {
+        try {
+            CountryInfo(geoIp.country(InetAddress.getByName(request.origin.remoteHost)))
+        } catch (e: GeoIp2Exception) {
+            CountryInfo()
+        }.also {
+            attributes.put(
+                countryResponseAttr,
+                it
+            )
+        }
+    }
+
+    return attributes[countryResponseAttr]
+}
 
 fun Application.installMetrics() {
     val esConfig: ElasticConfig = object : ElasticConfig {
@@ -91,6 +124,7 @@ fun Application.installMetrics() {
             call.attributes[extraTags].forEach {
                 tag(it.key, it.value)
             }
+            tag("cn", call.getCountry().countryCode)
         }
     }
 
