@@ -10,6 +10,7 @@ import io.ktor.request.userAgent
 import io.ktor.response.ApplicationSendPipeline
 import io.ktor.util.AttributeKey
 import io.micrometer.core.instrument.Clock
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.elastic.ElasticConfig
 import io.micrometer.elastic.ElasticMeterRegistry
 import io.micrometer.influx.InfluxConfig
@@ -85,6 +86,7 @@ fun Application.installMetrics() {
     install(MicrometerMetrics) {
         registry = appMicrometerRegistry
         distinctNotRegisteredRoutes = false
+        distributionStatisticConfig = DistributionStatisticConfig.Builder().build()
         timers { call, _ ->
             call.attributes[extraTags].forEach {
                 tag(it.key, it.value)
