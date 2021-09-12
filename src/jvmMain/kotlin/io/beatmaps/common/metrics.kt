@@ -60,7 +60,7 @@ fun Application.installMetrics() {
             "batchSize" to "10000",
             "connectTimeout" to "5s",
             "readTimeout" to "10s",
-            "indexDateFormat" to "yyyy-ww"
+            "indexDateFormat" to "yyyy-MM-dd"
         )
 
         override fun prefix() = "es"
