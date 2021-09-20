@@ -15,6 +15,8 @@ import io.ktor.request.userAgent
 import io.ktor.response.ApplicationSendPipeline
 import io.ktor.util.AttributeKey
 import io.micrometer.core.instrument.Clock
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Meter
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.elastic.ElasticConfig
 import io.micrometer.elastic.ElasticMeterRegistry
@@ -23,6 +25,8 @@ import io.micrometer.influx.InfluxMeterRegistry
 import nl.basjes.parse.useragent.UserAgentAnalyzer
 import java.io.File
 import java.net.InetAddress
+import java.util.Timer
+import java.util.TimerTask
 
 val geodbFilePath = System.getenv("GEOIP_PATH") ?: "geolite2.mmdb"
 val geoIp = DatabaseReader.Builder(File(geodbFilePath)).withCache(CHMCache()).build()
@@ -152,6 +156,26 @@ fun Application.installMetrics() {
         mk.end("req")
         context.response.headers.append("Server-Timing", mk.getHeader())
     }
+
+    var meterExpiry = setOf<Meter>()
+    Timer().scheduleAtFixedRate(object : TimerTask() {
+        override fun run() {
+            val unusedMeters = appMicrometerRegistry.meters.filter {
+                when (it) {
+                    is Counter -> it.count() == 0.0
+                    is io.micrometer.core.instrument.Timer -> it.count() == 0L
+                    else -> false
+                }
+            }
+
+            val toRemove = meterExpiry.intersect(unusedMeters)
+            meterExpiry = unusedMeters.minus(meterExpiry).toHashSet()
+
+            toRemove.forEach {
+                appMicrometerRegistry.remove(it)
+            }
+        }
+    }, 60000, 60000)
 }
 
 private val extraTags = AttributeKey<MutableMap<String, String>>("extraTags")
