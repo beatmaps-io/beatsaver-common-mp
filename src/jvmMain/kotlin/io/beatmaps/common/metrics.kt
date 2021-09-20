@@ -158,24 +158,28 @@ fun Application.installMetrics() {
     }
 
     var meterExpiry = setOf<Meter>()
-    Timer().scheduleAtFixedRate(object : TimerTask() {
-        override fun run() {
-            val unusedMeters = appMicrometerRegistry.meters.filter {
-                when (it) {
-                    is Counter -> it.count() == 0.0
-                    is io.micrometer.core.instrument.Timer -> it.count() == 0L
-                    else -> false
+    Timer().scheduleAtFixedRate(
+        object : TimerTask() {
+            override fun run() {
+                val unusedMeters = appMicrometerRegistry.meters.filter {
+                    when (it) {
+                        is Counter -> it.count() == 0.0
+                        is io.micrometer.core.instrument.Timer -> it.count() == 0L
+                        else -> false
+                    }
+                }
+
+                val toRemove = meterExpiry.intersect(unusedMeters)
+                meterExpiry = unusedMeters.minus(meterExpiry).toHashSet()
+
+                toRemove.forEach {
+                    appMicrometerRegistry.remove(it)
                 }
             }
-
-            val toRemove = meterExpiry.intersect(unusedMeters)
-            meterExpiry = unusedMeters.minus(meterExpiry).toHashSet()
-
-            toRemove.forEach {
-                appMicrometerRegistry.remove(it)
-            }
-        }
-    }, 60000, 60000)
+        },
+        60000,
+        60000
+    )
 }
 
 private val extraTags = AttributeKey<MutableMap<String, String>>("extraTags")
