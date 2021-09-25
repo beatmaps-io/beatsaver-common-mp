@@ -107,7 +107,7 @@ fun Application.installMetrics() {
 
     val mods = hashSetOf(
         "BMBF", "QuestSongDownloader", "BeatSaverVoting", "ModAssistant", "Beatlist", "PlaylistManager", "MorePlaylists", "BSDataPuller", "DiTails",
-        "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole"
+        "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole", "BeatSaverDownloader"
     )
 
     val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
