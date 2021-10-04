@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.TextColumnType
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.alias
 import org.postgresql.util.PGobject
 

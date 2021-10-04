@@ -17,7 +17,7 @@ import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.QueryAlias
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.VarCharColumnType
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.select
 import java.math.BigDecimal
 import java.time.Instant

@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 
 object Testplay : IntIdTable("testplay", "testplayId") {

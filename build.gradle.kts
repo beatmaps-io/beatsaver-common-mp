@@ -3,7 +3,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     kotlin("multiplatform") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
-    id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
     id("maven-publish")
 }
 
@@ -18,6 +18,9 @@ repositories {
 }
 
 kotlin {
+    jvmToolchain {
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(15))
+    }
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "15"
@@ -33,8 +36,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0-RC")
             }
         }
         val jvmMain by getting {
@@ -44,7 +47,7 @@ kotlin {
                 maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
             }
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
 
                 // Database library
                 implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
