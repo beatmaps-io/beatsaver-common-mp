@@ -19,11 +19,11 @@ repositories {
 
 kotlin {
     jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(15))
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(16))
     }
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "15"
+            kotlinOptions.jvmTarget = "16"
         }
         testRuns["test"].executionTask.configure {
             useJUnit()
