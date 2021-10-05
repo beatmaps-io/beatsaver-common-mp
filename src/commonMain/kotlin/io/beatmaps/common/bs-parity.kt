@@ -112,6 +112,7 @@ fun Float.toFixed(numOfDec: Int): String {
     return when {
         floatDigits >= 100 -> "${integerDigits + 1}"
         floatDigits <= 0 -> "$integerDigits"
+        floatDigits < 10 -> "$integerDigits.0$floatDigits"
         else -> "$integerDigits.$floatDigits"
     }
 }
