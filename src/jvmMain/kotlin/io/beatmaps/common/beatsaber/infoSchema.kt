@@ -142,6 +142,7 @@ object ImageFormat : Constraint
 object AudioFormat : Constraint
 object CutDirection : Constraint
 object MisplacedCustomData : Constraint
+data class UniqueDiff(val diff: String) : Constraint
 
 data class MapCustomData(
     val _contributors: List<Contributor>?,
@@ -250,6 +251,11 @@ data class DifficultyBeatmap(
         val allowedDiffNames = setOf("Easy", "Normal", "Hard", "Expert", "ExpertPlus")
         validate(DifficultyBeatmap::_difficulty).isNotNull()
             .validate(In(allowedDiffNames)) { it == null || allowedDiffNames.any { dn -> dn.equals(it, true) } }
+            .validate(UniqueDiff(_difficulty)) {
+                !characteristic._difficultyBeatmaps.any {
+                    it != self() && it._difficulty == self()._difficulty
+                }
+            }
         validate(DifficultyBeatmap::_difficultyRank).isNotNull().isIn(1, 3, 5, 7, 9)
         validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
             .also {
