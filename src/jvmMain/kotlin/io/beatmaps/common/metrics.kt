@@ -3,6 +3,8 @@ package io.beatmaps.common
 import com.maxmind.db.CHMCache
 import com.maxmind.geoip2.DatabaseReader
 import com.maxmind.geoip2.exception.GeoIp2Exception
+import com.maxmind.geoip2.model.AbstractCountryResponse
+import com.maxmind.geoip2.model.CityResponse
 import com.maxmind.geoip2.model.CountryResponse
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -32,15 +34,16 @@ val geodbFilePath = System.getenv("GEOIP_PATH") ?: "geolite2.mmdb"
 val geoIp = DatabaseReader.Builder(File(geodbFilePath)).withCache(CHMCache()).build()
 private val countryResponseAttr = AttributeKey<CountryInfo>("countryResponse")
 
-data class CountryInfo(val success: Boolean, val countryCode: String, val continentCode: String) {
-    constructor(cr: CountryResponse) : this(cr.country.isoCode != null, cr.country.isoCode ?: "", cr.continent.code ?: "")
+data class CountryInfo(val success: Boolean, val countryCode: String, val continentCode: String, val state: String? = null) {
+    constructor(cr: CityResponse) : this(cr, if (cr.country.isoCode == "US") cr.mostSpecificSubdivision.isoCode else null)
+    constructor(cr: AbstractCountryResponse, state: String? = null) : this(cr.country.isoCode != null, cr.country.isoCode ?: "", cr.continent.code ?: "", state)
     constructor() : this(false, "", "")
 }
 
 fun ApplicationCall.getCountry(): CountryInfo {
     if (!attributes.contains(countryResponseAttr)) {
         try {
-            CountryInfo(geoIp.country(InetAddress.getByName(request.origin.remoteHost)))
+            CountryInfo(geoIp.city(InetAddress.getByName(request.origin.remoteHost)))
         } catch (e: GeoIp2Exception) {
             CountryInfo()
         }.also {
@@ -129,6 +132,9 @@ fun Application.installMetrics() {
                 tag(it.key, it.value)
             }
             tag("cn", call.getCountry().countryCode)
+            call.getCountry().state?.let { state ->
+                tag("state", state)
+            }
         }
     }
 
