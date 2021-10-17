@@ -5,7 +5,6 @@ import com.maxmind.geoip2.DatabaseReader
 import com.maxmind.geoip2.exception.GeoIp2Exception
 import com.maxmind.geoip2.model.AbstractCountryResponse
 import com.maxmind.geoip2.model.CityResponse
-import com.maxmind.geoip2.model.CountryResponse
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.ApplicationCallPipeline

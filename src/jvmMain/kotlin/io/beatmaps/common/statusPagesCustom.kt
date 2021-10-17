@@ -39,7 +39,7 @@ class StatusPagesCustom(config: Configuration) {
          * Status handlers by status code
          */
         val statuses: MutableMap<HttpStatusCode,
-                suspend PipelineContext<*, ApplicationCall>.(HttpStatusCode) -> Unit> =
+            suspend PipelineContext<*, ApplicationCall>.(HttpStatusCode) -> Unit> =
             mutableMapOf()
 
         /**
