@@ -30,7 +30,7 @@ import java.util.Timer
 import java.util.TimerTask
 
 val geodbFilePath = System.getenv("GEOIP_PATH") ?: "geolite2.mmdb"
-val geoIp = DatabaseReader.Builder(File(geodbFilePath)).withCache(CHMCache()).build()
+val geoIp = File(geodbFilePath).let { file -> if (file.exists()) DatabaseReader.Builder(File(geodbFilePath)).withCache(CHMCache()).build() else null }
 private val countryResponseAttr = AttributeKey<CountryInfo>("countryResponse")
 
 data class CountryInfo(val success: Boolean, val countryCode: String, val continentCode: String, val state: String? = null) {
@@ -41,10 +41,14 @@ data class CountryInfo(val success: Boolean, val countryCode: String, val contin
 
 fun ApplicationCall.getCountry(): CountryInfo {
     if (!attributes.contains(countryResponseAttr)) {
-        try {
-            CountryInfo(geoIp.city(InetAddress.getByName(request.origin.remoteHost)))
-        } catch (e: GeoIp2Exception) {
+        if (geoIp == null) {
             CountryInfo()
+        } else {
+            try {
+                CountryInfo(geoIp.city(InetAddress.getByName(request.origin.remoteHost)))
+            } catch (e: GeoIp2Exception) {
+                CountryInfo()
+            }
         }.also {
             attributes.put(
                 countryResponseAttr,
