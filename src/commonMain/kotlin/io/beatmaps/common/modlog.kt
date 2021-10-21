@@ -21,8 +21,12 @@ data class DeletedData(val reason: String) : IModLogOpAction
 @SerialName("Unpublish")
 data class UnpublishData(val reason: String) : IModLogOpAction
 
+@Serializable
+@SerialName("UploadLimit")
+class UploadLimitData(val newValue: Int) : IModLogOpAction
+
 enum class ModLogOpType(val actionClass: KClass<*>) {
-    InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class);
+    InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class);
 
     companion object {
         private val map = values().associateBy(ModLogOpType::actionClass)
