@@ -194,7 +194,7 @@ fun Application.installMetrics() {
 private val extraTags = AttributeKey<MutableMap<String, String>>("extraTags")
 private val reqTime = AttributeKey<Timings>("serverTiming")
 fun <T> ApplicationCall.timeIt(name: String, block: () -> T) = attributes[reqTime].timeIt(name, block)
-fun ApplicationCall.tag(name: String, value: String) = attributes[extraTags].put(name, value)
+fun ApplicationCall.tag(name: String, value: String) = attributes.getOrNull(extraTags)?.put(name, value)
 
 class Timings {
     private val metrics = mutableMapOf<String, Float>()
