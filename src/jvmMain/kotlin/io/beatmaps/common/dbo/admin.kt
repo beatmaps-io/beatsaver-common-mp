@@ -2,7 +2,6 @@ package io.beatmaps.common.dbo
 
 import io.beatmaps.common.IModLogOpAction
 import io.beatmaps.common.ModLogOpType
-import io.beatmaps.common.db.wrapAsExpressionNotNull
 import io.beatmaps.common.jackson
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
