@@ -2,6 +2,7 @@ package io.beatmaps.common.db
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
+import org.jetbrains.exposed.sql.CustomFunction
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
@@ -11,7 +12,9 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.QueryParameter
+import org.jetbrains.exposed.sql.TextColumnType
 import org.jetbrains.exposed.sql.VarCharColumnType
+import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.time.Instant
 
@@ -31,16 +34,23 @@ infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
     }
 }
 
+infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
+
+fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
+fun unaccent(str: Expression<String>) = CustomFunction<String>("bs_unaccent", TextColumnType(), str)
+private val wildcardChar = stringLiteral("%")
+fun <T> wildcard(exp: Expression<T>) = PgConcat(null, wildcardChar, exp, wildcardChar)
+
 class PgConcat(
     /** Returns the delimiter. */
-    val separator: String,
+    val separator: String?,
     /** Returns the expressions being concatenated. */
     vararg val expr: Expression<*>
 ) : Function<String>(VarCharColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder): Unit = queryBuilder {
         append("(")
         expr.forEachIndexed { idx, it ->
-            if (idx > 0) append(" || '$separator' || ")
+            if (idx > 0) append(if (separator == null) " || " else " || '$separator' || ")
             append(it)
         }
         append(")")
@@ -49,6 +59,7 @@ class PgConcat(
 
 class InsensitiveLikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
 infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: String): Op<Boolean> = InsensitiveLikeOp(this, QueryParameter(pattern, columnType))
+infix fun <T : String?> ExpressionWithColumnType<T>.ilike(exp: ExpressionWithColumnType<T>): Op<Boolean> = InsensitiveLikeOp(this, exp)
 
 fun <T : Any> isFalse(query: Op<T>) = object : Expression<T>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
