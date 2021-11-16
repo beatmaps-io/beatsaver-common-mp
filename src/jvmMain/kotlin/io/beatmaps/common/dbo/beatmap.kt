@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.QueryAlias
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.javatime.timestamp
@@ -23,8 +24,8 @@ import java.math.BigDecimal
 import java.time.Instant
 
 object Beatmap : IntIdTable("beatmap", "mapId") {
-    fun joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
-        join(Versions, JoinType.INNER, onColumn = Beatmap.id, otherColumn = Versions.mapId, additionalConstraint = state).run {
+    fun ColumnSet.joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
+        join(Versions, JoinType.INNER, onColumn = id, otherColumn = Versions.mapId, additionalConstraint = state).run {
             if (stats) {
                 join(Difficulty, JoinType.INNER, onColumn = Versions.id, otherColumn = Difficulty.versionId)
             } else {
@@ -132,7 +133,7 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     }
 }
 
-fun Query.complexToBeatmap(alias: QueryAlias? = null) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
+fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = {}) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
     map.also {
         map.getOrPut(row[alias?.get(Beatmap.id) ?: Beatmap.id]) {
             if (row.hasValue(User.id)) {
@@ -141,6 +142,9 @@ fun Query.complexToBeatmap(alias: QueryAlias? = null) = this.fold(mutableMapOf<E
             if (row.hasValue(curatorAlias[User.id]) && row[Beatmap.curator] != null) {
                 UserDao.wrapRow(row, curatorAlias)
             }
+
+            cb(row)
+
             if (alias != null) {
                 BeatmapDao.wrapRow(row, alias)
             } else {
