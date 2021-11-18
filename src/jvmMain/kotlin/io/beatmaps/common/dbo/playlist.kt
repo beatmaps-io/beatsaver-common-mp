@@ -39,6 +39,7 @@ fun Query.handleOwner() = this.map { row ->
 data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<PlaylistDao>(Playlist)
     val name by Playlist.name
+    val ownerId: EntityID<Int> by Playlist.owner
     val owner by UserDao referencedOn Playlist.owner
 
     val description by Playlist.description

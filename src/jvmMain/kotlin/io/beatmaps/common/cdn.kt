@@ -17,8 +17,9 @@ private val illegalCharacters = arrayOf(
     '\u0017', '\u0018', '\u0019', '\u001a', '\u001b', '\u001c', '\u001d', '\u001f',
 ).toCharArray()
 
+fun cleanString(str: String) = str.split(*illegalCharacters).joinToString()
 fun downloadFilename(mapId: String, songName: String, levelAuthorName: String) =
-    "$mapId ($songName - $levelAuthorName).zip".split(*illegalCharacters).joinToString()
+    cleanString("$mapId ($songName - $levelAuthorName).zip")
 
 data class CDNUpdate(
     val hash: String?,
