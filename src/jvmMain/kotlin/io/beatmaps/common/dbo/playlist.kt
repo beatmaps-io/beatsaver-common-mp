@@ -26,6 +26,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val createdAt = timestamp("createdAt")
     val updatedAt = timestamp("updatedAt")
     val deletedAt = timestamp("deletedAt").nullable()
+    val songsChangedAt = timestamp("songsChangedAt").nullable()
 }
 
 fun Query.handleOwner() = this.map { row ->

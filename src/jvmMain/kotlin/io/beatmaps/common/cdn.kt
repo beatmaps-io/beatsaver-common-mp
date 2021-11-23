@@ -4,10 +4,13 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.features.NotFoundException
 import io.ktor.http.HttpHeaders
+import io.ktor.http.content.LastModifiedVersion
+import io.ktor.http.content.versions
 import io.ktor.response.header
 import io.ktor.response.respondFile
 import io.ktor.util.pipeline.PipelineContext
 import java.io.File
+import java.util.Date
 
 private val illegalCharacters = arrayOf(
     '<', '>', ':', '/', '\\', '|', '?', '*', '"',
@@ -44,7 +47,9 @@ suspend fun PipelineContext<*, ApplicationCall>.returnFile(file: File?, filename
             )
         }
 
-        call.respondFile(file)
+        call.respondFile(file) {
+            versions = versions.plus(LastModifiedVersion(Date(file.lastModified())))
+        }
     } else {
         throw NotFoundException()
     }
