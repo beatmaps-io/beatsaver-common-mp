@@ -37,6 +37,7 @@ infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
 infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
 
 fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
+fun unaccentLiteral(str: String) = unaccent(stringLiteral(str))
 fun unaccent(str: Expression<String>) = CustomFunction<String>("bs_unaccent", TextColumnType(), str)
 private val wildcardChar = stringLiteral("%")
 fun <T> wildcard(exp: Expression<T>) = PgConcat(null, wildcardChar, exp, wildcardChar)
