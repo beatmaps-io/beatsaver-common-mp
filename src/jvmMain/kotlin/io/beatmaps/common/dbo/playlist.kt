@@ -48,6 +48,7 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val createdAt by Playlist.createdAt
     val updatedAt by Playlist.updatedAt
+    val deletedAt by Playlist.deletedAt
     val songsChangedAt by Playlist.songsChangedAt
 }
 
