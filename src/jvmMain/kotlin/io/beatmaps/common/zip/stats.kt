@@ -1,5 +1,6 @@
 package io.beatmaps.common.zip
 
+import io.beatmaps.common.beatsaber.BSCustomData
 import io.beatmaps.common.beatsaber.BSDifficulty
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
@@ -43,6 +44,8 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
     return stats
 }
 
+fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> obj.getCustomData()["_fake"] != true }
+
 fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDifficulty, map: MapInfo): DiffStats {
     it[njs] = diff._noteJumpMovementSpeed
     it[offset] = diff._noteJumpStartBeatOffset
@@ -56,14 +59,14 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     val maxLen = 10f.pow(7) - 1
 
     val sorted = bsdiff._notes.sortedBy { note -> note._time }
-    val partitioned = bsdiff._notes.partition { note -> note._type != 3 }
+    val partitioned = bsdiff._notes.withoutFake().partition { note -> note._type != 3 }
     val len = if (sorted.isNotEmpty()) {
         sorted.last()._time - sorted.first()._time
     } else 0f
 
     it[notes] = partitioned.first.size
     it[bombs] = partitioned.second.size
-    it[obstacles] = bsdiff._obstacles.size
+    it[obstacles] = bsdiff._obstacles.withoutFake().size
     it[events] = bsdiff._events.size
     it[length] = min(len, maxLen).toBigDecimal()
     it[seconds] = min(if (map._beatsPerMinute == 0f) 0f else (60 / map._beatsPerMinute) * len, maxLen).toBigDecimal()
