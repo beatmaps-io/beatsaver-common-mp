@@ -109,6 +109,8 @@ inline fun <T : IdTable<Key>, Key : Comparable<Key>> T.updateReturning(
     }
 
 class NowExpression<T>(override val columnType: IColumnType) : ExpressionWithColumnType<T>() {
+    constructor(column: Column<T>) : this(column.columnType)
+
     override fun toQueryBuilder(queryBuilder: QueryBuilder) {
         queryBuilder.append("NOW()")
     }

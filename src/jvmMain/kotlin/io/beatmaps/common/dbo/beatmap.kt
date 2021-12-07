@@ -5,6 +5,7 @@ import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
 import io.beatmaps.common.db.array
 import io.beatmaps.common.db.postgresEnumeration
+import io.beatmaps.common.dbo.Beatmap.nullable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -181,6 +182,7 @@ object Versions : IntIdTable("versions", "versionId") {
     val testplayAt = timestamp("testplayAt").nullable()
     val key64 = varchar("key64", 8).nullable()
     val sageScore = short("sageScore").nullable()
+    val scheduledAt = timestamp("scheduledAt").nullable()
 }
 
 data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -194,6 +196,7 @@ data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
     val testplayAt: Instant? by Versions.testplayAt
     val key64: String? by Versions.key64
     val sageScore by Versions.sageScore
+    val scheduledAt by Versions.scheduledAt
 
     val testplays = mutableMapOf<EntityID<Int>, TestplayDao>()
     val difficulties = mutableMapOf<EntityID<Int>, DifficultyDao>()
