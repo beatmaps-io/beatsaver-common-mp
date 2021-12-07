@@ -110,7 +110,9 @@ data class MapInfo(
 
     fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> Path?) = validate(this) {
         validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-        validate(MapInfo::_songName).isNotNull().isNotBlank()
+        validate(MapInfo::_songName).isNotNull().isNotBlank().validate(MetadataLength) {
+            _songName.length + _levelAuthorName.length <= 100
+        }
         validate(MapInfo::_beatsPerMinute).isNotNull().isBetween(10f, 1000f)
         validate(MapInfo::_previewStartTime).isPositiveOrZero()
         validate(MapInfo::_previewDuration).isPositiveOrZero()
@@ -143,6 +145,7 @@ object AudioFormat : Constraint
 object CutDirection : Constraint
 object MisplacedCustomData : Constraint
 data class UniqueDiff(val diff: String) : Constraint
+object MetadataLength: Constraint
 
 data class MapCustomData(
     val _contributors: List<Contributor>?,
