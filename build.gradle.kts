@@ -76,7 +76,7 @@ kotlin {
                 implementation("io.micrometer:micrometer-registry-influx:1.7.3")
                 implementation("io.micrometer:micrometer-registry-elastic:1.7.3")
                 implementation("nl.basjes.parse.useragent:yauaa:6.0")
-                implementation("org.apache.logging.log4j:log4j-api:2.14.1") // Required by yauaa at runtime
+                implementation("org.apache.logging.log4j:log4j-api:2.15.0") // Required by yauaa at runtime
                 implementation("com.maxmind.geoip2:geoip2:2.15.0")
 
                 // Multimedia
