@@ -145,7 +145,7 @@ object AudioFormat : Constraint
 object CutDirection : Constraint
 object MisplacedCustomData : Constraint
 data class UniqueDiff(val diff: String) : Constraint
-object MetadataLength: Constraint
+object MetadataLength : Constraint
 
 data class MapCustomData(
     val _contributors: List<Contributor>?,
