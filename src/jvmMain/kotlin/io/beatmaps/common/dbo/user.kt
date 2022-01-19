@@ -51,6 +51,7 @@ object User : IntIdTable("uploader", "id") {
     val uniqueName = citext("uniqueName").nullable()
     val createdAt = timestamp("createdAt")
     val renamedAt = timestamp("renamedAt")
+    val curator = bool("curator")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -71,4 +72,5 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val active by User.active
     val uniqueName by User.uniqueName
     val createdAt by User.createdAt
+    val curator by User.curator
 }

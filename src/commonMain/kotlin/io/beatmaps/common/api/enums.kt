@@ -50,8 +50,8 @@ enum class ECharacteristic(val color: String) : HumanEnum<ECharacteristic> {
 
 @Serializable(with = EDifficultySerializer::class)
 enum class EDifficulty(val idx: Int, private val _human: String, val color: String) : HumanEnum<EDifficulty> {
-    Easy(1, "Easy", "success"), Normal(3, "Normal", "info"), Hard(5, "Hard", "orange"),
-    Expert(7, "Expert", "danger"), ExpertPlus(9, "Expert+", "purple");
+    Easy(1, "Easy", "green"), Normal(3, "Normal", "blue"), Hard(5, "Hard", "hard"),
+    Expert(7, "Expert", "expert"), ExpertPlus(9, "Expert+", "purple");
 
     override fun human() = _human
     override fun enumName() = name

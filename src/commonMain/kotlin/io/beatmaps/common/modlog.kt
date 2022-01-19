@@ -11,7 +11,7 @@ interface IModLogOpAction
 
 @Serializable
 @SerialName("InfoEdit")
-data class InfoEditData(val oldTitle: String, val oldDescription: String, val newTitle: String, val newDescription: String) : IModLogOpAction
+data class InfoEditData(val oldTitle: String, val oldDescription: String, val newTitle: String, val newDescription: String, val oldTags: List<String>? = null, val newTags: List<String>? = null) : IModLogOpAction
 
 @Serializable
 @SerialName("Deleted")
@@ -23,7 +23,7 @@ data class UnpublishData(val reason: String) : IModLogOpAction
 
 @Serializable
 @SerialName("UploadLimit")
-class UploadLimitData(val newValue: Int) : IModLogOpAction
+class UploadLimitData(val newValue: Int, val newCurator: Boolean) : IModLogOpAction
 
 @Serializable
 @SerialName("EditPlaylist")

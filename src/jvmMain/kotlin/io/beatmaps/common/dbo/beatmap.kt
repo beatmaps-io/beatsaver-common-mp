@@ -79,6 +79,8 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val minNps = decimal("minNps", 8, 3)
     val maxNps = decimal("maxNps", 8, 3)
     val fullSpread = bool("fullSpread")
+
+    val tags = array<String>("tags", VarCharColumnType(255)).nullable()
 }
 
 data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -114,6 +116,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val ranked by Beatmap.ranked
     val qualified by Beatmap.qualified
+
+    val tags by Beatmap.tags
 
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }

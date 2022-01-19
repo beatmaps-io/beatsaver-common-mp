@@ -25,6 +25,7 @@ fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() 
 }
 
 class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
+class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
 
 infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
     return if (t == null) {
@@ -34,6 +35,7 @@ infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
     }
 }
 
+infix fun <T, S> ExpressionWithColumnType<T>.contains(arry: Array<in S>): Op<Boolean> = ArrayContainsOp(this, QueryParameter(arry, columnType))
 infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
 
 fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
