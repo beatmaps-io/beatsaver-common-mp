@@ -27,6 +27,9 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val updatedAt = timestamp("updatedAt")
     val deletedAt = timestamp("deletedAt").nullable()
     val songsChangedAt = timestamp("songsChangedAt").nullable()
+
+    val curator = optReference("curatedBy", User)
+    val curatedAt = timestamp("curatedAt").nullable()
 }
 
 fun Query.handleOwner() = this.map { row ->
@@ -50,6 +53,9 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     val updatedAt by Playlist.updatedAt
     val deletedAt by Playlist.deletedAt
     val songsChangedAt by Playlist.songsChangedAt
+
+    val curatedAt by Playlist.curatedAt
+    val curator by UserDao optionalReferencedOn Playlist.curator
 }
 
 object PlaylistMap : IntIdTable("playlist_map", "id") {
