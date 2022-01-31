@@ -2,12 +2,15 @@ package io.beatmaps.common
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -39,6 +42,7 @@ class KotlinTimeModule : SimpleModule() {
         addSerializer(Float::class.java, FloatSerializer.INSTANCE)
         addSerializer(HumanEnum::class.java, HumanEnumSerializer.INSTANCE)
         addSerializer(MapTag::class.java, MapTagsSerializer.INSTANCE)
+        addDeserializer(MapTag::class.java, MapTagsDeserializer.INSTANCE)
     }
 }
 
@@ -108,4 +112,12 @@ class MapTagsSerializer : StdSerializer<MapTag>(MapTag::class.java) {
     override fun serialize(value: MapTag, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeString(value.slug)
     }
+}
+class MapTagsDeserializer : StdDeserializer<MapTag>(MapTag::class.java) {
+    companion object {
+        val INSTANCE: MapTagsDeserializer = MapTagsDeserializer()
+    }
+
+    override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?) =
+        p?.valueAsString?.let { MapTag.fromSlug(it) } ?: MapTag.None
 }
