@@ -29,11 +29,12 @@ val rabbitHost: String = System.getenv("RABBITMQ_HOST") ?: ""
 val rabbitPort: String = System.getenv("RABBITMQ_PORT") ?: "5672"
 val rabbitUser: String = System.getenv("RABBITMQ_USER") ?: "guest"
 val rabbitPass: String = System.getenv("RABBITMQ_PASS") ?: "guest"
+val rabbitVhost: String = System.getenv("RABBITMQ_VHOST") ?: ""
 private val rabbitLogger = Logger.getLogger("bmio.RabbitMQ")
 val genericQueueConfig = mapOf("x-dead-letter-exchange" to "beatmaps.dlq")
 
 fun RabbitMQConfiguration.setupAMQP(block: Channel.() -> Unit = {}) = apply {
-    uri = "amqp://$rabbitUser:$rabbitPass@$rabbitHost:$rabbitPort"
+    uri = "amqp://$rabbitUser:$rabbitPass@$rabbitHost:$rabbitPort/$rabbitVhost"
     connectionName = hostname
 
     serialize { jackson.writeValueAsBytes(it) }
