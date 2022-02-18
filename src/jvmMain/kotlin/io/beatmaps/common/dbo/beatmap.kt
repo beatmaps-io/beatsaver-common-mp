@@ -5,7 +5,6 @@ import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
 import io.beatmaps.common.db.array
 import io.beatmaps.common.db.postgresEnumeration
-import io.beatmaps.common.dbo.Beatmap.nullable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -25,17 +24,6 @@ import java.math.BigDecimal
 import java.time.Instant
 
 object Beatmap : IntIdTable("beatmap", "mapId") {
-    fun ColumnSet.joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
-        join(Versions, JoinType.INNER, onColumn = id, otherColumn = Versions.mapId, additionalConstraint = state).run {
-            if (stats) {
-                join(Difficulty, JoinType.INNER, onColumn = Versions.id, otherColumn = Difficulty.versionId)
-            } else {
-                this
-            }
-        }
-    fun ColumnSet.joinUploader() = join(User, JoinType.INNER, onColumn = uploader, otherColumn = User.id)
-    fun ColumnSet.joinCurator() = join(curatorAlias, JoinType.LEFT, onColumn = curator, otherColumn = curatorAlias[User.id])
-
     val name = text("name")
     val description = text("description")
     val uploader = reference("uploader", User)
@@ -137,6 +125,17 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
         }
     }
 }
+
+fun ColumnSet.joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
+    join(Versions, JoinType.INNER, onColumn = Beatmap.id, otherColumn = Versions.mapId, additionalConstraint = state).run {
+        if (stats) {
+            join(Difficulty, JoinType.INNER, onColumn = Versions.id, otherColumn = Difficulty.versionId)
+        } else {
+            this
+        }
+    }
+fun ColumnSet.joinUploader() = join(User, JoinType.INNER, onColumn = Beatmap.uploader, otherColumn = User.id)
+fun ColumnSet.joinCurator() = join(curatorAlias, JoinType.LEFT, onColumn = Beatmap.curator, otherColumn = curatorAlias[User.id])
 
 fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = {}) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
     map.also {
