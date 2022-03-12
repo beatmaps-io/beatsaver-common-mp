@@ -2,6 +2,7 @@ package io.beatmaps.common.beatsaber
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 
 interface BSCustomData {
@@ -15,15 +16,16 @@ interface BSCustomData {
 
 fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> obj.getCustomData()["_fake"] != true }
 
+@Serializable
 data class BSDifficulty(
     val _version: String?,
     val _notes: List<BSNote> = listOf(),
     val _obstacles: List<BSObstacle> = listOf(),
     val _events: List<BSEvent> = listOf(),
-    val _waypoints: List<Any> = listOf(),
-    val _specialEventsKeywordFilters: Any?,
-    override val _customData: Any?,
-    val _BPMChanges: List<Any>?
+    val _waypoints: JsonArray? = null,
+    val _specialEventsKeywordFilters: JsonObject?,
+    override val _customData: JsonObject?,
+    val _BPMChanges: JsonArray? = null
 ) : BSDiff {
     override fun noteCount() = _notes.withoutFake().filter { note -> note._type != 3 }.size
     override fun bombCount() = _notes.withoutFake().filter { note -> note._type == 3 }.size
@@ -46,29 +48,32 @@ data class BSDifficulty(
         }
 }
 
+@Serializable
 data class BSNote(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _lineIndex: Int = Int.MIN_VALUE,
     val _lineLayer: Int = Int.MIN_VALUE,
     val _type: Int = Int.MIN_VALUE,
     val _cutDirection: Int = Int.MIN_VALUE,
-    override val _customData: Any?
+    override val _customData: JsonObject?
 ) : BSCustomData
 
+@Serializable
 data class BSObstacle(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _lineIndex: Int = Int.MIN_VALUE,
     val _type: Int = Int.MIN_VALUE,
     val _duration: Long = Long.MIN_VALUE,
     val _width: Int = Int.MIN_VALUE,
-    override val _customData: Any?
+    override val _customData: JsonObject?
 ) : BSCustomData
 
+@Serializable
 data class BSEvent(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _type: Int = Int.MIN_VALUE,
     val _value: Int = Int.MIN_VALUE,
-    override val _customData: Any?
+    override val _customData: JsonObject?
 ) : BSCustomData
 
 sealed interface BSDiff : BSCustomData {
