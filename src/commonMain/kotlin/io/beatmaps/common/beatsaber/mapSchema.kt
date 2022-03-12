@@ -23,8 +23,8 @@ data class BSDifficulty(
     val _obstacles: List<BSObstacle> = listOf(),
     val _events: List<BSEvent> = listOf(),
     val _waypoints: JsonArray? = null,
-    val _specialEventsKeywordFilters: JsonObject?,
-    override val _customData: JsonObject?,
+    val _specialEventsKeywordFilters: JsonObject? = null,
+    override val _customData: JsonObject? = null,
     val _BPMChanges: JsonArray? = null
 ) : BSDiff {
     override fun noteCount() = _notes.withoutFake().filter { note -> note._type != 3 }.size
@@ -55,7 +55,7 @@ data class BSNote(
     val _lineLayer: Int = Int.MIN_VALUE,
     val _type: Int = Int.MIN_VALUE,
     val _cutDirection: Int = Int.MIN_VALUE,
-    override val _customData: JsonObject?
+    override val _customData: JsonObject? = null
 ) : BSCustomData
 
 @Serializable
@@ -63,9 +63,9 @@ data class BSObstacle(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _lineIndex: Int = Int.MIN_VALUE,
     val _type: Int = Int.MIN_VALUE,
-    val _duration: Long = Long.MIN_VALUE,
+    val _duration: Float = Float.NEGATIVE_INFINITY,
     val _width: Int = Int.MIN_VALUE,
-    override val _customData: JsonObject?
+    override val _customData: JsonObject? = null
 ) : BSCustomData
 
 @Serializable
@@ -73,7 +73,7 @@ data class BSEvent(
     val _time: Float = Float.NEGATIVE_INFINITY,
     val _type: Int = Int.MIN_VALUE,
     val _value: Int = Int.MIN_VALUE,
-    override val _customData: JsonObject?
+    override val _customData: JsonObject? = null
 ) : BSCustomData
 
 sealed interface BSDiff : BSCustomData {

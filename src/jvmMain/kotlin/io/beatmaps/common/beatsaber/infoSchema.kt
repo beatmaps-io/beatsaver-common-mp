@@ -321,7 +321,7 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
     }
     validate(BSDifficulty::_obstacles).isNotNull().validateForEach {
         validate(BSObstacle::_type).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacle::_duration).validate(NotNull) { it != Long.MIN_VALUE }
+        validate(BSObstacle::_duration).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
         validate(BSObstacle::_time).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
         validate(BSObstacle::_lineIndex).validate(NotNull) { it != Int.MIN_VALUE }
         validate(BSObstacle::_width).validate(NotNull) { it != Int.MIN_VALUE }
