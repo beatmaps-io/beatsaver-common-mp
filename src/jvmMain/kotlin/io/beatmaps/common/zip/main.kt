@@ -1,6 +1,7 @@
 package io.beatmaps.common.zip
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
@@ -46,7 +47,7 @@ data class ExtractedInfo(
     val md: DigestOutputStream,
     var mapInfo: MapInfo,
     val score: Short,
-    val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDifficulty>> = mutableMapOf(),
+    val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
     var duration: Float = 0f,
     var thumbnail: ByteArrayOutputStream? = null,
     var preview: ByteArrayOutputStream? = null

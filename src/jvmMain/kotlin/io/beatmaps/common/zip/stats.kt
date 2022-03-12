@@ -1,7 +1,6 @@
 package io.beatmaps.common.zip
 
-import io.beatmaps.common.beatsaber.BSCustomData
-import io.beatmaps.common.beatsaber.BSDifficulty
+import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
@@ -44,9 +43,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
     return stats
 }
 
-fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> obj.getCustomData()["_fake"] != true }
-
-fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDifficulty, map: MapInfo): DiffStats {
+fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDiff, map: MapInfo): DiffStats {
     it[njs] = diff._noteJumpMovementSpeed
     it[offset] = diff._noteJumpStartBeatOffset
 
@@ -58,18 +55,16 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
 
     val maxLen = 10f.pow(7) - 1
 
-    val sorted = bsdiff._notes.sortedBy { note -> note._time }
-    val partitioned = bsdiff._notes.withoutFake().partition { note -> note._type != 3 }
-    val len = if (sorted.isNotEmpty()) {
-        sorted.last()._time - sorted.first()._time
-    } else 0f
+    val len = bsdiff.songLength()
+    val noteCount = bsdiff.noteCount()
 
-    it[notes] = partitioned.first.size
-    it[bombs] = partitioned.second.size
-    it[obstacles] = bsdiff._obstacles.withoutFake().size
-    it[events] = bsdiff._events.size
+    it[notes] = noteCount
+    it[bombs] = bsdiff.bombCount()
+    it[obstacles] = bsdiff.obstacleCount()
+    it[events] = bsdiff.eventCount()
     it[length] = min(len, maxLen).toBigDecimal()
     it[seconds] = min(if (map._beatsPerMinute == 0f) 0f else (60 / map._beatsPerMinute) * len, maxLen).toBigDecimal()
+    it[maxScore] = bsdiff.maxScore()
 
     val requirementsLocal = diff._customData?._requirements?.toTypedArray()
     val suggestionsLocal = diff._customData?._suggestions?.toTypedArray()
@@ -79,7 +74,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
         requirementsLocal.containsIgnoreCase("Noodle Extensions"),
         requirementsLocal.containsIgnoreCase("Mapping Extensions"),
         requirementsLocal.containsIgnoreCase("Cinema") || suggestionsLocal.containsIgnoreCase("Cinema"),
-        BigDecimal.valueOf(if (len == 0f) 0.0 else ((partitioned.first.size / len) * (map._beatsPerMinute / 60)).toDouble()).min(maxAllowedNps)
+        BigDecimal.valueOf(if (len == 0f) 0.0 else ((noteCount / len) * (map._beatsPerMinute / 60)).toDouble()).min(maxAllowedNps)
     ).also { stats ->
         it[nps] = stats.nps
         it[chroma] = stats.chroma

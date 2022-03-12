@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.copyTo
-import io.beatmaps.common.jackson
 import io.beatmaps.common.zip.ExtractedInfo
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 import net.coobird.thumbnailator.Thumbnails
 import org.jaudiotagger.audio.generic.GenericAudioHeader
 import org.jaudiotagger.audio.ogg.OggFileReader
@@ -34,7 +35,6 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.lang.IllegalArgumentException
 import java.nio.file.Path
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
@@ -225,14 +225,22 @@ data class DifficultyBeatmap(
         val bytes = byteArrayOutputStream.toByteArray()
 
         info.md.write(bytes)
-        val diff = jackson.readValue<BSDifficulty>(bytes)
+        val jsonElement = Json.parseToJsonElement(bytes.decodeToString())
+        val diff = if (jsonElement.jsonObject.containsKey("version")) {
+            Json.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
+        } else {
+            Json.decodeFromJsonElement<BSDifficulty>(jsonElement)
+        }
 
         info.diffs.getOrPut(characteristic) {
             mutableMapOf()
         }[difficulty] = diff
 
         parent.addConstraintViolations(
-            Validator(diff).apply { this.validate(info) }.constraintViolations.map { constraint ->
+            when (diff) {
+                is BSDifficulty -> Validator(diff).apply { this.validate(info) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info) }
+            }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
                     value = constraint.value,
@@ -322,6 +330,86 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
         validate(BSEvent::_time).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
         validate(BSEvent::_type).validate(NotNull) { it != Int.MIN_VALUE }
         validate(BSEvent::_value).validate(NotNull) { it != Int.MIN_VALUE }
+    }
+}
+
+fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
+    validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+    validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
+        validate(BSBpmChange::bpm).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSBpmChange::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+    }
+    validate(BSDifficultyV3::rotationEvents).isNotNull().validateForEach {
+        validate(BSRotationEvent::executionTime).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
+        validate(BSRotationEvent::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSRotationEvent::rotation).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+    }
+    validate(BSDifficultyV3::colorNotes).isNotNull().validateForEach {
+        validate(BSNoteV3::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
+        validate(BSNoteV3::direction).validate(NotNull) { it != Int.MIN_VALUE }.validate(CutDirection) {
+            it == null || (it in 0..8)
+        }
+        validate(BSNoteV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+            if (info.duration > 0) {
+                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+            }
+        }
+        validate(BSNoteV3::x).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSNoteV3::y).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSNoteV3::angle).validate(NotNull) { it != Int.MIN_VALUE }
+    }
+    validate(BSDifficultyV3::bombNotes).isNotNull().validateForEach {
+        validate(BSBomb::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSBomb::x).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBomb::y).validate(NotNull) { it != Int.MIN_VALUE }
+    }
+    validate(BSDifficultyV3::obstacles).isNotNull().validateForEach {
+        validate(BSObstacleV3::duration).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSObstacleV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSObstacleV3::x).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSObstacleV3::y).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSObstacleV3::width).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSObstacleV3::height).validate(NotNull) { it != Int.MIN_VALUE }
+    }
+    validate(BSDifficultyV3::sliders).isNotNull().validateForEach {
+        validate(BSSlider::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSSlider::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
+        validate(BSSlider::x).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::y).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::direction).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::tailBeat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSSlider::tailX).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::tailY).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::headControlPointLengthMultiplier).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSSlider::tailControlPointLengthMultiplier).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSSlider::tailCutDirection).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::sliderMidAnchorMode).validate(NotNull) { it != Int.MIN_VALUE }
+    }
+    validate(BSDifficultyV3::burstSliders).isNotNull().validateForEach {
+        validate(BSBurstSlider::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+            if (info.duration > 0) {
+                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+            }
+        }
+        validate(BSBurstSlider::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
+        validate(BSBurstSlider::x).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::y).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::direction).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::tailBeat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+            if (info.duration > 0) {
+                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+            }
+        }
+        validate(BSBurstSlider::tailX).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::tailY).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::sliceCount).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBurstSlider::squishAmount).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+    }
+    validate(BSDifficultyV3::basicBeatmapEvents).isNotNull().validateForEach {
+        validate(BSEventV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSEventV3::eventType).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSEventV3::value).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSEventV3::floatValue).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
     }
 }
 

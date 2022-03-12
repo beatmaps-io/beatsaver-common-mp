@@ -1,5 +1,6 @@
 package io.beatmaps.common
 
+import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
 import io.beatmaps.common.beatsaber.BSNote
 import kotlin.math.pow
@@ -197,6 +198,11 @@ data class ParityNote(val note: BSNote, var error: Boolean = false, var warn: Bo
  * @param map - the map to scan for errors
  * @returns {void} - outputs error messages through outputUI
  */
+fun checkParity(map: BSDiff) = when (map) {
+    is BSDifficulty -> checkParity(map)
+    else -> Result(listOf(), 0, 0, 0) // Ignore new beatmap format as it is currently unsupported
+}
+
 fun checkParity(map: BSDifficulty): Result {
     val notes = getNotes(map)
     val errors = mutableListOf<Error>()

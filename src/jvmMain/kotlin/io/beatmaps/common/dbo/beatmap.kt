@@ -234,6 +234,8 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val information = array<String>("information", VarCharColumnType(255)).nullable()
     val warnings = array<String>("warnings", VarCharColumnType(255)).nullable()
 
+    val maxScore = integer("maxScore")
+
     val uniqueDiff = Index(listOf(versionId, characteristic, difficulty), true, "diff_unique")
 }
 
