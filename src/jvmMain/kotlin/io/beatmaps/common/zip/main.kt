@@ -3,11 +3,15 @@ package io.beatmaps.common.zip
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
+import io.beatmaps.common.beatsaber.BSDifficultyV3
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 import net.sourceforge.lame.lowlevel.LameEncoder
 import net.sourceforge.lame.mp3.Lame
 import net.sourceforge.lame.mp3.MPEGMode
@@ -27,7 +31,6 @@ import kotlin.io.path.isDirectory
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
-import kotlin.streams.toList
 
 val KProperty0<*>.isLazyInitialized: Boolean
     get() {
@@ -54,7 +57,7 @@ data class ExtractedInfo(
 )
 
 interface IMapScorer {
-    fun scoreMap(infoFile: MapInfo, audio: File, block: (String) -> BSDifficulty): Short
+    fun scoreMap(infoFile: MapInfo, audio: File, block: (String) -> BSDiff): Short
 }
 interface IMapScorerProvider {
     fun create(): IMapScorer
@@ -93,10 +96,16 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
     fun infoPrefix(): String = infoPath.parent.toString().removeSuffix("/") + "/"
     fun fromInfo(path: String) = getPath(infoPrefix() + path)
 
-    private val diffs = mutableMapOf<String, BSDifficulty>()
+    private val diffs = mutableMapOf<String, BSDiff>()
     fun diff(path: String) = diffs.getOrPut(path) {
         (fromInfo(path) ?: throw ZipHelperException("Difficulty file missing")).inputStream().buffered().use { stream ->
-            jackson.readValue(stream)
+            val jsonElement = Json.parseToJsonElement(stream.readAllBytes().decodeToString())
+
+            if (jsonElement.jsonObject.containsKey("version")) {
+                Json.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
+            } else {
+                Json.decodeFromJsonElement<BSDifficulty>(jsonElement)
+            }
         }
     }
 
