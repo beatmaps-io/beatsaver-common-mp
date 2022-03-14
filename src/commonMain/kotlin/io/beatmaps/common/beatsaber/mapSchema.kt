@@ -4,6 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlin.properties.ReadOnlyProperty
 
 interface BSCustomData {
     val _customData: Any?
@@ -14,11 +17,12 @@ interface BSCustomData {
     } as Map<*, *>
 }
 
-fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> obj.getCustomData()["_fake"] != true }
+fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> (obj.getCustomData()["_fake"] as? JsonPrimitive)?.booleanOrNull != true }
 
 @Serializable
 data class BSDifficulty(
-    val _version: String?,
+    @SerialName("_version")
+    override val version: String? = null,
     val _notes: List<BSNote> = listOf(),
     val _obstacles: List<BSObstacle> = listOf(),
     val _events: List<BSEvent> = listOf(),
@@ -29,12 +33,14 @@ data class BSDifficulty(
 ) : BSDiff {
     override fun noteCount() = _notes.withoutFake().filter { note -> note._type != 3 }.size
     override fun bombCount() = _notes.withoutFake().filter { note -> note._type == 3 }.size
+    override fun arcCount() = 0
+    override fun chainCount() = 0
     override fun obstacleCount() = _obstacles.withoutFake().size
     override fun eventCount() = _events.size
     override fun songLength() =
-        _notes.sortedBy { note -> note._time }.let { sorted ->
+        _notes.sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
-                sorted.last()._time - sorted.first()._time
+                sorted.last().time - sorted.first().time
             } else 0f
         }
 
@@ -48,37 +54,55 @@ data class BSDifficulty(
         }
 }
 
+fun <T> orNegativeInfinity(block: (T) -> Float?): ReadOnlyProperty<T, Float> =
+    ReadOnlyProperty { thisRef, _ -> block(thisRef) ?: Float.NEGATIVE_INFINITY }
+fun <T> orMinValue(block: (T) -> Int?): ReadOnlyProperty<T, Int> =
+    ReadOnlyProperty { thisRef, _ -> block(thisRef) ?: Int.MIN_VALUE }
+
+abstract class BSObject {
+    abstract val _time: Float?
+    val time by orNegativeInfinity { _time }
+}
+
 @Serializable
 data class BSNote(
-    val _time: Float = Float.NEGATIVE_INFINITY,
-    val _lineIndex: Int = Int.MIN_VALUE,
-    val _lineLayer: Int = Int.MIN_VALUE,
-    val _type: Int = Int.MIN_VALUE,
-    val _cutDirection: Int = Int.MIN_VALUE,
+    override val _time: Float? = null,
+    val _lineIndex: Int? = null,
+    val _lineLayer: Int? = null,
+    val _type: Int? = null,
+    val _cutDirection: Int? = null,
     override val _customData: JsonObject? = null
-) : BSCustomData
+) : BSCustomData, BSObject() {
+    val lineIndex by orMinValue { _lineIndex }
+    val lineLayer by orMinValue { _lineLayer }
+    val type by orMinValue { _type }
+    val cutDirection by orMinValue { _cutDirection }
+}
 
 @Serializable
 data class BSObstacle(
-    val _time: Float = Float.NEGATIVE_INFINITY,
-    val _lineIndex: Int = Int.MIN_VALUE,
-    val _type: Int = Int.MIN_VALUE,
-    val _duration: Float = Float.NEGATIVE_INFINITY,
-    val _width: Int = Int.MIN_VALUE,
+    override val _time: Float? = null,
+    val _lineIndex: Int? = null,
+    val _type: Int? = null,
+    val _duration: Float? = null,
+    val _width: Int? = null,
     override val _customData: JsonObject? = null
-) : BSCustomData
+) : BSCustomData, BSObject()
 
 @Serializable
 data class BSEvent(
-    val _time: Float = Float.NEGATIVE_INFINITY,
-    val _type: Int = Int.MIN_VALUE,
-    val _value: Int = Int.MIN_VALUE,
+    override val _time: Float? = null,
+    val _type: Int? = null,
+    val _value: Int? = null,
     override val _customData: JsonObject? = null
-) : BSCustomData
+) : BSCustomData, BSObject()
 
 sealed interface BSDiff : BSCustomData {
+    val version: String?
     fun noteCount(): Int
     fun bombCount(): Int
+    fun arcCount(): Int
+    fun chainCount(): Int
     fun eventCount(): Int
     fun obstacleCount(): Int
     fun songLength(): Float
@@ -87,7 +111,7 @@ sealed interface BSDiff : BSCustomData {
 
 @Serializable
 data class BSDifficultyV3(
-    val version: String?,
+    override val version: String? = null,
     val bpmEvents: List<BSBpmChange>,
     val rotationEvents: List<BSRotationEvent>,
     val colorNotes: List<BSNoteV3>,
@@ -107,11 +131,14 @@ data class BSDifficultyV3(
 ) : BSDiff {
     override fun noteCount() = colorNotes.size
     override fun bombCount() = bombNotes.size
+    override fun arcCount() = sliders.size
+    override fun chainCount() = burstSliders.size
+
     override fun eventCount() = basicBeatmapEvents.size
     override fun obstacleCount() = obstacles.size
-    override fun songLength() = colorNotes.sortedBy { note -> note.beat }.let { sorted ->
+    override fun songLength() = colorNotes.sortedBy { note -> note.time }.let { sorted ->
         if (sorted.isNotEmpty()) {
-            sorted.last().beat - sorted.first().beat
+            sorted.last().time - sorted.first().time
         } else 0f
     }
 
@@ -121,29 +148,29 @@ data class BSDifficultyV3(
 @Serializable
 data class BSObstacleV3(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE,
+    val beat: Float? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     @SerialName("d")
-    val duration: Float = Float.NEGATIVE_INFINITY,
+    val duration: Float? = null,
     @SerialName("w")
-    val width: Int = Int.MIN_VALUE,
+    val width: Int? = null,
     @SerialName("h")
-    val height: Int = Int.MIN_VALUE
+    val height: Int? = null
 )
 
 @Serializable
 data class BSBpmChange(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("m")
-    val bpm: Float = Float.NEGATIVE_INFINITY
+    val bpm: Float? = null
 )
 
 @Serializable
 data class BSBoostEvent(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("o")
     val boost: Boolean = false
 )
@@ -154,17 +181,17 @@ typealias BSLightRotationEventBoxGroup = BSEventBoxGroup<BSLightRotationEventBox
 @Serializable
 data class BSEventBoxGroup<T : GroupableEventBox>(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("g")
-    val groupId: Int = Int.MIN_VALUE,
+    val groupId: Int? = null,
     @SerialName("e")
     val eventBoxes: List<T> = listOf()
 )
 
 interface GroupableEventBox {
     val indexFilter: BSIndexFilter?
-    val beatDistributionParam: Float
-    val beatDistributionParamType: Int
+    val beatDistributionParam: Float?
+    val beatDistributionParamType: Int?
 }
 
 @Serializable
@@ -172,16 +199,16 @@ data class BSLightColorEventBox(
     @SerialName("f")
     override val indexFilter: BSIndexFilter? = null,
     @SerialName("w")
-    override val beatDistributionParam: Float = Float.NEGATIVE_INFINITY,
+    override val beatDistributionParam: Float? = null,
     @SerialName("d")
-    override val beatDistributionParamType: Int = Int.MIN_VALUE,
+    override val beatDistributionParamType: Int? = null,
 
     @SerialName("r")
-    val brightnessDistributionParam: Float = Float.NEGATIVE_INFINITY,
+    val brightnessDistributionParam: Float? = null,
     @SerialName("t")
-    val brightnessDistributionParamType: Int = Int.MIN_VALUE,
+    val brightnessDistributionParamType: Int? = null,
     @SerialName("b")
-    val brightnessDistributionShouldAffectFirstBaseEvent: Int = Int.MIN_VALUE,
+    val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
     @SerialName("e")
     val lightColorBaseDataList: List<BSLightColorBaseData> = listOf()
 ) : GroupableEventBox
@@ -189,15 +216,15 @@ data class BSLightColorEventBox(
 @Serializable
 data class BSLightColorBaseData(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("i")
-    val transitionType: Int = Int.MIN_VALUE,
+    val transitionType: Int? = null,
     @SerialName("c")
-    val colorType: Int = Int.MIN_VALUE,
+    val colorType: Int? = null,
     @SerialName("s")
-    val brightness: Float = Float.NEGATIVE_INFINITY,
+    val brightness: Float? = null,
     @SerialName("f")
-    val strobeFrequency: Int = Int.MIN_VALUE
+    val strobeFrequency: Int? = null
 )
 
 @Serializable
@@ -205,20 +232,20 @@ data class BSLightRotationEventBox(
     @SerialName("f")
     override val indexFilter: BSIndexFilter? = null,
     @SerialName("w")
-    override val beatDistributionParam: Float = Float.NEGATIVE_INFINITY,
+    override val beatDistributionParam: Float? = null,
     @SerialName("d")
-    override val beatDistributionParamType: Int = Int.MIN_VALUE,
+    override val beatDistributionParamType: Int? = null,
 
     @SerialName("s")
-    val rotationDistributionParam: Float = Float.NEGATIVE_INFINITY,
+    val rotationDistributionParam: Float? = null,
     @SerialName("t")
-    val rotationDistributionParamType: Int = Int.MIN_VALUE,
+    val rotationDistributionParamType: Int? = null,
     @SerialName("a")
-    val axis: Int = Int.MIN_VALUE,
+    val axis: Int? = null,
     @SerialName("r")
-    val flipRotation: Int = Int.MIN_VALUE,
+    val flipRotation: Int? = null,
     @SerialName("b")
-    val brightnessDistributionShouldAffectFirstBaseEvent: Int = Int.MIN_VALUE,
+    val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
     @SerialName("l")
     val lightRotationBaseDataList: List<LightRotationBaseData> = listOf()
 ) : GroupableEventBox
@@ -226,129 +253,133 @@ data class BSLightRotationEventBox(
 @Serializable
 data class LightRotationBaseData(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("p")
-    val usePreviousEventRotationValue: Int = Int.MIN_VALUE,
+    val usePreviousEventRotationValue: Int? = null,
     @SerialName("e")
-    val easeType: Int = Int.MIN_VALUE,
+    val easeType: Int? = null,
     @SerialName("l")
-    val loopsCount: Int = Int.MIN_VALUE,
+    val loopsCount: Int? = null,
     @SerialName("r")
-    val rotation: Float = Float.NEGATIVE_INFINITY,
+    val rotation: Float? = null,
     @SerialName("o")
-    val rotationDirection: Int = Int.MIN_VALUE
+    val rotationDirection: Int? = null
 )
 
 @Serializable
 data class BSIndexFilter(
     @SerialName("f")
-    val type: Int = Int.MIN_VALUE,
+    val type: Int? = null,
     @SerialName("p")
-    val param0: Int = Int.MIN_VALUE,
+    val param0: Int? = null,
     @SerialName("t")
-    val param1: Int = Int.MIN_VALUE,
+    val param1: Int? = null,
     @SerialName("r")
-    val reversed: Int = Int.MIN_VALUE
+    val reversed: Int? = null
 )
 
 @Serializable
 data class BSWaypoint(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE,
+    val beat: Float? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     @SerialName("d")
-    val offsetDirection: Int = Int.MIN_VALUE
+    val offsetDirection: Int? = null
 )
 
 @Serializable
 data class BSBomb(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE
+    val beat: Float? = null,
+    val x: Int? = null,
+    val y: Int? = null
 )
 
 @Serializable
 data class BSNoteV3(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE,
+    override val _time: Float? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     @SerialName("a")
-    val angle: Int = Int.MIN_VALUE,
+    val angleOffset: Int? = null,
     @SerialName("c")
-    val color: Int = Int.MIN_VALUE,
+    val color: Int? = null,
     @SerialName("d")
-    val direction: Int = Int.MIN_VALUE
-)
+    val direction: Int? = null
+) : BSObject()
 
 @Serializable
 data class BSBurstSlider(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    override val _time: Float? = null,
     @SerialName("c")
-    val color: Int = Int.MIN_VALUE,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE,
+    val color: Int? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     @SerialName("d")
-    val direction: Int = Int.MIN_VALUE,
+    val direction: Int? = null,
     @SerialName("tb")
-    val tailBeat: Float = Float.NEGATIVE_INFINITY,
+    val tailBeat: Float? = null,
     @SerialName("tx")
-    val tailX: Int = Int.MIN_VALUE,
+    val tailX: Int? = null,
     @SerialName("ty")
-    val tailY: Int = Int.MIN_VALUE,
+    val tailY: Int? = null,
     @SerialName("sc")
-    val sliceCount: Int = Int.MIN_VALUE,
+    val sliceCount: Int? = null,
     @SerialName("s")
-    val squishAmount: Float = Float.NEGATIVE_INFINITY
-)
+    val squishAmount: Float? = null
+) : BSObject() {
+    val tailTime by orNegativeInfinity { tailBeat }
+}
 
 @Serializable
 data class BSSlider(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    override val _time: Float? = null,
     @SerialName("c")
-    val color: Int = Int.MIN_VALUE,
-    val x: Int = Int.MIN_VALUE,
-    val y: Int = Int.MIN_VALUE,
+    val color: Int? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     @SerialName("d")
-    val direction: Int = Int.MIN_VALUE,
+    val direction: Int? = null,
     @SerialName("tb")
-    val tailBeat: Float = Float.NEGATIVE_INFINITY,
+    val tailBeat: Float? = null,
     @SerialName("tx")
-    val tailX: Int = Int.MIN_VALUE,
+    val tailX: Int? = null,
     @SerialName("ty")
-    val tailY: Int = Int.MIN_VALUE,
+    val tailY: Int? = null,
     @SerialName("mu")
-    val headControlPointLengthMultiplier: Float = Float.NEGATIVE_INFINITY,
+    val headControlPointLengthMultiplier: Float? = null,
     @SerialName("tmu")
-    val tailControlPointLengthMultiplier: Float = Float.NEGATIVE_INFINITY,
+    val tailControlPointLengthMultiplier: Float? = null,
     @SerialName("tc")
-    val tailCutDirection: Int = Int.MIN_VALUE,
+    val tailCutDirection: Int? = null,
     @SerialName("m")
-    val sliderMidAnchorMode: Int = Int.MIN_VALUE
-)
+    val sliderMidAnchorMode: Int? = null
+) : BSObject() {
+    val tailTime by orNegativeInfinity { tailBeat }
+}
 
 @Serializable
 data class BSEventV3(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("et")
-    val eventType: Int = Int.MIN_VALUE,
+    val eventType: Int? = null,
     @SerialName("i")
-    val value: Int = Int.MIN_VALUE,
+    val value: Int? = null,
     @SerialName("f")
-    val floatValue: Float = Float.NEGATIVE_INFINITY
+    val floatValue: Float? = null
 )
 
 @Serializable
 data class BSRotationEvent(
     @SerialName("b")
-    val beat: Float = Float.NEGATIVE_INFINITY,
+    val beat: Float? = null,
     @SerialName("e")
-    val executionTime: Int = Int.MIN_VALUE,
+    val executionTime: Int? = null,
     @SerialName("r")
-    val rotation: Float = Float.NEGATIVE_INFINITY
+    val rotation: Float? = null
 )

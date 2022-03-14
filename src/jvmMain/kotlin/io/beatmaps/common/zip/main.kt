@@ -65,7 +65,9 @@ interface IMapScorerProvider {
 class ZipHelperException(val msg: String) : RuntimeException()
 
 class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
 
     val infoPath: Path by lazy {
         fs.getPath(filesOriginalCase.firstOrNull { it.endsWith("/Info.dat", true) } ?: throw ZipHelperException("Missing Info.dat"))
@@ -101,7 +103,7 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
     private val diffs = mutableMapOf<String, BSDiff>()
     fun diff(path: String) = diffs.getOrPut(path) {
         (fromInfo(path) ?: throw ZipHelperException("Difficulty file missing")).inputStream().buffered().use { stream ->
-            val jsonElement = json.parseToJsonElement(stream.readAllBytes().decodeToString())
+            val jsonElement = json.parseToJsonElement(readFromStream(stream))
 
             if (jsonElement.jsonObject.containsKey("version")) {
                 json.decodeFromJsonElement<BSDifficultyV3>(jsonElement)

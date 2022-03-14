@@ -101,9 +101,9 @@ class Parity(private val type: Types) {
     }
 
     fun init(notes: List<BSNote>) {
-        val firstNote = notes.firstOrNull { Types.fromInt(it._type) === type }
+        val firstNote = notes.firstOrNull { Types.fromInt(it.type) === type }
 
-        parity = if (firstNote?.let { cuts[type]?.get(Swing.Good)?.get(HitParity.Forehand)?.contains(CutDirection.fromInt(it._cutDirection)) } == true) {
+        parity = if (firstNote?.let { cuts[type]?.get(Swing.Good)?.get(HitParity.Forehand)?.contains(CutDirection.fromInt(it.cutDirection)) } == true) {
             HitParity.Forehand
         } else {
             HitParity.Backhand
@@ -118,9 +118,9 @@ class Parity(private val type: Types) {
  */
 fun getNotes(obj: BSDifficulty) =
     obj._notes.sortedBy {
-        it._time
+        it.time
     }.filter {
-        Types.fromInt(it._type) != null
+        Types.fromInt(it.type) != null
     }
 
 fun Float.toFixed(numOfDec: Int): String {
@@ -166,13 +166,13 @@ data class Error(val messageType: MessageType, val time: Float, val parity: HitP
 }
 data class Result(val error: List<Error>, val info: Int, val warnings: Int, val errors: Int)
 fun outputReset(resets: MutableList<Error>, note: BSNote, parity: HitParity, type: Types) {
-    resets.add(Error.reset(note._time, parity, type))
+    resets.add(Error.reset(note.time, parity, type))
 }
 fun outputError(output: MutableList<Error>, note: BSNote, parity: HitParity, type: Types, deltaTime: Float) {
-    output.add(Error.error(note._time, parity, type, note._lineIndex, note._lineLayer, deltaTime))
+    output.add(Error.error(note.time, parity, type, note.lineIndex, note.lineLayer, deltaTime))
 }
 fun outputWarn(output: MutableList<Error>, note: BSNote, parity: HitParity, type: Types) {
-    output.add(Error.warn(note._time, parity, type, note._lineIndex, note._lineLayer))
+    output.add(Error.warn(note.time, parity, type, note.lineIndex, note.lineLayer))
 }
 
 /**
@@ -186,7 +186,7 @@ fun findCol(jsonData: List<BSNote>, type: Types, lastVal: Int) =
     if (lastVal < 0) -1 else {
         jsonData.indexOf(
             jsonData.subList(0, lastVal).lastOrNull {
-                Types.fromInt(it._type) === type
+                Types.fromInt(it.type) === type
             }
         )
     }
@@ -209,7 +209,7 @@ fun checkParity(map: BSDifficulty): Result {
 
     val parity = ParityPair().also { it.init(notes) }
 
-    val ohno = map._notes.any { it._lineIndex > 3 || it._lineIndex < 0 || it._lineLayer < 0 || it._lineLayer > 2 }
+    val ohno = map._notes.any { it.lineIndex > 3 || it.lineIndex < 0 || it.lineLayer < 0 || it.lineLayer > 2 }
     if (ohno) {
         // ME is too complicated for me
         return Result(errors, 0, 0, 0)
@@ -218,10 +218,10 @@ fun checkParity(map: BSDifficulty): Result {
     val parityNotes = notes.map { ParityNote(it) }
 
     tailrec fun revertParity(note: BSNote, offset: Int, type: Types) {
-        if (offset >= notes.size || (notes[offset]._time - note._time - sliderPrecision) > comparisonTolerance) {
+        if (offset >= notes.size || (notes[offset].time - note.time - sliderPrecision) > comparisonTolerance) {
             return
-        } else if (note._type == notes[offset]._type) {
-            parity[type].invert(note._time)
+        } else if (note.type == notes[offset].type) {
+            parity[type].invert(note.time)
         } else {
             revertParity(note, offset + 1, type)
         }
@@ -229,10 +229,10 @@ fun checkParity(map: BSDifficulty): Result {
 
     parityNotes.forEachIndexed { i, parityNote ->
         val note = parityNote.note
-        val type = Types.fromInt(note._type)
-        val cutDirection = CutDirection.fromInt(note._cutDirection)
-        val column = LineIndex.fromInt(note._lineIndex)
-        val row = LineLayer.fromInt(note._lineLayer)
+        val type = Types.fromInt(note.type)
+        val cutDirection = CutDirection.fromInt(note.cutDirection)
+        val column = LineIndex.fromInt(note.lineIndex)
+        val row = LineLayer.fromInt(note.lineLayer)
 
         if (type == null) {
             return@forEachIndexed
@@ -254,9 +254,9 @@ fun checkParity(map: BSDifficulty): Result {
                 val targetColumn = if (color === Types.Red) LineIndex.MiddleLeft else LineIndex.MiddleRight
                 val targetRow = if (row == LineLayer.Bottom) LineLayer.Top else LineLayer.Bottom
                 notes.drop(i + 1).firstOrNull { offsetNote ->
-                    val tooSoon = offsetNote._time - note._time - bombMinTime > comparisonTolerance
-                    val shouldInvertA = Types.fromInt(offsetNote._type) === color && cuts[color]?.get(Swing.Good)?.get(suggestedParity)?.contains(CutDirection.fromInt(offsetNote._cutDirection)) != true
-                    val shouldInvertB = Types.fromInt(offsetNote._type) === Types.Bomb && LineIndex.fromInt(offsetNote._lineIndex) == targetColumn && LineLayer.fromInt(offsetNote._lineLayer) == targetRow
+                    val tooSoon = offsetNote.time - note.time - bombMinTime > comparisonTolerance
+                    val shouldInvertA = Types.fromInt(offsetNote.type) === color && cuts[color]?.get(Swing.Good)?.get(suggestedParity)?.contains(CutDirection.fromInt(offsetNote.cutDirection)) != true
+                    val shouldInvertB = Types.fromInt(offsetNote.type) === Types.Bomb && LineIndex.fromInt(offsetNote.lineIndex) == targetColumn && LineLayer.fromInt(offsetNote.lineLayer) == targetRow
 
                     if (!tooSoon && (shouldInvertA || shouldInvertB)) {
                         setParity[color] = false
@@ -266,13 +266,13 @@ fun checkParity(map: BSDifficulty): Result {
                 }
 
                 parity[color].lastInvertTime?.let { lit ->
-                    if (note._time - lit - bombMinTime <= comparisonTolerance) {
+                    if (note.time - lit - bombMinTime <= comparisonTolerance) {
                         setParity[color] = false
                     }
                 }
 
                 if (suggestedParity == parity[color].getParity()) {
-                    parity[color].lastInvertTime = note._time
+                    parity[color].lastInvertTime = note.time
                 }
             }
 
@@ -280,14 +280,14 @@ fun checkParity(map: BSDifficulty): Result {
             setParity.forEach { entry ->
                 if (entry.value) {
                     if (suggestedParity !== parity[entry.key].getParity()) {
-                        parity[entry.key].invert(note._time)
+                        parity[entry.key].invert(note.time)
                         outputReset(errors, note, parity[entry.key].getParity(), entry.key)
                     }
                 }
             }
         } else {
             when {
-                cuts[type]?.get(Swing.Good)?.get(parity[type].getParity())?.contains(cutDirection) == true -> parity[type].invert(note._time)
+                cuts[type]?.get(Swing.Good)?.get(parity[type].getParity())?.contains(cutDirection) == true -> parity[type].invert(note.time)
                 cuts[type]?.get(Swing.Borderline)?.get(parity[type].getParity())?.contains(cutDirection) == true -> {
                     parityNote.warn = true
 
@@ -298,11 +298,11 @@ fun checkParity(map: BSDifficulty): Result {
                     }
 
                     outputWarn(errors, note, parity[type].getParity(), type)
-                    parity[type].invert(note._time)
+                    parity[type].invert(note.time)
                 }
                 else -> {
                     parityNote.error = true
-                    val deltaTime = note._time - (parity[type].lastInvertTime ?: 0f)
+                    val deltaTime = note.time - (parity[type].lastInvertTime ?: 0f)
                     val idx = findCol(notes, type, i - 1)
                     if (idx >= 0) {
                         val last = parityNotes[idx]

@@ -305,111 +305,111 @@ fun extraFieldsViolation(
 }
 
 fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
-    validate(BSDifficulty::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+    validate(BSDifficulty::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficulty::_notes).isNotNull().validateForEach {
-        validate(BSNote::_type).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1, 3)
-        validate(BSNote::_cutDirection).validate(NotNull) { it != Int.MIN_VALUE }.validate(CutDirection) {
+        validate(BSNote::_type).isNotNull().isIn(0, 1, 3)
+        validate(BSNote::_cutDirection).isNotNull().validate(CutDirection) {
             it == null || (it in 0..8) || (it in 1000..1360)
         }
-        validate(BSNote::_time).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+        validate(BSNote::_time).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
         }
-        validate(BSNote::_lineIndex).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSNote::_lineLayer).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSNote::_lineIndex).isNotNull()
+        validate(BSNote::_lineLayer).isNotNull()
     }
     validate(BSDifficulty::_obstacles).isNotNull().validateForEach {
-        validate(BSObstacle::_type).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacle::_duration).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSObstacle::_time).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSObstacle::_lineIndex).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacle::_width).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSObstacle::_type).isNotNull()
+        validate(BSObstacle::_duration).isNotNull()
+        validate(BSObstacle::_time).isNotNull()
+        validate(BSObstacle::_lineIndex).isNotNull()
+        validate(BSObstacle::_width).isNotNull()
     }
     validate(BSDifficulty::_events).isNotNull().validateForEach {
-        validate(BSEvent::_time).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSEvent::_type).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSEvent::_value).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSEvent::_time).isNotNull()
+        validate(BSEvent::_type).isNotNull()
+        validate(BSEvent::_value).validate(NotNull) { it != null && it != Int.MIN_VALUE }
     }
 }
 
 fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
     validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
-        validate(BSBpmChange::bpm).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSBpmChange::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSBpmChange::bpm).isNotNull()
+        validate(BSBpmChange::beat).isNotNull()
     }
     validate(BSDifficultyV3::rotationEvents).isNotNull().validateForEach {
-        validate(BSRotationEvent::executionTime).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
-        validate(BSRotationEvent::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSRotationEvent::rotation).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSRotationEvent::executionTime).isNotNull().isIn(0, 1)
+        validate(BSRotationEvent::beat).isNotNull()
+        validate(BSRotationEvent::rotation).isNotNull()
     }
     validate(BSDifficultyV3::colorNotes).isNotNull().validateForEach {
-        validate(BSNoteV3::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
-        validate(BSNoteV3::direction).validate(NotNull) { it != Int.MIN_VALUE }.validate(CutDirection) {
+        validate(BSNoteV3::color).isNotNull().isIn(0, 1)
+        validate(BSNoteV3::direction).isNotNull().validate(CutDirection) {
             it == null || (it in 0..8)
         }
-        validate(BSNoteV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+        validate(BSNoteV3::beat).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
         }
-        validate(BSNoteV3::x).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSNoteV3::y).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSNoteV3::angle).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSNoteV3::x).isNotNull()
+        validate(BSNoteV3::y).isNotNull()
+        validate(BSNoteV3::angleOffset).isNotNull()
     }
     validate(BSDifficultyV3::bombNotes).isNotNull().validateForEach {
-        validate(BSBomb::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSBomb::x).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBomb::y).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSBomb::beat).isNotNull()
+        validate(BSBomb::x).isNotNull()
+        validate(BSBomb::y).isNotNull()
     }
     validate(BSDifficultyV3::obstacles).isNotNull().validateForEach {
-        validate(BSObstacleV3::duration).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSObstacleV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSObstacleV3::x).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacleV3::y).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacleV3::width).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSObstacleV3::height).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSObstacleV3::duration).isNotNull()
+        validate(BSObstacleV3::beat).isNotNull()
+        validate(BSObstacleV3::x).isNotNull()
+        validate(BSObstacleV3::y).isNotNull()
+        validate(BSObstacleV3::width).isNotNull()
+        validate(BSObstacleV3::height).isNotNull()
     }
     validate(BSDifficultyV3::sliders).isNotNull().validateForEach {
-        validate(BSSlider::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSSlider::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
-        validate(BSSlider::x).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::y).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::direction).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::tailBeat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSSlider::tailX).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::tailY).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::headControlPointLengthMultiplier).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSSlider::tailControlPointLengthMultiplier).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSSlider::tailCutDirection).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSSlider::sliderMidAnchorMode).validate(NotNull) { it != Int.MIN_VALUE }
+        validate(BSSlider::beat).isNotNull()
+        validate(BSSlider::color).isNotNull().isIn(0, 1)
+        validate(BSSlider::x).isNotNull()
+        validate(BSSlider::y).isNotNull()
+        validate(BSSlider::direction).isNotNull()
+        validate(BSSlider::tailBeat).isNotNull()
+        validate(BSSlider::tailX).isNotNull()
+        validate(BSSlider::tailY).isNotNull()
+        validate(BSSlider::headControlPointLengthMultiplier).isNotNull()
+        validate(BSSlider::tailControlPointLengthMultiplier).isNotNull()
+        validate(BSSlider::tailCutDirection).isNotNull()
+        validate(BSSlider::sliderMidAnchorMode).isNotNull()
     }
     validate(BSDifficultyV3::burstSliders).isNotNull().validateForEach {
-        validate(BSBurstSlider::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+        validate(BSBurstSlider::beat).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
         }
-        validate(BSBurstSlider::color).validate(NotNull) { it != Int.MIN_VALUE }.isIn(0, 1)
-        validate(BSBurstSlider::x).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::y).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::direction).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::tailBeat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }.let {
+        validate(BSBurstSlider::color).isNotNull().isIn(0, 1)
+        validate(BSBurstSlider::x).isNotNull()
+        validate(BSBurstSlider::y).isNotNull()
+        validate(BSBurstSlider::direction).isNotNull()
+        validate(BSBurstSlider::tailBeat).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
         }
-        validate(BSBurstSlider::tailX).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::tailY).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::sliceCount).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSBurstSlider::squishAmount).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSBurstSlider::tailX).isNotNull()
+        validate(BSBurstSlider::tailY).isNotNull()
+        validate(BSBurstSlider::sliceCount).isNotNull()
+        validate(BSBurstSlider::squishAmount).isNotNull()
     }
     validate(BSDifficultyV3::basicBeatmapEvents).isNotNull().validateForEach {
-        validate(BSEventV3::beat).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
-        validate(BSEventV3::eventType).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSEventV3::value).validate(NotNull) { it != Int.MIN_VALUE }
-        validate(BSEventV3::floatValue).validate(NotNull) { it != Float.NEGATIVE_INFINITY }
+        validate(BSEventV3::beat).isNotNull()
+        validate(BSEventV3::eventType).isNotNull()
+        validate(BSEventV3::value).isNotNull()
+        validate(BSEventV3::floatValue).isNotNull()
     }
 }
 

@@ -212,6 +212,8 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val offset = float("offsetTime")
     val notes = integer("notes")
     val bombs = integer("bombs")
+    val arcs = integer("arcs")
+    val chains = integer("chains")
     val obstacles = integer("obstacles")
     val nps = decimal("nps", 8, 3)
     val length = decimal("length", 10, 3)
@@ -235,6 +237,7 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val warnings = array<String>("warnings", VarCharColumnType(255)).nullable()
 
     val maxScore = integer("maxScore")
+    val schemaVersion = varchar("schemaVersion", 10)
 
     val uniqueDiff = Index(listOf(versionId, characteristic, difficulty), true, "diff_unique")
 }

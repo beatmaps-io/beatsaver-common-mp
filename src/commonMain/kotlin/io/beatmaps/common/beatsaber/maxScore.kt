@@ -67,15 +67,15 @@ fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
     val sliders = data.sliders
     val burstSliders = data.burstSliders
 
-    val slidersByBeat = sliders.groupBy { it.beat }
-    val slidersByTailBeat = sliders.groupBy { it.tailBeat }
-    val burstSlidersByBeat = burstSliders.groupBy { it.beat }
+    val slidersByBeat = sliders.groupBy { it.time }
+    val slidersByTailBeat = sliders.groupBy { it.tailTime }
+    val burstSlidersByBeat = burstSliders.groupBy { it.time }
 
     val noteItems = notes
         .map {
-            val matchesHead = slidersByBeat[it.beat]?.any { s -> it.color == s.color && it.x == s.x && it.y == s.y } == true
-            val matchesTail = slidersByTailBeat[it.beat]?.any { s -> it.color == s.color && it.x == s.tailX && it.y == s.tailY } == true
-            val matchesBurst = burstSlidersByBeat[it.beat]?.any { s -> it.color == s.color && it.x == s.x && it.y == it.y } == true
+            val matchesHead = slidersByBeat[it.time]?.any { s -> it.color == s.color && it.x == s.x && it.y == s.y } == true
+            val matchesTail = slidersByTailBeat[it.time]?.any { s -> it.color == s.color && it.x == s.tailX && it.y == s.tailY } == true
+            val matchesBurst = burstSlidersByBeat[it.time]?.any { s -> it.color == s.color && it.x == s.x && it.y == it.y } == true
 
             val type = if (matchesTail) {
                 NoteScoreDefinition.SliderTail
@@ -87,13 +87,14 @@ fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
                 NoteScoreDefinition.Normal
             }
 
-            MaxScoreCounterElement(type, it.beat)
+            MaxScoreCounterElement(type, it.time)
         }
 
     val burstItems = burstSliders.flatMap {
-        (1 until it.sliceCount).map { i ->
-            val t = i / (it.sliceCount - 1).toFloat()
-            val beat = (it.beat + (it.tailBeat - it.beat) * t)
+        val sliceCount = it.sliceCount ?: 0
+        (1 until sliceCount).map { i ->
+            val t = i / (sliceCount - 1).toFloat()
+            val beat = (it.time + (it.tailTime - it.time) * t)
             MaxScoreCounterElement(NoteScoreDefinition.BurstSliderElement, beat)
         }
     }

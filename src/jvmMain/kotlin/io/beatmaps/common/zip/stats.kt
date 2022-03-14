@@ -58,8 +58,11 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     val len = bsdiff.songLength()
     val noteCount = bsdiff.noteCount()
 
+    it[schemaVersion] = bsdiff.version ?: "2.2.0"
     it[notes] = noteCount
     it[bombs] = bsdiff.bombCount()
+    it[arcs] = bsdiff.arcCount()
+    it[chains] = bsdiff.chainCount()
     it[obstacles] = bsdiff.obstacleCount()
     it[events] = bsdiff.eventCount()
     it[length] = min(len, maxLen).toBigDecimal()
