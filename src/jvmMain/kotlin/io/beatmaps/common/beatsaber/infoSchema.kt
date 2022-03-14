@@ -349,7 +349,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         validate(BSNoteV3::direction).isNotNull().validate(CutDirection) {
             it == null || (it in 0..8)
         }
-        validate(BSNoteV3::beat).isNotNull().let {
+        validate(BSNoteV3::time).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
@@ -372,7 +372,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         validate(BSObstacleV3::height).isNotNull()
     }
     validate(BSDifficultyV3::sliders).isNotNull().validateForEach {
-        validate(BSSlider::beat).isNotNull()
+        validate(BSSlider::time).isNotNull()
         validate(BSSlider::color).isNotNull().isIn(0, 1)
         validate(BSSlider::x).isNotNull()
         validate(BSSlider::y).isNotNull()
@@ -386,7 +386,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         validate(BSSlider::sliderMidAnchorMode).isNotNull()
     }
     validate(BSDifficultyV3::burstSliders).isNotNull().validateForEach {
-        validate(BSBurstSlider::beat).isNotNull().let {
+        validate(BSBurstSlider::time).isNotNull().let {
             if (info.duration > 0) {
                 it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
             }
@@ -405,12 +405,66 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         validate(BSBurstSlider::sliceCount).isNotNull()
         validate(BSBurstSlider::squishAmount).isNotNull()
     }
+    validate(BSDifficultyV3::waypoints).isNotNull().validateForEach {
+        validate(BSWaypoint::beat).isNotNull()
+        validate(BSWaypoint::x).isNotNull()
+        validate(BSWaypoint::y).isNotNull()
+        validate(BSWaypoint::offsetDirection).isNotNull()
+    }
     validate(BSDifficultyV3::basicBeatmapEvents).isNotNull().validateForEach {
         validate(BSEventV3::beat).isNotNull()
         validate(BSEventV3::eventType).isNotNull()
         validate(BSEventV3::value).isNotNull()
         validate(BSEventV3::floatValue).isNotNull()
     }
+    validate(BSDifficultyV3::colorBoostBeatmapEvents).isNotNull().validateForEach {
+        validate(BSBoostEvent::beat).isNotNull()
+        validate(BSBoostEvent::boost).isNotNull()
+    }
+    validate(BSDifficultyV3::lightColorEventBoxGroups).isNotNull().validateForEach {
+        validate(BSLightColorEventBoxGroup::beat).isNotNull()
+        validate(BSLightColorEventBoxGroup::groupId).isNotNull()
+        validate(BSLightColorEventBoxGroup::eventBoxes).isNotNull().validateForEach {
+            validate(BSLightColorEventBox::indexFilter).isNotNull()
+            validate(BSLightColorEventBox::beatDistributionParam).isNotNull()
+            validate(BSLightColorEventBox::beatDistributionParamType).isNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionParam).isNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionParamType).isNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionShouldAffectFirstBaseEvent).isNotNull()
+            validate(BSLightColorEventBox::lightColorBaseDataList).isNotNull().validateForEach {
+                validate(BSLightColorBaseData::beat).isNotNull()
+                validate(BSLightColorBaseData::transitionType).isNotNull()
+                validate(BSLightColorBaseData::colorType).isNotNull()
+                validate(BSLightColorBaseData::colorType).isNotNull()
+                validate(BSLightColorBaseData::brightness).isNotNull()
+                validate(BSLightColorBaseData::strobeFrequency).isNotNull()
+            }
+        }
+    }
+    validate(BSDifficultyV3::lightRotationEventBoxGroups).isNotNull().validateForEach {
+        validate(BSLightRotationEventBoxGroup::beat).isNotNull()
+        validate(BSLightRotationEventBoxGroup::groupId).isNotNull()
+        validate(BSLightRotationEventBoxGroup::eventBoxes).isNotNull().validateForEach {
+            validate(BSLightRotationEventBox::indexFilter).isNotNull()
+            validate(BSLightRotationEventBox::beatDistributionParam).isNotNull()
+            validate(BSLightRotationEventBox::beatDistributionParamType).isNotNull()
+            validate(BSLightRotationEventBox::rotationDistributionParam).isNotNull()
+            validate(BSLightRotationEventBox::rotationDistributionParamType).isNotNull()
+            validate(BSLightRotationEventBox::axis).isNotNull()
+            validate(BSLightRotationEventBox::flipRotation).isNotNull()
+            validate(BSLightRotationEventBox::brightnessDistributionShouldAffectFirstBaseEvent).isNotNull()
+            validate(BSLightRotationEventBox::lightRotationBaseDataList).isNotNull().validateForEach {
+                validate(LightRotationBaseData::beat).isNotNull()
+                validate(LightRotationBaseData::usePreviousEventRotationValue).isNotNull()
+                validate(LightRotationBaseData::easeType).isNotNull()
+                validate(LightRotationBaseData::loopsCount).isNotNull()
+                validate(LightRotationBaseData::rotation).isNotNull()
+                validate(LightRotationBaseData::rotationDirection).isNotNull()
+            }
+        }
+    }
+    validate(BSDifficultyV3::basicEventTypesWithKeywords).isNotNull()
+    validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).isNotNull()
 }
 
 data class DifficultyBeatmapCustomData(

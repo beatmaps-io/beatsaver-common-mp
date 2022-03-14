@@ -124,8 +124,8 @@ data class BSDifficultyV3(
     val colorBoostBeatmapEvents: List<BSBoostEvent>,
     val lightColorEventBoxGroups: List<BSLightColorEventBoxGroup>,
     val lightRotationEventBoxGroups: List<BSLightRotationEventBoxGroup>,
-    val basicEventTypesWithKeywords: JsonObject,
-    val useNormalEventsAsCompatibleEvents: Boolean,
+    val basicEventTypesWithKeywords: JsonObject? = null,
+    val useNormalEventsAsCompatibleEvents: Boolean? = null,
 
     override val _customData: JsonObject? = null
 ) : BSDiff {
@@ -172,7 +172,7 @@ data class BSBoostEvent(
     @SerialName("b")
     val beat: Float? = null,
     @SerialName("o")
-    val boost: Boolean = false
+    val boost: Boolean? = null
 )
 
 typealias BSLightColorEventBoxGroup = BSEventBoxGroup<BSLightColorEventBox>
@@ -185,7 +185,7 @@ data class BSEventBoxGroup<T : GroupableEventBox>(
     @SerialName("g")
     val groupId: Int? = null,
     @SerialName("e")
-    val eventBoxes: List<T> = listOf()
+    val eventBoxes: List<T>? = null
 )
 
 interface GroupableEventBox {
@@ -210,7 +210,7 @@ data class BSLightColorEventBox(
     @SerialName("b")
     val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
     @SerialName("e")
-    val lightColorBaseDataList: List<BSLightColorBaseData> = listOf()
+    val lightColorBaseDataList: List<BSLightColorBaseData>? = null
 ) : GroupableEventBox
 
 @Serializable
@@ -247,7 +247,7 @@ data class BSLightRotationEventBox(
     @SerialName("b")
     val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
     @SerialName("l")
-    val lightRotationBaseDataList: List<LightRotationBaseData> = listOf()
+    val lightRotationBaseDataList: List<LightRotationBaseData>? = null
 ) : GroupableEventBox
 
 @Serializable
