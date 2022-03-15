@@ -11,8 +11,6 @@ import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.readFromBytes
-import io.beatmaps.common.zip.readFromStream
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import net.coobird.thumbnailator.Thumbnails

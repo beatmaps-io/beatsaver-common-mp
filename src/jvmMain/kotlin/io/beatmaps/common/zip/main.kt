@@ -10,7 +10,6 @@ import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import net.sourceforge.lame.lowlevel.LameEncoder
