@@ -9,3 +9,7 @@ val json = Json {
     }
     prettyPrint = true
 }
+
+val jsonIgnoreUnknown = Json {
+    ignoreUnknownKeys = true
+}

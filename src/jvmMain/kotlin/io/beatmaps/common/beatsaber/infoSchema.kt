@@ -8,7 +8,10 @@ import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.copyTo
+import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
+import io.beatmaps.common.zip.readFromBytes
+import io.beatmaps.common.zip.readFromStream
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -225,11 +228,11 @@ data class DifficultyBeatmap(
         val bytes = byteArrayOutputStream.toByteArray()
 
         info.md.write(bytes)
-        val jsonElement = Json.parseToJsonElement(bytes.decodeToString())
+        val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromBytes(bytes))
         val diff = if (jsonElement.jsonObject.containsKey("version")) {
-            Json.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
+            jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
         } else {
-            Json.decodeFromJsonElement<BSDifficulty>(jsonElement)
+            jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(jsonElement)
         }
 
         info.diffs.getOrPut(characteristic) {

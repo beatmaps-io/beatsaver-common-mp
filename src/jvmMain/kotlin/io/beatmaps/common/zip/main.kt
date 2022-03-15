@@ -9,6 +9,7 @@ import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
+import io.beatmaps.common.jsonIgnoreUnknown
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -65,10 +66,6 @@ interface IMapScorerProvider {
 class ZipHelperException(val msg: String) : RuntimeException()
 
 class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
     val infoPath: Path by lazy {
         fs.getPath(filesOriginalCase.firstOrNull { it.endsWith("/Info.dat", true) } ?: throw ZipHelperException("Missing Info.dat"))
     }
@@ -103,12 +100,12 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
     private val diffs = mutableMapOf<String, BSDiff>()
     fun diff(path: String) = diffs.getOrPut(path) {
         (fromInfo(path) ?: throw ZipHelperException("Difficulty file missing")).inputStream().buffered().use { stream ->
-            val jsonElement = json.parseToJsonElement(readFromStream(stream))
+            val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromStream(stream))
 
             if (jsonElement.jsonObject.containsKey("version")) {
-                json.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
+                jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
             } else {
-                json.decodeFromJsonElement<BSDifficulty>(jsonElement)
+                jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(jsonElement)
             }
         }
     }
