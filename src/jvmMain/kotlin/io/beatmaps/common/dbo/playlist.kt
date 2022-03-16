@@ -15,8 +15,6 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 object Playlist : IntIdTable("playlist", "playlistId") {
     fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
         join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
-    fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = owner, otherColumn = User.id)
-    fun ColumnSet.joinPlaylistCurator() = join(curatorAlias, JoinType.LEFT, onColumn = curator, otherColumn = curatorAlias[User.id])
 
     val name = varchar("name", 255)
     val owner = reference("owner", User)
@@ -32,6 +30,9 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val curator = optReference("curatedBy", User)
     val curatedAt = timestamp("curatedAt").nullable()
 }
+
+fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
+fun ColumnSet.joinPlaylistCurator() = join(curatorAlias, JoinType.LEFT, onColumn = Playlist.curator, otherColumn = curatorAlias[User.id])
 
 fun Iterable<ResultRow>.handleOwner() = this.map { row ->
     if (row.hasValue(User.id)) {
