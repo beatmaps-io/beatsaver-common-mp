@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.ColumnSet
 import org.jetbrains.exposed.sql.Index
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
-import org.jetbrains.exposed.sql.Query
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.javatime.timestamp
 
@@ -16,6 +16,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
         join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
     fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = owner, otherColumn = User.id)
+    fun ColumnSet.joinPlaylistCurator() = join(curatorAlias, JoinType.LEFT, onColumn = curator, otherColumn = curatorAlias[User.id])
 
     val name = varchar("name", 255)
     val owner = reference("owner", User)
@@ -32,9 +33,17 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val curatedAt = timestamp("curatedAt").nullable()
 }
 
-fun Query.handleOwner() = this.map { row ->
+fun Iterable<ResultRow>.handleOwner() = this.map { row ->
     if (row.hasValue(User.id)) {
         UserDao.wrapRow(row)
+    }
+
+    row
+}
+
+fun Iterable<ResultRow>.handleCurator() = this.map { row ->
+    if (row.hasValue(curatorAlias[User.id]) && row[Playlist.curator] != null) {
+        UserDao.wrapRow(row, curatorAlias)
     }
 
     row
