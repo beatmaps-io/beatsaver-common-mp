@@ -270,4 +270,5 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val suggestions by Difficulty.suggestions
     val information by Difficulty.information
     val warnings by Difficulty.warnings
+    val maxScore by Difficulty.maxScore
 }
