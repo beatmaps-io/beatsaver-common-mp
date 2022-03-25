@@ -52,6 +52,7 @@ object User : IntIdTable("uploader", "id") {
     val createdAt = timestamp("createdAt")
     val renamedAt = timestamp("renamedAt")
     val curator = bool("curator")
+    val verifiedMapper = bool("verifiedMapper")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -73,4 +74,5 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val uniqueName by User.uniqueName
     val createdAt by User.createdAt
     val curator by User.curator
+    val verifiedMapper by User.verifiedMapper
 }
