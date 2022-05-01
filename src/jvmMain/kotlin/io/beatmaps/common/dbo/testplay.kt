@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 
-object Testplay : IntIdTable("testplay", "testplayId") {
+object Testplay : IntIdTable("dev.testplay", "testplayId") {
     val versionId = reference("versionId", Versions)
     val userId = reference("userId", User)
 

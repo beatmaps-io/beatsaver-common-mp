@@ -6,13 +6,13 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object Plays : IntIdTable("plays", "Id") {
+object Plays : IntIdTable("counters.plays", "Id") {
     val mapId = reference("mapId", Beatmap)
     val userId = long("userId")
     val createdAt = timestamp("createdAt")
 }
 
-object Votes : IntIdTable("vote", "Id") {
+object Votes : IntIdTable("counters.vote", "Id") {
     val mapId = reference("mapId", Beatmap)
     val userId = long("userId")
     val vote = bool("vote")
@@ -28,7 +28,7 @@ data class VotesDao(val key: EntityID<Int>) : IntEntity(key) {
     val steam by Votes.steam
 }
 
-object Downloads : IntIdTable("downloads", "downloadId") {
+object Downloads : IntIdTable("counters.downloads", "downloadId") {
     val hash = char("hash", 40)
     val remote = varchar("remote", 15)
     val processed = bool("processed")
