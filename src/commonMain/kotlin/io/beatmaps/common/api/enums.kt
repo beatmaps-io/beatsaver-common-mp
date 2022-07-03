@@ -65,3 +65,7 @@ enum class EDifficulty(val idx: Int, private val _human: String, val color: Stri
 enum class EMapState {
     Uploaded, Testplay, Published, Feedback, Scheduled
 }
+
+enum class EAlertType {
+    Deletion, Review, MapRelease, Curation
+}
