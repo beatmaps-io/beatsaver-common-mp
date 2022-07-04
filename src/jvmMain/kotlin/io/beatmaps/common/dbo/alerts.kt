@@ -27,10 +27,10 @@ data class AlertDao(val key: EntityID<Int>): IntEntity(key) {
 }
 
 object AlertRecipient: IntIdTable("alert_recipient", "id") {
-    val recipientId = reference("userId", User)
+    val recipientId = reference("recipientId", User)
     val alertId = reference("alertId", Alert)
 
-    val readAt = timestamp("readAt")
+    val readAt = timestamp("readAt").nullable()
 
     val link = Index(listOf(alertId, recipientId), true, "alertLink")
 }
