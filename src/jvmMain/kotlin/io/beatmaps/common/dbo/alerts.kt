@@ -1,12 +1,14 @@
 package io.beatmaps.common.dbo
 
 import io.beatmaps.common.api.EAlertType
+import io.beatmaps.common.db.NowExpression
 import io.beatmaps.common.db.postgresEnumeration
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Index
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object Alert: IntIdTable("alert", "alertId") {
@@ -15,6 +17,28 @@ object Alert: IntIdTable("alert", "alertId") {
     val type = postgresEnumeration<EAlertType>("type", "alertType")
 
     val sentAt = timestamp("sentAt")
+
+    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientIds: List<Int>) {
+        val newAlert = insert {
+            it[head] = alertHead
+            it[body] = alertBody
+            it[type] = alertType
+            it[sentAt] = NowExpression(sentAt.columnType)
+        }.resultedValues?.first()
+
+        newAlert?.let { a ->
+            val alert = AlertDao.wrapRow(a)
+            recipientIds.forEach { id ->
+                AlertRecipient.insert {
+                    it[recipientId] = id
+                    it[alertId] = alert.id
+                }
+            }
+        }
+    }
+
+    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientId: Int) =
+        insert(alertHead, alertBody, alertType, listOf(recipientId))
 }
 
 data class AlertDao(val key: EntityID<Int>): IntEntity(key) {
