@@ -58,12 +58,3 @@ object AlertRecipient: IntIdTable("alert_recipient", "id") {
 
     val link = Index(listOf(alertId, recipientId), true, "alertLink")
 }
-
-data class AlertRecipientDao(val key: EntityID<Int>): IntEntity(key) {
-    companion object: IntEntityClass<AlertRecipientDao>(AlertRecipient)
-
-    val recipient by UserDao referencedOn AlertRecipient.recipientId
-    val alert by AlertDao referencedOn AlertRecipient.alertId
-
-    val readAt by AlertRecipient.readAt
-}
