@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Index
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
 
@@ -28,11 +29,9 @@ object Alert: IntIdTable("alert", "alertId") {
 
         newAlert?.let { a ->
             val alert = AlertDao.wrapRow(a)
-            recipientIds.forEach { id ->
-                AlertRecipient.insert {
-                    it[recipientId] = id
-                    it[alertId] = alert.id
-                }
+            AlertRecipient.batchInsert(recipientIds) {
+                this[AlertRecipient.recipientId] = it
+                this[AlertRecipient.alertId] = alert.id
             }
         }
     }
