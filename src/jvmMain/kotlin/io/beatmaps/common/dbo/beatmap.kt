@@ -82,6 +82,7 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val songAuthorName: String by Beatmap.songAuthorName
     val levelAuthorName: String by Beatmap.levelAuthorName
     val automapper: Boolean by Beatmap.automapper
+    val ai: Boolean by Beatmap.ai
     val plays: Int by Beatmap.plays
     val downloads: Int by Beatmap.downloads
 
