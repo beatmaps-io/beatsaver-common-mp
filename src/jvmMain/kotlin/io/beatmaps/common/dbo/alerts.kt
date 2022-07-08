@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object Alert: IntIdTable("alert", "alertId") {
+object Alert : IntIdTable("alert", "alertId") {
     val head = varchar("head", 255)
     val body = text("body")
     val type = postgresEnumeration<EAlertType>("type", "alertType")
@@ -40,8 +40,8 @@ object Alert: IntIdTable("alert", "alertId") {
         insert(alertHead, alertBody, alertType, listOf(recipientId))
 }
 
-data class AlertDao(val key: EntityID<Int>): IntEntity(key) {
-    companion object: IntEntityClass<AlertDao>(Alert)
+data class AlertDao(val key: EntityID<Int>) : IntEntity(key) {
+    companion object : IntEntityClass<AlertDao>(Alert)
     val head by Alert.head
     val body by Alert.body
     val type by Alert.type
@@ -49,7 +49,7 @@ data class AlertDao(val key: EntityID<Int>): IntEntity(key) {
     val sentAt by Alert.sentAt
 }
 
-object AlertRecipient: IntIdTable("alert_recipient", "id") {
+object AlertRecipient : IntIdTable("alert_recipient", "id") {
     val recipientId = reference("recipientId", User)
     val alertId = reference("alertId", Alert)
 
