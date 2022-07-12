@@ -66,6 +66,16 @@ enum class EMapState {
     Uploaded, Testplay, Published, Feedback, Scheduled
 }
 
-enum class EAlertType {
-    Deletion, Review, MapRelease, Curation
+enum class EAlertType(val color: String, val icon: String) {
+    Deletion("danger", "fa-exclamation-circle"),
+    Review("info", "fa-comment-alt"),
+    MapRelease("info", "fa-map"),
+    Curation("success", "fa-award")
+}
+
+enum class MapAttr(val color: String) {
+    Curated("success"),
+    Qualified("info"),
+    Ranked("warning"),
+    Verified("bs-purple")
 }
