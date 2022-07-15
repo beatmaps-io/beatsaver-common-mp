@@ -30,10 +30,12 @@ data class BPMInfo(
 
     private fun samplesToDuration(samples: Int) = samples / _songFrequency.toFloat()
 
-    override fun maximumBeat(bpm: Float) = (_regions.maxByOrNull { it._endBeat }?.let {
+    private fun maximumInfo() = _regions.maxByOrNull { it._endBeat }?.let {
         // Find the last region, time after is at song's bpm
         it._endBeat to samplesToDuration(_songSampleCount - it._endSampleIndex)
-    } ?: (0f to duration())).let {
+    } ?: (0f to duration())
+
+    override fun maximumBeat(bpm: Float) = maximumInfo().let {
         it.first + ((it.second / 60) * bpm)
     }
 }
