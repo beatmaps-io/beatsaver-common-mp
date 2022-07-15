@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.copyTo
+import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.readFromBytes
@@ -18,6 +20,7 @@ import org.jaudiotagger.audio.generic.GenericAudioHeader
 import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation
+import org.valiktor.ConstraintViolationException
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.In
@@ -109,7 +112,29 @@ data class MapInfo(
             }
         } != null && info.duration > 0
 
+    private fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> Path?, constraintViolations: MutableSet<ConstraintViolation>) =
+        getFile("BPMInfo.dat")?.inputStream()?.use { stream ->
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            stream.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
+
+            jackson.readValue<BPMInfo>(byteArrayOutputStream.toByteArray()).also {
+                try {
+                    it.validate()
+                } catch (e: ConstraintViolationException) {
+                    constraintViolations += e.constraintViolations.map { cv ->
+                        DefaultConstraintViolation(
+                            "`BPMInfo.dat`.${cv.property}",
+                            cv.value,
+                            cv.constraint
+                        )
+                    }
+                }
+            }
+        } ?: LegacySongLengthInfo(info)
+
     fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> Path?) = validate(this) {
+        val songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
+
         validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
         validate(MapInfo::_songName).isNotNull().isNotBlank().validate(MetadataLength) {
             _songName.length + _levelAuthorName.length <= 100
@@ -132,7 +157,7 @@ data class MapInfo(
         }
         validate(MapInfo::_allDirectionsEnvironmentName).isEqualTo("GlassDesertEnvironment")
         validate(MapInfo::_songTimeOffset).isZero()
-        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info) }
+        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info, songLengthInfo) }
     }
 }
 
@@ -194,10 +219,10 @@ data class DifficultyBeatmapSet(
     val _beatmapCharacteristicName: String,
     val _difficultyBeatmaps: List<DifficultyBeatmap>
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> Path?, info: ExtractedInfo) = validator.apply {
+    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> Path?, info: ExtractedInfo, songLengthInfo: SongLengthInfo) = validator.apply {
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).validateForEach {
-            it.validate(this, self(), files, getFile, info)
+            it.validate(this, self(), files, getFile, info, songLengthInfo)
         }
     }
 
@@ -220,7 +245,14 @@ data class DifficultyBeatmap(
         additionalInformation[name] = value
     }
 
-    private fun diffValid(parent: Validator<*>.Property<*>, path: Path?, characteristic: DifficultyBeatmapSet, difficulty: DifficultyBeatmap, info: ExtractedInfo) = path?.inputStream().use { stream ->
+    private fun diffValid(
+        parent: Validator<*>.Property<*>,
+        path: Path?,
+        characteristic: DifficultyBeatmapSet,
+        difficulty: DifficultyBeatmap,
+        info: ExtractedInfo,
+        songLengthInfo: SongLengthInfo
+    ) = path?.inputStream().use { stream ->
         val byteArrayOutputStream = ByteArrayOutputStream()
         stream?.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
         val bytes = byteArrayOutputStream.toByteArray()
@@ -237,10 +269,11 @@ data class DifficultyBeatmap(
             mutableMapOf()
         }[difficulty] = diff
 
+        val maxBeat = songLengthInfo.maximumBeat(info.mapInfo._beatsPerMinute)
         parent.addConstraintViolations(
             when (diff) {
-                is BSDifficulty -> Validator(diff).apply { this.validate(info) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info) }
+                is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat) }
             }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
@@ -253,7 +286,14 @@ data class DifficultyBeatmap(
 
     private fun self() = this
 
-    fun validate(validator: Validator<DifficultyBeatmap>, characteristic: DifficultyBeatmapSet, files: Set<String>, getFile: (String) -> Path?, info: ExtractedInfo) = validator.apply {
+    fun validate(
+        validator: Validator<DifficultyBeatmap>,
+        characteristic: DifficultyBeatmapSet,
+        files: Set<String>,
+        getFile: (String) -> Path?,
+        info: ExtractedInfo,
+        songLengthInfo: SongLengthInfo
+    ) = validator.apply {
         extraFieldsViolation(
             constraintViolations,
             additionalInformation.keys,
@@ -272,7 +312,7 @@ data class DifficultyBeatmap(
         validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
             .also {
                 if (files.contains(_beatmapFilename.lowercase())) {
-                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info)
+                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info, songLengthInfo)
                 }
             }
     }
@@ -305,7 +345,7 @@ fun extraFieldsViolation(
         }
 }
 
-fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
+fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
     validate(BSDifficulty::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficulty::_notes).isNotNull().validateForEach {
         validate(BSNote::_type).isNotNull().isIn(0, 1, 3)
@@ -314,7 +354,7 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
         }
         validate(BSNote::_time).isNotNull().let {
             if (info.duration > 0) {
-                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+                it.isBetween(0f, maxBeat)
             }
         }
         validate(BSNote::_lineIndex).isNotNull()
@@ -334,7 +374,7 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo) {
     }
 }
 
-fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
+fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
     validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
         validate(BSBpmChange::bpm).isNotNull()
@@ -352,7 +392,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         }
         validate(BSNoteV3::time).isNotNull().let {
             if (info.duration > 0) {
-                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+                it.isBetween(0f, maxBeat)
             }
         }
         validate(BSNoteV3::x).isNotNull()
@@ -389,7 +429,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
     validate(BSDifficultyV3::burstSliders).isNotNull().validateForEach {
         validate(BSBurstSlider::time).isNotNull().let {
             if (info.duration > 0) {
-                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+                it.isBetween(0f, maxBeat)
             }
         }
         validate(BSBurstSlider::color).isNotNull().isIn(0, 1)
@@ -398,7 +438,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo) {
         validate(BSBurstSlider::direction).isNotNull()
         validate(BSBurstSlider::tailBeat).isNotNull().let {
             if (info.duration > 0) {
-                it.isBetween(0f, (info.duration / 60) * info.mapInfo._beatsPerMinute)
+                it.isBetween(0f, maxBeat)
             }
         }
         validate(BSBurstSlider::tailX).isNotNull()
