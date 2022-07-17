@@ -105,8 +105,9 @@ data class MapInfo(
             }
         } catch (e: Exception) {
             try {
-                val wavInfo = AudioSystem.getAudioInputStream(audio)
-                info.duration = ((wavInfo.frameLength + 0.0) / wavInfo.format.frameRate).toFloat()
+                AudioSystem.getAudioInputStream(audio).use { wavInfo ->
+                    info.duration = ((wavInfo.frameLength + 0.0) / wavInfo.format.sampleRate).toFloat()
+                }
             } catch (e: Exception) {
                 null
             }
