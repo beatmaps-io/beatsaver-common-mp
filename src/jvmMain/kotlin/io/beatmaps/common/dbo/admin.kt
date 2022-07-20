@@ -38,10 +38,10 @@ object ModLog : IntIdTable("modlog", "logId") {
 data class ModLogDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<ModLogDao>(ModLog)
 
-    val opBy by ModLog.opBy
-    val opOn by ModLog.opOn
+    val opBy by UserDao referencedOn ModLog.opBy
+    val opOn by BeatmapDao optionalReferencedOn ModLog.opOn
     val opAt by ModLog.opAt
-    val targetUser by ModLog.targetUser
+    val targetUser by UserDao referencedOn ModLog.targetUser
     private val type by ModLog.type
     private val action by ModLog.action
 
