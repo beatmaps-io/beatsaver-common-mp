@@ -70,7 +70,8 @@ enum class EAlertType(val color: String, val icon: String) {
     Deletion("danger", "fa-exclamation-circle"),
     Review("info", "fa-comment-alt"),
     MapRelease("info", "fa-map"),
-    Curation("success", "fa-award")
+    Curation("success", "fa-award"),
+    Uncuration("danger", "fa-award")
 }
 
 enum class MapAttr(val color: String) {
