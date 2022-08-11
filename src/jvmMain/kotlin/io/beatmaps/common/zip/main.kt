@@ -12,22 +12,23 @@ import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.FileHeader
+import net.lingala.zip4j.model.ZipParameters
 import net.sourceforge.lame.lowlevel.LameEncoder
 import net.sourceforge.lame.mp3.Lame
 import net.sourceforge.lame.mp3.MPEGMode
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.nio.file.FileSystem
-import java.nio.file.FileSystems
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Files
-import java.nio.file.Path
 import java.security.DigestOutputStream
 import java.util.ServiceLoader
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
-import kotlin.io.path.inputStream
-import kotlin.io.path.isDirectory
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
@@ -64,9 +65,32 @@ interface IMapScorerProvider {
 }
 class ZipHelperException(val msg: String) : RuntimeException()
 
-class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
-    val infoPath: Path by lazy {
-        fs.getPath(filesOriginalCase.firstOrNull { it.endsWith("/Info.dat", true) } ?: throw ZipHelperException("Missing Info.dat"))
+class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) {
+    fun inputStream(): InputStream = fs.getInputStream(header)
+    private val outputStream = ByteArrayOutputStream()
+    fun outputStream() = object : OutputStream() {
+        override fun write(b: Int) {
+            outputStream.write(b)
+        }
+
+        override fun close() {
+            fs.addStream(
+                ByteArrayInputStream(outputStream.toByteArray()),
+                ZipParameters().apply {
+                    fileNameInZip = originalPath
+                    lastModifiedFileTime = System.currentTimeMillis()
+                }
+            )
+        }
+    }
+    val fileName = header?.fileName
+    val parent = File("/$fileName").parent.replace("\\", "/").removeSuffix("/")
+    fun deleteIfExists() = header?.let { fs.removeFile(it) }
+}
+
+class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
+    val infoPath: ZipPath by lazy {
+        getPathDirect(filesOriginalCase.firstOrNull { it.endsWith("/info.dat", true) } ?: throw ZipHelperException("Missing Info.dat"))
     }
 
     val audioFile: File by lazy {
@@ -93,7 +117,7 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
         }
     }
 
-    fun infoPrefix(): String = infoPath.parent.toString().removeSuffix("/") + "/"
+    fun infoPrefix(): String = infoPath.parent + "/"
     fun fromInfo(path: String) = getPath(infoPrefix() + path)
 
     private val diffs = mutableMapOf<String, BSDiff>()
@@ -111,10 +135,12 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
 
     fun getPath(path: String) =
         filesOriginalCase.find { it.equals(path, true) }?.let {
-            fs.getPath(it)
+            getPathDirect(it)
         }
 
-    fun newPath(path: String): Path = fs.getPath(path)
+    fun getPathDirect(path: String) = path.removePrefix("/").let { op -> ZipPath(fs, op, fs.getFileHeader(op)) }
+
+    fun moveFile(old: ZipPath?, new: String) = if (old != null) fs.renameFile(old.header, new.removePrefix("/")) else Unit
 
     fun scoreMap() =
         ServiceLoader.load(IMapScorerProvider::class.java)
@@ -170,15 +196,13 @@ class ZipHelper(private val fs: FileSystem, val filesOriginalCase: Set<String>, 
 
     companion object {
         fun <T> openZip(file: File, block: ZipHelper.() -> T) =
-            FileSystems.newFileSystem(file.toPath(), mapOf("create" to "false")).use { fs ->
-                val lists = fs.rootDirectories.map {
-                    Files.walk(it).toList().partition { p ->
-                        p.isDirectory()
-                    }
+            ZipFile(file).let { fs ->
+                val (_directories, _files) = fs.fileHeaders.partition {
+                    it.isDirectory
                 }
 
-                val files = lists.flatMap { it.second }.map { it.toString() }
-                val directories = lists.flatMap { it.first }.map { it.toString() }
+                val files = _files.map { "/" + it.fileName }
+                val directories = _directories.map { "/" + it.fileName }
 
                 ZipHelper(fs, files.toSet(), files.map { it.lowercase() }.toSet(), directories.toSet()).use(block)
             }
