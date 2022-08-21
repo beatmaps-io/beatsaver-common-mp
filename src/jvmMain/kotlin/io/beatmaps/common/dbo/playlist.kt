@@ -10,11 +10,18 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.avg
+import org.jetbrains.exposed.sql.count
+import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.sql.max
+import org.jetbrains.exposed.sql.min
+import org.jetbrains.exposed.sql.sum
 
 object Playlist : IntIdTable("playlist", "playlistId") {
     fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
-        join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
+        join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId)
+            .join(Beatmap, type, Beatmap.id, PlaylistMap.mapId, state)
 
     val name = varchar("name", 255)
     val owner = reference("owner", User)
@@ -29,6 +36,15 @@ object Playlist : IntIdTable("playlist", "playlistId") {
 
     val curator = optReference("curatedBy", User)
     val curatedAt = timestamp("curatedAt").nullable()
+
+    val mapCount = Beatmap.id.count()
+    val mapperCount = Beatmap.uploader.countDistinct()
+    val totalDuration = Beatmap.duration.sum()
+    val minNps = Beatmap.minNps.min()
+    val maxNps = Beatmap.maxNps.max()
+    val upVotes = Beatmap.upVotesInt.sum()
+    val downVotes = Beatmap.downVotesInt.sum()
+    val avgScore = Beatmap.score.avg()
 }
 
 fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
