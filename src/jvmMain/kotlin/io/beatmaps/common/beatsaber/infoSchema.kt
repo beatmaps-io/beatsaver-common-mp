@@ -12,6 +12,7 @@ import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
+import io.beatmaps.common.zip.ZipPath
 import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -39,10 +40,8 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.nio.file.Path
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
-import kotlin.io.path.inputStream
 
 data class MapInfo(
     val _version: String,
@@ -63,7 +62,7 @@ data class MapInfo(
     val _customData: MapCustomData?,
     val _difficultyBeatmapSets: List<DifficultyBeatmapSet>
 ) {
-    fun imageInfo(path: Path?, info: ExtractedInfo) = path?.inputStream().use { stream ->
+    fun imageInfo(path: ZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
         try {
             ImageIO.createImageInputStream(stream).use { iis ->
                 val readers = ImageIO.getImageReaders(iis)
@@ -113,7 +112,7 @@ data class MapInfo(
             }
         } != null && info.duration > 0
 
-    private fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> Path?, constraintViolations: MutableSet<ConstraintViolation>) =
+    private fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> ZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
         getFile("BPMInfo.dat")?.inputStream()?.use { stream ->
             val byteArrayOutputStream = ByteArrayOutputStream()
             stream.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
@@ -133,7 +132,7 @@ data class MapInfo(
             }
         } ?: LegacySongLengthInfo(info)
 
-    fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> Path?) = validate(this) {
+    fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> ZipPath?) = validate(this) {
         val songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
 
         validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
@@ -220,7 +219,7 @@ data class DifficultyBeatmapSet(
     val _beatmapCharacteristicName: String,
     val _difficultyBeatmaps: List<DifficultyBeatmap>
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> Path?, info: ExtractedInfo, songLengthInfo: SongLengthInfo) = validator.apply {
+    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo, songLengthInfo: SongLengthInfo) = validator.apply {
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).validateForEach {
             it.validate(this, self(), files, getFile, info, songLengthInfo)
@@ -248,7 +247,7 @@ data class DifficultyBeatmap(
 
     private fun diffValid(
         parent: Validator<*>.Property<*>,
-        path: Path?,
+        path: ZipPath?,
         characteristic: DifficultyBeatmapSet,
         difficulty: DifficultyBeatmap,
         info: ExtractedInfo,
@@ -291,7 +290,7 @@ data class DifficultyBeatmap(
         validator: Validator<DifficultyBeatmap>,
         characteristic: DifficultyBeatmapSet,
         files: Set<String>,
-        getFile: (String) -> Path?,
+        getFile: (String) -> ZipPath?,
         info: ExtractedInfo,
         songLengthInfo: SongLengthInfo
     ) = validator.apply {

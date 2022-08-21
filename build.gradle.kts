@@ -91,6 +91,8 @@ kotlin {
                 implementation("org.sejda.imageio:webp-imageio:0.1.6")
                 implementation("nwaldispuehl:java-lame:3.98.4")
 
+                implementation("net.lingala.zip4j:zip4j:2.11.1")
+
                 implementation("org.valiktor:valiktor-core:0.12.0")
             }
         }
