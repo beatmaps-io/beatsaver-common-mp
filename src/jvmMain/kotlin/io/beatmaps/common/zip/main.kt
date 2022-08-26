@@ -13,6 +13,7 @@ import io.beatmaps.common.jsonIgnoreUnknown
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.FileHeader
 import net.lingala.zip4j.model.ZipParameters
 import net.sourceforge.lame.lowlevel.LameEncoder
@@ -63,7 +64,8 @@ interface IMapScorer {
 interface IMapScorerProvider {
     fun create(): IMapScorer
 }
-class ZipHelperException(val msg: String) : RuntimeException()
+class RarException : ZipHelperException("")
+open class ZipHelperException(val msg: String) : RuntimeException()
 
 class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) {
     fun inputStream(): InputStream = fs.getInputStream(header)
@@ -195,7 +197,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
     }
 
     companion object {
-        fun <T> openZip(file: File, block: ZipHelper.() -> T) =
+        fun <T> openZip(file: File, block: ZipHelper.() -> T) = try {
             ZipFile(file).let { fs ->
                 val (_directories, _files) = fs.fileHeaders.partition {
                     it.isDirectory
@@ -206,6 +208,16 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
 
                 ZipHelper(fs, files.toSet(), files.map { it.lowercase() }.toSet(), directories.toSet()).use(block)
             }
+        } catch (e: ZipException) {
+            if (file.exists()) {
+                file.inputStream().use {
+                    String(it.readNBytes(4)) == "Rar!"
+                }.let { rar ->
+                    if (rar) throw RarException()
+                }
+            }
+            throw ZipHelperException("Error opening zip file")
+        }
     }
 }
 
