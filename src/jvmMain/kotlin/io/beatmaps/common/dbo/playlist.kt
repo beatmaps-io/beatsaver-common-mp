@@ -29,6 +29,10 @@ object Playlist : IntIdTable("playlist", "playlistId") {
 
     val curator = optReference("curatedBy", User)
     val curatedAt = timestamp("curatedAt").nullable()
+
+    val totalMaps = integer("totalMaps")
+    val minNps = decimal("minNps", 8, 3)
+    val maxNps = decimal("maxNps", 8, 3)
 }
 
 fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
@@ -66,6 +70,10 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val curatedAt by Playlist.curatedAt
     val curator by UserDao optionalReferencedOn Playlist.curator
+
+    val totalMaps by Playlist.totalMaps
+    val minNps by Playlist.minNps
+    val maxNps by Playlist.maxNps
 }
 
 object PlaylistMap : IntIdTable("playlist_map", "id") {
@@ -81,6 +89,8 @@ data class PlaylistMapDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<PlaylistMapDao>(PlaylistMap)
     val playlist by PlaylistDao referencedOn PlaylistMap.playlistId
     val map by BeatmapDao referencedOn PlaylistMap.mapId
+
+    val playlistId by PlaylistMap.id
 
     val order by PlaylistMap.order
 }
