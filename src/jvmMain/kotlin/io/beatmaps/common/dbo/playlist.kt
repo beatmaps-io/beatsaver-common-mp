@@ -11,11 +11,8 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.avg
-import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.javatime.timestamp
-import org.jetbrains.exposed.sql.max
-import org.jetbrains.exposed.sql.min
 import org.jetbrains.exposed.sql.sum
 
 object Playlist : IntIdTable("playlist", "playlistId") {
@@ -37,11 +34,12 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val curator = optReference("curatedBy", User)
     val curatedAt = timestamp("curatedAt").nullable()
 
-    val mapCount = Beatmap.id.count()
+    val totalMaps = integer("totalMaps")
+    val minNps = decimal("minNps", 8, 3)
+    val maxNps = decimal("maxNps", 8, 3)
+
     val mapperCount = Beatmap.uploader.countDistinct()
     val totalDuration = Beatmap.duration.sum()
-    val minNps = Beatmap.minNps.min()
-    val maxNps = Beatmap.maxNps.max()
     val upVotes = Beatmap.upVotesInt.sum()
     val downVotes = Beatmap.downVotesInt.sum()
     val avgScore = Beatmap.score.avg()
@@ -82,6 +80,10 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val curatedAt by Playlist.curatedAt
     val curator by UserDao optionalReferencedOn Playlist.curator
+
+    val totalMaps by Playlist.totalMaps
+    val minNps by Playlist.minNps
+    val maxNps by Playlist.maxNps
 }
 
 object PlaylistMap : IntIdTable("playlist_map", "id") {
@@ -97,6 +99,8 @@ data class PlaylistMapDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<PlaylistMapDao>(PlaylistMap)
     val playlist by PlaylistDao referencedOn PlaylistMap.playlistId
     val map by BeatmapDao referencedOn PlaylistMap.mapId
+
+    val playlistId by PlaylistMap.id
 
     val order by PlaylistMap.order
 }

@@ -106,6 +106,9 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val ranked by Beatmap.ranked
     val qualified by Beatmap.qualified
 
+    val minNps by Beatmap.minNps
+    val maxNps by Beatmap.minNps
+
     val tags by Beatmap.tags
 
     fun enrichTestplays() = this.also {

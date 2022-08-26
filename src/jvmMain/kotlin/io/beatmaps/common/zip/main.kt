@@ -90,7 +90,7 @@ class ZipPath(private val fs: ZipFile, private val originalPath: String, val hea
 
 class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
     val infoPath: ZipPath by lazy {
-        getPathDirect(filesOriginalCase.firstOrNull { it.endsWith("/info.dat", true) } ?: throw ZipHelperException("Missing Info.dat"))
+        getPathDirect(filesOriginalCase.filter { it.endsWith("/info.dat", true) }.minByOrNull { it.length } ?: throw ZipHelperException("Missing Info.dat"))
     }
 
     val audioFile: File by lazy {
