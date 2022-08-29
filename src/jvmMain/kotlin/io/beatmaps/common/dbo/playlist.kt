@@ -13,9 +13,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object Playlist : IntIdTable("playlist", "playlistId") {
-    fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Beatmap.deletedAt.isNull() }) =
-        join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId)
-            .join(Beatmap, type, Beatmap.id, PlaylistMap.mapId, state)
+    fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
+        join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
+            .join(Beatmap, type, Beatmap.id, PlaylistMap.mapId) { Beatmap.deletedAt.isNull() }
 
     val name = varchar("name", 255)
     val owner = reference("owner", User)
