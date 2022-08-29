@@ -35,7 +35,7 @@ fun Application.emailQueue() {
     }
 }
 
-fun PipelineContext<Unit, ApplicationCall>.sendEmail(to: String, subject: String, body: String) {
+fun PipelineContext<*, ApplicationCall>.sendEmail(to: String, subject: String, body: String) {
     if (relayHostname == null) {
         emailLogger.warning("Email not setup")
         emailLogger.info(body)
