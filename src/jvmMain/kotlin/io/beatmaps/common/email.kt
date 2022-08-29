@@ -5,6 +5,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.util.pipeline.PipelineContext
 import org.apache.commons.mail.DefaultAuthenticator
+import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
 import java.util.logging.Logger
 
@@ -26,11 +27,15 @@ fun genericEmail() = SimpleEmail().apply {
 fun Application.emailQueue() {
     rabbitOptional {
         consumeAck("email", EmailInfo::class) { _, emailInfo ->
-            genericEmail().apply {
-                subject = emailInfo.subject
-                setMsg(emailInfo.body)
-                addTo(emailInfo.to)
-            }.send()
+            try {
+                genericEmail().apply {
+                    subject = emailInfo.subject
+                    setMsg(emailInfo.body)
+                    addTo(emailInfo.to)
+                }.send()
+            } catch (e: EmailException) {
+                emailLogger.warning("Sending email resulted in exception ${e.message}")
+            }
         }
     }
 }
