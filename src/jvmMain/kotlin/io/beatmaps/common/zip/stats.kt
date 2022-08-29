@@ -9,6 +9,7 @@ import io.beatmaps.common.dbo.Difficulty
 import io.beatmaps.common.dbo.Versions
 import io.beatmaps.common.dbo.VersionsDao
 import io.beatmaps.common.dbo.maxAllowedNps
+import io.beatmaps.common.pow
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
@@ -53,7 +54,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
         it[pWarn] = pr.warnings
     }
 
-    val maxLen = 10f.pow(7) - 1
+    val maxLen = 10.pow(7) - 1.0f
 
     val len = bsdiff.songLength()
     val noteCount = bsdiff.noteCount()

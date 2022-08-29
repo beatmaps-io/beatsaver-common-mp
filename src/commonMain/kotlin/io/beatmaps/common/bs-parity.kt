@@ -3,8 +3,6 @@ package io.beatmaps.common
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
 import io.beatmaps.common.beatsaber.BSNote
-import kotlin.math.pow
-import kotlin.math.roundToInt
 
 enum class CutDirection {
     Up, Down, Left, Right,
@@ -122,18 +120,6 @@ fun getNotes(obj: BSDifficulty) =
     }.filter {
         Types.fromInt(it.type) != null
     }
-
-fun Float.toFixed(numOfDec: Int): String {
-    val integerDigits = this.toInt()
-    val floatDigits = ((this - integerDigits) * 10f.pow(numOfDec)).roundToInt()
-
-    return when {
-        floatDigits >= 100 -> "${integerDigits + 1}"
-        floatDigits <= 0 -> "$integerDigits"
-        floatDigits < 10 -> "$integerDigits.0$floatDigits"
-        else -> "$integerDigits.$floatDigits"
-    }
-}
 
 fun Float.padTime() = this.toInt().padTime()
 fun Int.padTime() = this.toString().padStart(2, '0')
