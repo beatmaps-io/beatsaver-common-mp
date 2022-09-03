@@ -5,15 +5,15 @@
 
 package io.beatmaps.common
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.ApplicationFeature
-import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
-import io.ktor.http.content.resolveResource
-import io.ktor.response.ApplicationSendPipeline
-import io.ktor.response.respond
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.BaseApplicationPlugin
+import io.ktor.server.application.call
+import io.ktor.server.http.content.resolveResource
+import io.ktor.server.response.ApplicationSendPipeline
+import io.ktor.server.response.respond
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.coroutines.coroutineScope
@@ -134,7 +134,7 @@ class StatusPagesCustom(config: Configuration) {
     /**
      * Feature installation object
      */
-    companion object Feature : ApplicationFeature<ApplicationCallPipeline, Configuration, StatusPagesCustom> {
+    companion object Feature : BaseApplicationPlugin<ApplicationCallPipeline, Configuration, StatusPagesCustom> {
         override val key: AttributeKey<StatusPagesCustom> = AttributeKey("Status Pages")
 
         override fun install(pipeline: ApplicationCallPipeline, configure: Configuration.() -> Unit): StatusPagesCustom {

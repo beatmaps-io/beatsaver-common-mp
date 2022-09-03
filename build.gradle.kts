@@ -1,8 +1,8 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    kotlin("multiplatform") version "1.5.30"
-    kotlin("plugin.serialization") version "1.5.30"
+    kotlin("multiplatform") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("maven-publish")
 }
@@ -19,7 +19,7 @@ repositories {
 
 kotlin {
     jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(16))
+        languageVersion.set(JavaLanguageVersion.of(16))
     }
     jvm {
         compilations.all {
@@ -36,8 +36,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0-RC")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
             }
         }
         val commonTest by getting {
@@ -56,8 +56,11 @@ kotlin {
                 maven { url = uri("https://jitpack.io") }
                 maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
             }
+            languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4")
 
                 // Database library
                 implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -71,17 +74,18 @@ kotlin {
                 implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
                 implementation("org.postgresql:postgresql:42.5.0")
-                implementation("com.github.JUtupe:ktor-rabbitmq:0.2.0")
+                implementation("com.github.JUtupe:ktor-rabbitmq:0.4.0")
                 implementation("com.rabbitmq:amqp-client:5.9.0")
 
                 implementation("org.apache.commons:commons-email:1.5")
 
                 // Serialization
-                implementation("io.ktor:ktor-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.1")
 
                 // Metrics
-                implementation("io.ktor:ktor-metrics-micrometer:$ktorVersion")
+                implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
                 implementation("io.micrometer:micrometer-core:1.7.3")
                 implementation("io.micrometer:micrometer-registry-influx:1.7.3")
                 implementation("io.micrometer:micrometer-registry-elastic:1.7.3")

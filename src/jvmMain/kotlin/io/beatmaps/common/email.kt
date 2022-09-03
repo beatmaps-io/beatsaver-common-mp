@@ -1,8 +1,8 @@
 package io.beatmaps.common
 
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
 import io.ktor.util.pipeline.PipelineContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException

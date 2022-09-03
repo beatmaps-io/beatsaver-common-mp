@@ -38,6 +38,11 @@ enum class MultiplierEventType {
 }
 
 data class MaxScoreCounterElement(val scoreDef: NoteScoreDefinition, val time: Float)
+object NoteScoreDefaults {
+    const val maxBeforeCutScore = 70
+    const val maxCenterDistanceCutScore = 15
+    const val maxAfterCutScore = 30
+}
 enum class NoteScoreDefinition(
     val maxCenterDistanceCutScore: Int,
     val minBeforeCutScore: Int,
@@ -47,19 +52,13 @@ enum class NoteScoreDefinition(
     val fixedCutScore: Int
 ) {
     NoScore(0, 0, 0, 0, 0, 0),
-    Normal(NoteScoreDefinition.maxCenterDistanceCutScore, 0, NoteScoreDefinition.maxBeforeCutScore, 0, NoteScoreDefinition.maxAfterCutScore, 0),
-    SliderHead(NoteScoreDefinition.maxCenterDistanceCutScore, 0, NoteScoreDefinition.maxBeforeCutScore, NoteScoreDefinition.maxAfterCutScore, NoteScoreDefinition.maxAfterCutScore, 0),
-    SliderTail(NoteScoreDefinition.maxCenterDistanceCutScore, NoteScoreDefinition.maxBeforeCutScore, NoteScoreDefinition.maxBeforeCutScore, 0, NoteScoreDefinition.maxAfterCutScore, 0),
-    BurstSliderHead(NoteScoreDefinition.maxCenterDistanceCutScore, 0, NoteScoreDefinition.maxBeforeCutScore, 0, 0, 0),
+    Normal(NoteScoreDefaults.maxCenterDistanceCutScore, 0, NoteScoreDefaults.maxBeforeCutScore, 0, NoteScoreDefaults.maxAfterCutScore, 0),
+    SliderHead(NoteScoreDefaults.maxCenterDistanceCutScore, 0, NoteScoreDefaults.maxBeforeCutScore, NoteScoreDefaults.maxAfterCutScore, NoteScoreDefaults.maxAfterCutScore, 0),
+    SliderTail(NoteScoreDefaults.maxCenterDistanceCutScore, NoteScoreDefaults.maxBeforeCutScore, NoteScoreDefaults.maxBeforeCutScore, 0, NoteScoreDefaults.maxAfterCutScore, 0),
+    BurstSliderHead(NoteScoreDefaults.maxCenterDistanceCutScore, 0, NoteScoreDefaults.maxBeforeCutScore, 0, 0, 0),
     BurstSliderElement(0, 0, 0, 0, 0, 20);
 
     fun maxCutScore() = maxCenterDistanceCutScore + maxBeforeCutScore + maxAfterCutScore + fixedCutScore
-
-    companion object {
-        const val maxBeforeCutScore = 70
-        const val maxCenterDistanceCutScore = 15
-        const val maxAfterCutScore = 30
-    }
 }
 
 fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {

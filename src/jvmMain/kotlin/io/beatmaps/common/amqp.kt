@@ -5,9 +5,8 @@ import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.DeliverCallback
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.feature
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -16,7 +15,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import pl.jutupe.ktor_rabbitmq.RabbitMQ
 import pl.jutupe.ktor_rabbitmq.RabbitMQConfiguration
+import pl.jutupe.ktor_rabbitmq.RabbitMQInstance
 import pl.jutupe.ktor_rabbitmq.publish
+import pl.jutupe.ktor_rabbitmq.rabbitConsumer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.logging.Logger
@@ -43,9 +44,9 @@ fun RabbitMQConfiguration.setupAMQP(block: Channel.() -> Unit = {}) = apply {
     initialize(block)
 }
 
-fun Application.rabbitOptional(configuration: RabbitMQ.() -> Unit) {
+fun Application.rabbitOptional(configuration: RabbitMQInstance.() -> Unit) {
     if (rabbitHost.isNotEmpty()) {
-        feature(RabbitMQ).apply(configuration)
+        rabbitConsumer(configuration)
     } else {
         rabbitLogger.warning("RabbitMQ not set up")
     }
@@ -57,13 +58,13 @@ fun <T> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.Ba
     }
 }
 
-private fun RabbitMQ.getConnection() =
+private fun RabbitMQInstance.getConnection() =
     javaClass.getDeclaredField("connection").let {
         it.isAccessible = true
         it.get(this) as Connection
     }
 
-fun <T : Any> RabbitMQ.consumeAck(
+fun <T : Any> RabbitMQInstance.consumeAck(
     queue: String,
     clazz: KClass<T>,
     rabbitDeliverCallback: suspend (consumerTag: String, body: T) -> Unit
