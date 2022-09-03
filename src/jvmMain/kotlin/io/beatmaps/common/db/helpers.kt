@@ -6,16 +6,20 @@ import org.jetbrains.exposed.sql.CustomFunction
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.GreaterEqOp
 import org.jetbrains.exposed.sql.IntegerColumnType
 import org.jetbrains.exposed.sql.IsNullOp
+import org.jetbrains.exposed.sql.LessEqOp
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.QueryParameter
 import org.jetbrains.exposed.sql.TextColumnType
 import org.jetbrains.exposed.sql.VarCharColumnType
+import org.jetbrains.exposed.sql.floatParam
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import java.math.BigDecimal
 import java.time.Instant
 
 fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() {
@@ -23,6 +27,9 @@ fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() 
         queryBuilder.append("${TransactionManager.current().identity(column)} + $num")
     }
 }
+
+infix fun ExpressionWithColumnType<BigDecimal>.greaterEq(t: Float) = GreaterEqOp(this, floatParam(t))
+infix fun ExpressionWithColumnType<BigDecimal>.lessEq(t: Float) = LessEqOp(this, floatParam(t))
 
 class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
 class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
