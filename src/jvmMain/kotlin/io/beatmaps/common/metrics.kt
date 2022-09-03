@@ -116,31 +116,6 @@ fun Application.installMetrics() {
         "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole", "BeatSaverDownloader"
     )
 
-    val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
-        InfluxMeterRegistry.builder(influxConfig).clock(Clock.SYSTEM).build()
-    } else if (System.getenv("ES_ENABLED") != null) {
-        ElasticMeterRegistry.builder(esConfig).clock(Clock.SYSTEM).build()
-    } else {
-        return
-    }
-
-    appMicrometerRegistry.config().commonTags("host", System.getenv("HOSTNAME") ?: "unknown")
-
-    install(MicrometerMetrics) {
-        registry = appMicrometerRegistry
-        distinctNotRegisteredRoutes = false
-        distributionStatisticConfig = DistributionStatisticConfig.Builder().build()
-        timers { call, _ ->
-            call.attributes[extraTags].forEach {
-                tag(it.key, it.value)
-            }
-            tag("cn", call.getCountry().countryCode)
-            call.getCountry().state?.let { state ->
-                tag("state", state)
-            }
-        }
-    }
-
     // Request timing header
     intercept(ApplicationCallPipeline.Monitoring) {
         val t = Timings()
@@ -164,6 +139,31 @@ fun Application.installMetrics() {
         val mk = call.attributes[reqTime]
         mk.end("req")
         context.response.headers.append("Server-Timing", mk.getHeader())
+    }
+
+    val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
+        InfluxMeterRegistry.builder(influxConfig).clock(Clock.SYSTEM).build()
+    } else if (System.getenv("ES_ENABLED") != null) {
+        ElasticMeterRegistry.builder(esConfig).clock(Clock.SYSTEM).build()
+    } else {
+        return
+    }
+
+    appMicrometerRegistry.config().commonTags("host", System.getenv("HOSTNAME") ?: "unknown")
+
+    install(MicrometerMetrics) {
+        registry = appMicrometerRegistry
+        distinctNotRegisteredRoutes = false
+        distributionStatisticConfig = DistributionStatisticConfig.Builder().build()
+        timers { call, _ ->
+            call.attributes[extraTags].forEach {
+                tag(it.key, it.value)
+            }
+            tag("cn", call.getCountry().countryCode)
+            call.getCountry().state?.let { state ->
+                tag("state", state)
+            }
+        }
     }
 
     var meterExpiry = setOf<Meter>()
