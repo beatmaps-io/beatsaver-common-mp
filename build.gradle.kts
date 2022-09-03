@@ -3,7 +3,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     kotlin("multiplatform") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("maven-publish")
 }
 
@@ -70,7 +70,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
                 implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
-                implementation("org.postgresql:postgresql:42.1.4")
+                implementation("org.postgresql:postgresql:42.5.0")
                 implementation("com.github.JUtupe:ktor-rabbitmq:0.2.0")
                 implementation("com.rabbitmq:amqp-client:5.9.0")
 

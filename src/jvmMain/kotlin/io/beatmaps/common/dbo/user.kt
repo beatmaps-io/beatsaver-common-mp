@@ -14,7 +14,7 @@ import org.postgresql.util.PGobject
 class CiTextColumn : TextColumnType() {
     override fun valueFromDB(value: Any): Any {
         if (value is PGobject && value.type == "citext") {
-            return value.value
+            return value.value ?: ""
         }
         return super.valueFromDB(value)
     }
