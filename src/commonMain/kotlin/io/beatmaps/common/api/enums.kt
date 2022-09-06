@@ -71,7 +71,13 @@ enum class EAlertType(val color: String, val icon: String) {
     Review("info", "fa-comment-alt"),
     MapRelease("info", "fa-map"),
     Curation("success", "fa-award"),
-    Uncuration("danger", "fa-award")
+    Uncuration("danger", "fa-award");
+
+    companion object {
+        private val map = EAlertType.values().associateBy { it.name.lowercase() }
+        fun fromLower(lower: String) = EAlertType.map[lower]
+        fun fromList(list: String?) = list?.lowercase()?.split(",")?.mapNotNull { a -> EAlertType.fromLower(a) }
+    }
 }
 
 enum class MapAttr(val color: String) {
