@@ -36,6 +36,7 @@ val curatorAlias by lazy { User.alias("curator") }
 object User : IntIdTable("uploader", "id") {
     val hash = char("hash", 24).uniqueIndex("hash").nullable()
     val name = text("name")
+    val description = text("description")
     val avatar = text("avatar").nullable()
     val email = citext("email").uniqueIndex("email_idx").nullable()
     val steamId = long("steamId").nullable()
@@ -58,6 +59,7 @@ object User : IntIdTable("uploader", "id") {
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<UserDao>(User)
     val name: String by User.name
+    val description: String by User.description
     val hash: String? by User.hash
     val avatar: String? by User.avatar
     val email: String? by User.email
