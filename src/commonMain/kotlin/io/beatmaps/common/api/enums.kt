@@ -66,12 +66,14 @@ enum class EMapState {
     Uploaded, Testplay, Published, Feedback, Scheduled
 }
 
-enum class EAlertType(val color: String, val icon: String) {
+enum class EAlertType(val color: String, val icon: String, private val readableName: String? = null) {
     Deletion("danger", "fa-exclamation-circle"),
     Review("info", "fa-comment-alt"),
-    MapRelease("info", "fa-map"),
+    MapRelease("info", "fa-map", "Map Release"),
     Curation("success", "fa-award"),
     Uncuration("danger", "fa-award");
+
+    fun readable(): String = readableName ?: name
 
     companion object {
         private val map = EAlertType.values().associateBy { it.name.lowercase() }
