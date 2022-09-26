@@ -1,6 +1,5 @@
 package io.beatmaps.common.zip
 
-import SongLengthInfo
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
@@ -8,6 +7,7 @@ import io.beatmaps.common.beatsaber.BSDifficultyV3
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown

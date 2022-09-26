@@ -1,6 +1,5 @@
 package io.beatmaps.common.beatsaber
 
-import SongLengthInfo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray

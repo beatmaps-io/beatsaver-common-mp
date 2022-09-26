@@ -1,6 +1,5 @@
 package io.beatmaps.common.beatsaber
 
-import SongLengthInfo
 import io.beatmaps.common.zip.ExtractedInfo
 import org.valiktor.Validator
 import org.valiktor.functions.isLessThanOrEqualTo

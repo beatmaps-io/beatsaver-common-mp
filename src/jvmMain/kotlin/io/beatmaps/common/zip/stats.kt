@@ -1,10 +1,10 @@
 package io.beatmaps.common.zip
 
-import SongLengthInfo
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.checkParity
 import io.beatmaps.common.dbo.Difficulty
 import io.beatmaps.common.dbo.Versions
