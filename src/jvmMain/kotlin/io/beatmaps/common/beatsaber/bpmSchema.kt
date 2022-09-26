@@ -1,5 +1,6 @@
 package io.beatmaps.common.beatsaber
 
+import SongLengthInfo
 import io.beatmaps.common.zip.ExtractedInfo
 import org.valiktor.Validator
 import org.valiktor.functions.isLessThanOrEqualTo
@@ -8,10 +9,7 @@ import org.valiktor.functions.isPositiveOrZero
 import org.valiktor.functions.matches
 import org.valiktor.functions.validateForEach
 import org.valiktor.validate
-
-interface SongLengthInfo {
-    fun maximumBeat(bpm: Float): Float
-}
+import kotlin.math.roundToInt
 
 data class BPMInfo(
     val _version: String,
@@ -26,9 +24,10 @@ data class BPMInfo(
         validate(BPMInfo::_regions).validateForEach { it.validate(this, this@BPMInfo) }
     }
 
-    fun duration() = samplesToDuration(_songSampleCount)
+    private fun duration() = samplesToDuration(_songSampleCount)
 
     private fun samplesToDuration(samples: Int) = samples / _songFrequency.toFloat()
+    private fun durationToSamples(duration: Float) = (duration * _songFrequency).roundToInt()
 
     private fun maximumInfo() = _regions.maxByOrNull { it._endBeat }?.let {
         // Find the last region, time after is at song's bpm
@@ -38,10 +37,30 @@ data class BPMInfo(
     override fun maximumBeat(bpm: Float) = maximumInfo().let {
         it.first + ((it.second / 60) * bpm)
     }
+
+    override fun secondsToTime(sec: Float) =
+        _regions.find { it._startSampleIndex < durationToSamples(sec) && durationToSamples(sec) < it._endSampleIndex }?.let {
+            // We're in this region. Interpolate!
+            val lengthInSamples = it._endSampleIndex - it._startSampleIndex
+            val percent = (durationToSamples(sec) - it._startSampleIndex) / lengthInSamples
+            val lengthInBeats = it._endBeat - it._startBeat
+            it._startBeat + (lengthInBeats * percent)
+        } ?: 0f
+
+    override fun timeToSeconds(time: Float) =
+        _regions.find { it._startBeat < time && time < it._endBeat }?.let {
+            // We're in this region. Interpolate!
+            val lengthInBeats = it._endBeat - it._startBeat
+            val percent = (time - it._startBeat) / lengthInBeats
+            val lengthInSamples = it._endSampleIndex - it._startSampleIndex
+            samplesToDuration(it._startSampleIndex + (lengthInSamples * percent).roundToInt())
+        } ?: 0f
 }
 
-class LegacySongLengthInfo(val info: ExtractedInfo) : SongLengthInfo {
-    override fun maximumBeat(bpm: Float) = (info.duration / 60) * info.mapInfo._beatsPerMinute
+class LegacySongLengthInfo(private val info: ExtractedInfo) : SongLengthInfo {
+    override fun maximumBeat(bpm: Float) = secondsToTime(info.duration)
+    override fun timeToSeconds(time: Float) = (time / info.mapInfo._beatsPerMinute) * 60
+    override fun secondsToTime(sec: Float) = (sec / 60) * info.mapInfo._beatsPerMinute
 }
 
 data class BPMRegion(

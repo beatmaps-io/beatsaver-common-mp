@@ -133,7 +133,7 @@ data class MapInfo(
         } ?: LegacySongLengthInfo(info)
 
     fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> ZipPath?) = validate(this) {
-        val songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
+        info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
 
         validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
         validate(MapInfo::_songName).isNotNull().isNotBlank().validate(MetadataLength) {
@@ -157,7 +157,7 @@ data class MapInfo(
         }
         validate(MapInfo::_allDirectionsEnvironmentName).isEqualTo("GlassDesertEnvironment")
         validate(MapInfo::_songTimeOffset).isZero()
-        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info, songLengthInfo) }
+        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info) }
     }
 }
 
@@ -219,10 +219,10 @@ data class DifficultyBeatmapSet(
     val _beatmapCharacteristicName: String,
     val _difficultyBeatmaps: List<DifficultyBeatmap>
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo, songLengthInfo: SongLengthInfo) = validator.apply {
+    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo) = validator.apply {
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).validateForEach {
-            it.validate(this, self(), files, getFile, info, songLengthInfo)
+            it.validate(this, self(), files, getFile, info)
         }
     }
 
@@ -250,8 +250,7 @@ data class DifficultyBeatmap(
         path: ZipPath?,
         characteristic: DifficultyBeatmapSet,
         difficulty: DifficultyBeatmap,
-        info: ExtractedInfo,
-        songLengthInfo: SongLengthInfo
+        info: ExtractedInfo
     ) = path?.inputStream().use { stream ->
         val byteArrayOutputStream = ByteArrayOutputStream()
         stream?.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
@@ -269,7 +268,7 @@ data class DifficultyBeatmap(
             mutableMapOf()
         }[difficulty] = diff
 
-        val maxBeat = songLengthInfo.maximumBeat(info.mapInfo._beatsPerMinute)
+        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo._beatsPerMinute) ?: 0f
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
@@ -291,8 +290,7 @@ data class DifficultyBeatmap(
         characteristic: DifficultyBeatmapSet,
         files: Set<String>,
         getFile: (String) -> ZipPath?,
-        info: ExtractedInfo,
-        songLengthInfo: SongLengthInfo
+        info: ExtractedInfo
     ) = validator.apply {
         extraFieldsViolation(
             constraintViolations,
@@ -312,7 +310,7 @@ data class DifficultyBeatmap(
         validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
             .also {
                 if (files.contains(_beatmapFilename.lowercase())) {
-                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info, songLengthInfo)
+                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info)
                 }
             }
     }

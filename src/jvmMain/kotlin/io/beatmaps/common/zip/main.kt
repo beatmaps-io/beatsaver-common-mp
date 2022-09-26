@@ -1,5 +1,6 @@
 package io.beatmaps.common.zip
 
+import SongLengthInfo
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
@@ -55,7 +56,8 @@ data class ExtractedInfo(
     val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
     var duration: Float = 0f,
     var thumbnail: ByteArrayOutputStream? = null,
-    var preview: ByteArrayOutputStream? = null
+    var preview: ByteArrayOutputStream? = null,
+    var songLengthInfo: SongLengthInfo? = null
 )
 
 interface IMapScorer {
