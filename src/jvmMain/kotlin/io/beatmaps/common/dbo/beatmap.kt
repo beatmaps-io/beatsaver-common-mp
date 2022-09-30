@@ -245,6 +245,9 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val maxScore = integer("maxScore")
     val schemaVersion = varchar("schemaVersion", 10)
 
+    val rankedAt = timestamp("rankedAt").nullable()
+    val qualifiedAt = timestamp("qualifiedAt").nullable()
+
     val uniqueDiff = Index(listOf(versionId, characteristic, difficulty), true, "diff_unique")
 }
 
@@ -277,4 +280,6 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val information by Difficulty.information
     val warnings by Difficulty.warnings
     val maxScore by Difficulty.maxScore
+    val rankedAt by Difficulty.rankedAt
+    val qualifiedAt by Difficulty.qualifiedAt
 }
