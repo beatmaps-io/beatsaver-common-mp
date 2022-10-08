@@ -31,6 +31,7 @@ import org.valiktor.functions.isEqualTo
 import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotBlank
 import org.valiktor.functions.isNotNull
+import org.valiktor.functions.isNull
 import org.valiktor.functions.isPositiveOrZero
 import org.valiktor.functions.isZero
 import org.valiktor.functions.matches
@@ -40,8 +41,10 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.lang.Runtime.Version
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
+import kotlin.reflect.KProperty1
 
 data class MapInfo(
     val _version: String,
@@ -272,7 +275,7 @@ data class DifficultyBeatmap(
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version.parse(diff.version)) }
             }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
@@ -372,7 +375,7 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
     }
 }
 
-fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
+fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
     validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
         validate(BSBpmChange::bpm).isNotNull()
@@ -464,7 +467,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
         validate(BSLightColorEventBoxGroup::beat).isNotNull()
         validate(BSLightColorEventBoxGroup::groupId).isNotNull()
         validate(BSLightColorEventBoxGroup::eventBoxes).isNotNull().validateForEach {
-            validate(BSLightColorEventBox::indexFilter).isNotNull()
+            validateEventBox(BSLightColorEventBox::indexFilter, ver)
             validate(BSLightColorEventBox::beatDistributionParam).isNotNull()
             validate(BSLightColorEventBox::beatDistributionParamType).isNotNull()
             validate(BSLightColorEventBox::brightnessDistributionParam).isNotNull()
@@ -484,7 +487,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
         validate(BSLightRotationEventBoxGroup::beat).isNotNull()
         validate(BSLightRotationEventBoxGroup::groupId).isNotNull()
         validate(BSLightRotationEventBoxGroup::eventBoxes).isNotNull().validateForEach {
-            validate(BSLightRotationEventBox::indexFilter).isNotNull()
+            validateEventBox(BSLightRotationEventBox::indexFilter, ver)
             validate(BSLightRotationEventBox::beatDistributionParam).isNotNull()
             validate(BSLightRotationEventBox::beatDistributionParamType).isNotNull()
             validate(BSLightRotationEventBox::rotationDistributionParam).isNotNull()
@@ -504,6 +507,22 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
     }
     validate(BSDifficultyV3::basicEventTypesWithKeywords).isNotNull()
     validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).isNotNull()
+}
+
+fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty1<T, BSIndexFilter?>, ver: Version) {
+    validate(indexFilter).isNotNull().validate {
+        validate(BSIndexFilter::type).isNotNull()
+        validate(BSIndexFilter::param0).isNotNull()
+        validate(BSIndexFilter::param1).isNotNull()
+        validate(BSIndexFilter::reversed).isNotNull()
+        listOf(
+            BSIndexFilter::chunks,
+            BSIndexFilter::randomType,
+            BSIndexFilter::seed,
+            BSIndexFilter::limit,
+            BSIndexFilter::alsoAffectsType
+        ).map { validate(it) }.forEach { if (ver.interim() > 0) it.isNotNull() else it.isNull() }
+    }
 }
 
 data class DifficultyBeatmapCustomData(

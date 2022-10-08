@@ -294,7 +294,17 @@ data class BSIndexFilter(
     @SerialName("t")
     val param1: Int? = null,
     @SerialName("r")
-    val reversed: Int? = null
+    val reversed: Int? = null,
+    @SerialName("c")
+    val chunks: Int? = null,
+    @SerialName("n")
+    val randomType: Int? = null,
+    @SerialName("s")
+    val seed: Int? = null,
+    @SerialName("l")
+    val limit: Float? = null,
+    @SerialName("d")
+    val alsoAffectsType: Int? = null
 )
 
 @Serializable
