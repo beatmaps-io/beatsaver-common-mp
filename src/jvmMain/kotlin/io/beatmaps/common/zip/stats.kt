@@ -4,6 +4,7 @@ import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.checkParity
 import io.beatmaps.common.dbo.Difficulty
 import io.beatmaps.common.dbo.Versions
@@ -15,12 +16,11 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.lang.Float.min
 import java.math.BigDecimal
-import kotlin.math.pow
 
 data class DiffStats(val chroma: Boolean, val noodle: Boolean, val me: Boolean, val cinema: Boolean, val nps: BigDecimal)
 fun Array<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
 
-fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: DifficultyBeatmapSet, map: MapInfo, ver: VersionsDao? = null): DiffStats {
+fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: DifficultyBeatmapSet, map: MapInfo, sli: SongLengthInfo, ver: VersionsDao? = null): DiffStats {
     val version = ver ?: VersionsDao.wrapRow(
         Versions.select {
             Versions.hash eq hash
@@ -36,7 +36,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
 
         val bsdiff = diff(diff._beatmapFilename)
 
-        stats = sharedInsert(it, diff, bsdiff, map)
+        stats = sharedInsert(it, diff, bsdiff, map, sli)
         it[characteristic] = char.enumValue()
         it[difficulty] = diff.enumValue()
     }
@@ -44,7 +44,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
     return stats
 }
 
-fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDiff, map: MapInfo): DiffStats {
+fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDiff, map: MapInfo, sli: SongLengthInfo): DiffStats {
     it[njs] = diff._noteJumpMovementSpeed
     it[offset] = diff._noteJumpStartBeatOffset
 
@@ -58,6 +58,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
 
     val len = bsdiff.songLength()
     val noteCount = bsdiff.noteCount()
+    val mappedNps = bsdiff.mappedNps(sli)
 
     it[schemaVersion] = bsdiff.version ?: "2.2.0"
     it[notes] = noteCount
@@ -78,7 +79,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
         requirementsLocal.containsIgnoreCase("Noodle Extensions"),
         requirementsLocal.containsIgnoreCase("Mapping Extensions"),
         requirementsLocal.containsIgnoreCase("Cinema") || suggestionsLocal.containsIgnoreCase("Cinema"),
-        BigDecimal.valueOf(if (len == 0f) 0.0 else ((noteCount / len) * (map._beatsPerMinute / 60)).toDouble()).min(maxAllowedNps)
+        BigDecimal.valueOf(mappedNps.toDouble()).min(maxAllowedNps)
     ).also { stats ->
         it[nps] = stats.nps
         it[chroma] = stats.chroma

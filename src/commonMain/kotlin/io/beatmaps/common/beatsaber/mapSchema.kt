@@ -31,18 +31,21 @@ data class BSDifficulty(
     override val _customData: JsonObject? = null,
     val _BPMChanges: JsonArray? = null
 ) : BSDiff {
-    override fun noteCount() = _notes.withoutFake().filter { note -> note._type != 3 }.size
-    override fun bombCount() = _notes.withoutFake().filter { note -> note._type == 3 }.size
+    private val noteCountLazy by lazy { _notes.withoutFake().partition { note -> note._type != 3 } }
+    override fun noteCount() = noteCountLazy.first.size
+    override fun bombCount() = noteCountLazy.second.size
     override fun arcCount() = 0
     override fun chainCount() = 0
     override fun obstacleCount() = _obstacles.withoutFake().size
     override fun eventCount() = _events.size
-    override fun songLength() =
+    private val songLengthLazy by lazy {
         _notes.sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 sorted.last().time - sorted.first().time
             } else 0f
         }
+    }
+    override fun songLength() = songLengthLazy
 
     private val maxScorePerBlock = 115
     override fun maxScore() =
@@ -51,6 +54,11 @@ data class BSDifficulty(
                 (if (n > (1 + 4)) maxScorePerBlock * 4 * (n.coerceAtMost(13) - 5) else 0) +
                 (if (n > 1) maxScorePerBlock * 2 * (n.coerceAtMost(5) - 1) else 0) +
                 n.coerceAtMost(1) * maxScorePerBlock
+        }
+
+    override fun mappedNps(sli: SongLengthInfo) =
+        sli.timeToSeconds(songLength()).let { len ->
+            if (len == 0f) 0f else noteCount() / len
         }
 }
 
@@ -107,6 +115,7 @@ sealed interface BSDiff : BSCustomData {
     fun obstacleCount(): Int
     fun songLength(): Float
     fun maxScore(): Int
+    fun mappedNps(sli: SongLengthInfo): Float
 }
 
 @Serializable
@@ -136,13 +145,23 @@ data class BSDifficultyV3(
 
     override fun eventCount() = basicBeatmapEvents.size
     override fun obstacleCount() = obstacles.size
-    override fun songLength() = colorNotes.sortedBy { note -> note.time }.let { sorted ->
-        if (sorted.isNotEmpty()) {
-            sorted.last().time - sorted.first().time
-        } else 0f
+    private val firstAndLastLazy by lazy {
+        colorNotes.sortedBy { note -> note.time }.let { sorted ->
+            if (sorted.isNotEmpty()) {
+                sorted.first().time to sorted.last().time
+            } else 0f to 0f
+        }
     }
+    override fun songLength() = firstAndLastLazy.second - firstAndLastLazy.first
 
-    override fun maxScore() = computeMaxMultipliedScoreForBeatmap(this)
+    private val maxScoreLazy by lazy { computeMaxMultipliedScoreForBeatmap(this) }
+    override fun maxScore() = maxScoreLazy
+    override fun mappedNps(sli: SongLengthInfo) =
+        sli.let {
+            it.timeToSeconds(firstAndLastLazy.second) - it.timeToSeconds(firstAndLastLazy.first)
+        }.let { len ->
+            if (len == 0f) 0f else noteCount() / len
+        }
 }
 
 @Serializable
@@ -275,7 +294,17 @@ data class BSIndexFilter(
     @SerialName("t")
     val param1: Int? = null,
     @SerialName("r")
-    val reversed: Int? = null
+    val reversed: Int? = null,
+    @SerialName("c")
+    val chunks: Int? = null,
+    @SerialName("n")
+    val randomType: Int? = null,
+    @SerialName("s")
+    val seed: Int? = null,
+    @SerialName("l")
+    val limit: Float? = null,
+    @SerialName("d")
+    val alsoAffectsType: Int? = null
 )
 
 @Serializable

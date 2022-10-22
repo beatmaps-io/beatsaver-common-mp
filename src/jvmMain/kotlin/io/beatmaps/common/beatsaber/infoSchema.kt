@@ -31,6 +31,7 @@ import org.valiktor.functions.isEqualTo
 import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotBlank
 import org.valiktor.functions.isNotNull
+import org.valiktor.functions.isNull
 import org.valiktor.functions.isPositiveOrZero
 import org.valiktor.functions.isZero
 import org.valiktor.functions.matches
@@ -40,8 +41,10 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.lang.Runtime.Version
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
+import kotlin.reflect.KProperty1
 
 data class MapInfo(
     val _version: String,
@@ -133,7 +136,7 @@ data class MapInfo(
         } ?: LegacySongLengthInfo(info)
 
     fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> ZipPath?) = validate(this) {
-        val songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
+        info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
 
         validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
         validate(MapInfo::_songName).isNotNull().isNotBlank().validate(MetadataLength) {
@@ -157,7 +160,7 @@ data class MapInfo(
         }
         validate(MapInfo::_allDirectionsEnvironmentName).isEqualTo("GlassDesertEnvironment")
         validate(MapInfo::_songTimeOffset).isZero()
-        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info, songLengthInfo) }
+        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info) }
     }
 }
 
@@ -219,10 +222,10 @@ data class DifficultyBeatmapSet(
     val _beatmapCharacteristicName: String,
     val _difficultyBeatmaps: List<DifficultyBeatmap>
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo, songLengthInfo: SongLengthInfo) = validator.apply {
+    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo) = validator.apply {
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).validateForEach {
-            it.validate(this, self(), files, getFile, info, songLengthInfo)
+            it.validate(this, self(), files, getFile, info)
         }
     }
 
@@ -250,8 +253,7 @@ data class DifficultyBeatmap(
         path: ZipPath?,
         characteristic: DifficultyBeatmapSet,
         difficulty: DifficultyBeatmap,
-        info: ExtractedInfo,
-        songLengthInfo: SongLengthInfo
+        info: ExtractedInfo
     ) = path?.inputStream().use { stream ->
         val byteArrayOutputStream = ByteArrayOutputStream()
         stream?.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
@@ -269,11 +271,11 @@ data class DifficultyBeatmap(
             mutableMapOf()
         }[difficulty] = diff
 
-        val maxBeat = songLengthInfo.maximumBeat(info.mapInfo._beatsPerMinute)
+        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo._beatsPerMinute) ?: 0f
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version.parse(diff.version)) }
             }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
@@ -291,8 +293,7 @@ data class DifficultyBeatmap(
         characteristic: DifficultyBeatmapSet,
         files: Set<String>,
         getFile: (String) -> ZipPath?,
-        info: ExtractedInfo,
-        songLengthInfo: SongLengthInfo
+        info: ExtractedInfo
     ) = validator.apply {
         extraFieldsViolation(
             constraintViolations,
@@ -312,7 +313,7 @@ data class DifficultyBeatmap(
         validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
             .also {
                 if (files.contains(_beatmapFilename.lowercase())) {
-                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info, songLengthInfo)
+                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info)
                 }
             }
     }
@@ -374,7 +375,7 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
     }
 }
 
-fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
+fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
     validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
         validate(BSBpmChange::bpm).isNotNull()
@@ -466,7 +467,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
         validate(BSLightColorEventBoxGroup::beat).isNotNull()
         validate(BSLightColorEventBoxGroup::groupId).isNotNull()
         validate(BSLightColorEventBoxGroup::eventBoxes).isNotNull().validateForEach {
-            validate(BSLightColorEventBox::indexFilter).isNotNull()
+            validateEventBox(BSLightColorEventBox::indexFilter, ver)
             validate(BSLightColorEventBox::beatDistributionParam).isNotNull()
             validate(BSLightColorEventBox::beatDistributionParamType).isNotNull()
             validate(BSLightColorEventBox::brightnessDistributionParam).isNotNull()
@@ -486,7 +487,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
         validate(BSLightRotationEventBoxGroup::beat).isNotNull()
         validate(BSLightRotationEventBoxGroup::groupId).isNotNull()
         validate(BSLightRotationEventBoxGroup::eventBoxes).isNotNull().validateForEach {
-            validate(BSLightRotationEventBox::indexFilter).isNotNull()
+            validateEventBox(BSLightRotationEventBox::indexFilter, ver)
             validate(BSLightRotationEventBox::beatDistributionParam).isNotNull()
             validate(BSLightRotationEventBox::beatDistributionParamType).isNotNull()
             validate(BSLightRotationEventBox::rotationDistributionParam).isNotNull()
@@ -506,6 +507,22 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float) {
     }
     validate(BSDifficultyV3::basicEventTypesWithKeywords).isNotNull()
     validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).isNotNull()
+}
+
+fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty1<T, BSIndexFilter?>, ver: Version) {
+    validate(indexFilter).isNotNull().validate {
+        validate(BSIndexFilter::type).isNotNull()
+        validate(BSIndexFilter::param0).isNotNull()
+        validate(BSIndexFilter::param1).isNotNull()
+        validate(BSIndexFilter::reversed).isNotNull()
+        listOf(
+            BSIndexFilter::chunks,
+            BSIndexFilter::randomType,
+            BSIndexFilter::seed,
+            BSIndexFilter::limit,
+            BSIndexFilter::alsoAffectsType
+        ).map { validate(it) }.forEach { if (ver.interim() > 0) it.isNotNull() else it.isNull() }
+    }
 }
 
 data class DifficultyBeatmapCustomData(

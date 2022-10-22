@@ -7,6 +7,7 @@ import io.beatmaps.common.beatsaber.BSDifficultyV3
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
@@ -55,7 +56,8 @@ data class ExtractedInfo(
     val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
     var duration: Float = 0f,
     var thumbnail: ByteArrayOutputStream? = null,
-    var preview: ByteArrayOutputStream? = null
+    var preview: ByteArrayOutputStream? = null,
+    var songLengthInfo: SongLengthInfo? = null
 )
 
 interface IMapScorer {
