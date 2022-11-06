@@ -12,6 +12,7 @@ object Review : IntIdTable("review", "reviewId") {
     val text = text("text")
     val sentiment = integer("sentiment")
     val createdAt = timestamp("createdAt")
+    val updatedAt = timestamp("updatedAt")
     val curatedAt = timestamp("curatedAt").nullable()
     val deletedAt = timestamp("deletedAt").nullable()
 }
@@ -25,6 +26,7 @@ data class ReviewDao(val key: EntityID<Int>) : IntEntity(key) {
     val text by Review.text
     val sentiment by Review.sentiment
     val createdAt by Review.createdAt
+    val updatedAt by Review.updatedAt
     val curatedAt by Review.curatedAt
     val deletedAt by Review.deletedAt
 }
