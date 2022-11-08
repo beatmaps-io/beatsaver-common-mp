@@ -275,7 +275,7 @@ data class DifficultyBeatmap(
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version.parse(diff.version)) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version.parse(diff.version + ".1")) }
             }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
