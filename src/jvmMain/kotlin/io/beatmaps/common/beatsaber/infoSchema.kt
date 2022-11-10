@@ -41,7 +41,6 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.lang.Runtime.Version
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
 import kotlin.reflect.KProperty1
@@ -275,7 +274,7 @@ data class DifficultyBeatmap(
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version.parse(diff.version + ".1")) }
+                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version(diff.version)) }
             }.constraintViolations.map { constraint ->
                 DefaultConstraintViolation(
                     property = "`${path?.fileName}`.${constraint.property}",
@@ -521,7 +520,7 @@ fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty
             BSIndexFilter::seed,
             BSIndexFilter::limit,
             BSIndexFilter::alsoAffectsType
-        ).map { validate(it) }.forEach { if (ver.interim() > 0) it.isNotNull() else it.isNull() }
+        ).map { validate(it) }.forEach { if (ver.minor > 0) it.isNotNull() else it.isNull() }
     }
 }
 
