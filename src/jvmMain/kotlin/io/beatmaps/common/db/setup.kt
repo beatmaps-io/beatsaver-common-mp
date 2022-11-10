@@ -24,6 +24,8 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
             password = dbPass
             minimumIdle = 2
             idleTimeout = 10000
+            leakDetectionThreshold = 500
+            maxLifetime = 5 * 60 * 1000
             maximumPoolSize = 20
             connectionTestQuery = "SELECT 1"
         }
