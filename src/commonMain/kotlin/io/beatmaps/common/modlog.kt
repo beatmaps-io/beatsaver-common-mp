@@ -37,9 +37,18 @@ data class EditPlaylistData(val playlistId: Int, val oldTitle: String, val oldDe
 @SerialName("DeletedPlaylist")
 data class DeletedPlaylistData(val playlistId: Int, val reason: String) : IModLogOpAction
 
+@Serializable
+@SerialName("ReviewModeration")
+data class ReviewModerationData(val oldSentiment: Int, val newSentiment: Int, val oldText: String, val newText: String) : IModLogOpAction
+
+@Serializable
+@SerialName("ReviewDelete")
+data class ReviewDeleteData(val reason: String) : IModLogOpAction
+
 enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
-    Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class);
+    Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
+    ReviewDelete(ReviewDeleteData::class);
 
     companion object {
         private val map = values().associateBy(ModLogOpType::actionClass)
@@ -55,4 +64,6 @@ fun SerializersModuleBuilder.modlog() = polymorphic(IModLogOpAction::class) {
     subclass(SuspendData::class)
     subclass(EditPlaylistData::class)
     subclass(DeletedPlaylistData::class)
+    subclass(ReviewModerationData::class)
+    subclass(ReviewDeleteData::class)
 }
