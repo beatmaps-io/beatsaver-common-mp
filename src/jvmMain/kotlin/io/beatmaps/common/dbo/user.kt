@@ -33,6 +33,7 @@ class CiTextColumn : TextColumnType() {
 fun Table.citext(name: String): Column<String> = registerColumn(name, CiTextColumn())
 
 val curatorAlias by lazy { User.alias("curator") }
+val reviewerAlias by lazy { User.alias("reviewer") }
 object User : IntIdTable("uploader", "id") {
     val hash = char("hash", 24).uniqueIndex("hash").nullable()
     val name = text("name")
