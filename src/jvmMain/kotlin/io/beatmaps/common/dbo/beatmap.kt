@@ -54,6 +54,8 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val upVotesInt = integer("upvote")
     val downVotesInt = integer("downvote")
     val lastVoteAt = timestamp("lastVoteAt").nullable()
+    val sentiment = decimal("sentiment", 4, 3)
+    val reviews = integer("reviews")
 
     val chroma = bool("chroma")
     val noodle = bool("noodle")
@@ -110,6 +112,9 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val maxNps by Beatmap.minNps
 
     val tags by Beatmap.tags
+
+    val sentiment by Beatmap.sentiment
+    val reviews by Beatmap.reviews
 
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }
