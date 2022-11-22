@@ -1,5 +1,7 @@
 package io.beatmaps.common.dbo
 
+import io.beatmaps.common.api.EPlaylistType
+import io.beatmaps.common.db.postgresEnumeration
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -21,7 +23,6 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val owner = reference("owner", User)
 
     val description = text("description")
-    val public = bool("public")
 
     val createdAt = timestamp("createdAt")
     val updatedAt = timestamp("updatedAt")
@@ -34,6 +35,8 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val totalMaps = integer("totalMaps")
     val minNps = decimal("minNps", 8, 3)
     val maxNps = decimal("maxNps", 8, 3)
+
+    val type = postgresEnumeration<EPlaylistType>("type", "playlistType")
 }
 
 fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
@@ -62,7 +65,6 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     val owner by UserDao referencedOn Playlist.owner
 
     val description by Playlist.description
-    val public by Playlist.public
 
     val createdAt by Playlist.createdAt
     val updatedAt by Playlist.updatedAt
@@ -75,6 +77,8 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     val totalMaps by Playlist.totalMaps
     val minNps by Playlist.minNps
     val maxNps by Playlist.maxNps
+
+    val type by Playlist.type
 }
 
 object PlaylistMap : IntIdTable("playlist_map", "id") {

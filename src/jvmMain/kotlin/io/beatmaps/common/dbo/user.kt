@@ -56,6 +56,7 @@ object User : IntIdTable("uploader", "id") {
     val curator = bool("curator")
     val verifiedMapper = bool("verifiedMapper")
     val suspendedAt = timestamp("suspendedAt").nullable()
+    val bookmarksId = reference("bookmarksId", Playlist).nullable()
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -80,4 +81,5 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val curator by User.curator
     val verifiedMapper by User.verifiedMapper
     val suspendedAt by User.suspendedAt
+    val bookmarksId by User.bookmarksId
 }

@@ -88,3 +88,9 @@ enum class MapAttr(val color: String) {
     Ranked("warning"),
     Verified("bs-purple")
 }
+
+enum class EPlaylistType() {
+    Private,
+    Public,
+    System
+}
