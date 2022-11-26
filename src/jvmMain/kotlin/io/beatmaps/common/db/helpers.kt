@@ -3,6 +3,7 @@ package io.beatmaps.common.db
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.CustomFunction
+import org.jetbrains.exposed.sql.DecimalColumnType
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
@@ -107,6 +108,16 @@ fun <T> Expression<T>.countWithFilter(condition: Expression<Boolean>): Expressio
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT("
         +this@countWithFilter
+        +") FILTER (WHERE "
+        +condition
+        +")"
+    }
+}
+
+fun <T> Expression<T>.avgWithFilter(condition: Expression<Boolean>, scale: Int = 2): Expression<BigDecimal?> = object : Function<BigDecimal?>(DecimalColumnType(Int.MAX_VALUE, scale)) {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +"AVG("
+        +this@avgWithFilter
         +") FILTER (WHERE "
         +condition
         +")"
