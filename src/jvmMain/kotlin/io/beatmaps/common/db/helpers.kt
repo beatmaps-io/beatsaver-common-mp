@@ -29,8 +29,8 @@ fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() 
     }
 }
 
-infix fun ExpressionWithColumnType<BigDecimal>.greaterEq(t: Float) = GreaterEqOp(this, floatParam(t))
-infix fun ExpressionWithColumnType<BigDecimal>.lessEq(t: Float) = LessEqOp(this, floatParam(t))
+infix fun ExpressionWithColumnType<BigDecimal>.greaterEqF(t: Float) = GreaterEqOp(this, floatParam(t))
+infix fun ExpressionWithColumnType<BigDecimal>.lessEqF(t: Float) = LessEqOp(this, floatParam(t))
 
 class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
 class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
