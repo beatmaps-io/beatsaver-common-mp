@@ -246,6 +246,7 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val suggestions = array<String>("suggestions", VarCharColumnType(255)).nullable()
     val information = array<String>("information", VarCharColumnType(255)).nullable()
     val warnings = array<String>("warnings", VarCharColumnType(255)).nullable()
+    val label = varchar("label", 255).nullable()
 
     val maxScore = integer("maxScore")
     val schemaVersion = varchar("schemaVersion", 10)
@@ -287,4 +288,5 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val maxScore by Difficulty.maxScore
     val rankedAt by Difficulty.rankedAt
     val qualifiedAt by Difficulty.qualifiedAt
+    val label by Difficulty.label
 }
