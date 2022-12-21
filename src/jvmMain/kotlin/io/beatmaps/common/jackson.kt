@@ -17,6 +17,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.beatmaps.common.api.HumanEnum
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 
 val inlineJackson: ObjectMapper = jacksonObjectMapper()
     .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
@@ -43,6 +44,7 @@ class KotlinTimeModule : SimpleModule() {
         addSerializer(HumanEnum::class.java, HumanEnumSerializer.INSTANCE)
         addSerializer(MapTag::class.java, MapTagsSerializer.INSTANCE)
         addDeserializer(MapTag::class.java, MapTagsDeserializer.INSTANCE)
+        addDeserializer(LocalDate::class.java, LocalDateDeserializer.INSTANCE)
     }
 }
 
@@ -120,4 +122,12 @@ class MapTagsDeserializer : StdDeserializer<MapTag>(MapTag::class.java) {
 
     override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?) =
         p?.valueAsString?.let { MapTag.fromSlug(it) } ?: MapTag.None
+}
+class LocalDateDeserializer : StdDeserializer<LocalDate>(LocalDate::class.java) {
+    companion object {
+        val INSTANCE: LocalDateDeserializer = LocalDateDeserializer()
+    }
+
+    override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?) =
+        p?.valueAsString?.let { LocalDate.parse(it) }
 }
