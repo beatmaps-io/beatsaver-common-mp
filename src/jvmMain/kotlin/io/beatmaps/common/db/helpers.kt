@@ -88,6 +88,12 @@ fun <T : Any> wrapAsExpressionNotNull(query: Query) = object : Expression<T>() {
     }
 }
 
+fun <T> wrapAsOp(expr: Expression<T>) = object : Op<T>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) {
+        expr.toQueryBuilder(queryBuilder)
+    }
+}
+
 fun countAsInt(expr: Expression<*>): Expression<Int> = object : Function<Int>(IntegerColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT("
