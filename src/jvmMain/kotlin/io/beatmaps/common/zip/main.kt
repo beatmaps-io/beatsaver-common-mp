@@ -108,7 +108,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
         }
     }
 
-    private val audioInitialized = ::audioFile.isLazyInitialized
+    private fun audioInitialized() = ::audioFile.isLazyInitialized
 
     val info by lazy {
         infoPath.inputStream().use {
@@ -191,7 +191,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
     }
 
     override fun close() {
-        if (audioInitialized) {
+        if (audioInitialized()) {
             Files.delete(audioFile.toPath())
         }
     }
