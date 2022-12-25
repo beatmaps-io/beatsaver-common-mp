@@ -37,12 +37,10 @@ import kotlin.reflect.jvm.isAccessible
 
 val KProperty0<*>.isLazyInitialized: Boolean
     get() {
-        if (this !is Lazy<*>) return true
-
         // Prevent IllegalAccessException from JVM access check on private properties.
         val originalAccessLevel = isAccessible
         isAccessible = true
-        val isLazyInitialized = (getDelegate() as Lazy<*>).isInitialized()
+        val isLazyInitialized = if (getDelegate() is Lazy<*>) (getDelegate() as Lazy<*>).isInitialized() else true
         // Reset access level.
         isAccessible = originalAccessLevel
         return isLazyInitialized
