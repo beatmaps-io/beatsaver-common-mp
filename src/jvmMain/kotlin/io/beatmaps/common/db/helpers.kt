@@ -3,6 +3,7 @@ package io.beatmaps.common.db
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.CustomFunction
+import org.jetbrains.exposed.sql.DecimalColumnType
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
@@ -28,8 +29,8 @@ fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() 
     }
 }
 
-infix fun ExpressionWithColumnType<BigDecimal>.greaterEq(t: Float) = GreaterEqOp(this, floatParam(t))
-infix fun ExpressionWithColumnType<BigDecimal>.lessEq(t: Float) = LessEqOp(this, floatParam(t))
+infix fun ExpressionWithColumnType<BigDecimal>.greaterEqF(t: Float) = GreaterEqOp(this, floatParam(t))
+infix fun ExpressionWithColumnType<BigDecimal>.lessEqF(t: Float) = LessEqOp(this, floatParam(t))
 
 class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
 class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
@@ -87,6 +88,12 @@ fun <T : Any> wrapAsExpressionNotNull(query: Query) = object : Expression<T>() {
     }
 }
 
+fun <T> wrapAsOp(expr: Expression<T>) = object : Op<T>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) {
+        expr.toQueryBuilder(queryBuilder)
+    }
+}
+
 fun countAsInt(expr: Expression<*>): Expression<Int> = object : Function<Int>(IntegerColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT("
@@ -107,6 +114,16 @@ fun <T> Expression<T>.countWithFilter(condition: Expression<Boolean>): Expressio
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT("
         +this@countWithFilter
+        +") FILTER (WHERE "
+        +condition
+        +")"
+    }
+}
+
+fun <T> Expression<T>.avgWithFilter(condition: Expression<Boolean>, scale: Int = 2): Expression<BigDecimal?> = object : Function<BigDecimal?>(DecimalColumnType(Int.MAX_VALUE, scale)) {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +"AVG("
+        +this@avgWithFilter
         +") FILTER (WHERE "
         +condition
         +")"

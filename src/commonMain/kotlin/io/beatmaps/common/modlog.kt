@@ -43,7 +43,7 @@ data class ReviewModerationData(val oldSentiment: Int, val newSentiment: Int, va
 
 @Serializable
 @SerialName("ReviewDelete")
-data class ReviewDeleteData(val reason: String) : IModLogOpAction
+data class ReviewDeleteData(val reason: String, val text: String? = null, val sentiment: Int? = null) : IModLogOpAction
 
 enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),

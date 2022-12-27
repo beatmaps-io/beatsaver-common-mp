@@ -14,7 +14,7 @@ version = System.getenv("BUILD_NUMBER")?.let { "1.0.$it" } ?: "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
 }
 
 kotlin {
@@ -74,7 +74,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
                 implementation("org.postgresql:postgresql:42.5.0")
-                implementation("com.github.JUtupe:ktor-rabbitmq:0.4.0")
+                implementation("pl.jutupe:ktor-rabbitmq:0.4.5")
                 implementation("com.rabbitmq:amqp-client:5.9.0")
 
                 implementation("org.apache.commons:commons-email:1.5")

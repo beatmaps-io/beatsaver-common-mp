@@ -37,12 +37,10 @@ import kotlin.reflect.jvm.isAccessible
 
 val KProperty0<*>.isLazyInitialized: Boolean
     get() {
-        if (this !is Lazy<*>) return true
-
         // Prevent IllegalAccessException from JVM access check on private properties.
         val originalAccessLevel = isAccessible
         isAccessible = true
-        val isLazyInitialized = (getDelegate() as Lazy<*>).isInitialized()
+        val isLazyInitialized = getDelegate().let { d -> if (d is Lazy<*>) d.isInitialized() else true }
         // Reset access level.
         isAccessible = originalAccessLevel
         return isLazyInitialized
@@ -110,7 +108,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
         }
     }
 
-    private val audioInitialized = ::audioFile.isLazyInitialized
+    private fun audioInitialized() = ::audioFile.isLazyInitialized
 
     val info by lazy {
         infoPath.inputStream().use {
@@ -193,7 +191,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
     }
 
     override fun close() {
-        if (audioInitialized) {
+        if (audioInitialized()) {
             Files.delete(audioFile.toPath())
         }
     }

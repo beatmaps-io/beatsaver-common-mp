@@ -35,7 +35,13 @@ fun localAvatarFolder() = File(System.getenv("AVATAR_DIR") ?: "K:\\BMAvatar")
 fun localFolder(hash: String) = File(System.getenv("ZIP_DIR") ?: "K:\\BeatSaver", hash.substring(0, 1))
 fun localCoverFolder(hash: String) = File(System.getenv("COVER_DIR") ?: "K:\\BeatSaverCover", hash.substring(0, 1))
 fun localAudioFolder(hash: String) = File(System.getenv("AUDIO_DIR") ?: "K:\\BeatSaverAudio", hash.substring(0, 1))
-fun localPlaylistCoverFolder() = File(System.getenv("PLAYLIST_COVER_DIR") ?: "K:\\BeatSaverPlaylist")
+fun localPlaylistCoverFolder(size: Int = 256) = File(System.getenv("PLAYLIST_COVER_DIR") ?: "K:\\BeatSaverPlaylist").let { outerFolder ->
+    if (size != 256) {
+        File(outerFolder, "$size")
+    } else {
+        outerFolder
+    }
+}
 
 suspend fun PipelineContext<*, ApplicationCall>.returnFile(file: File?, filename: String? = null) {
     if (file != null && file.exists()) {

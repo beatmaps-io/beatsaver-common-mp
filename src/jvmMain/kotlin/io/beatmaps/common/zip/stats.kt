@@ -70,6 +70,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     it[length] = min(len, maxLen).toBigDecimal()
     it[seconds] = min(if (map._beatsPerMinute == 0f) 0f else (60 / map._beatsPerMinute) * len, maxLen).toBigDecimal()
     it[maxScore] = bsdiff.maxScore()
+    it[label] = diff._customData?._difficultyLabel?.take(255)
 
     val requirementsLocal = diff._customData?._requirements?.toTypedArray()
     val suggestionsLocal = diff._customData?._suggestions?.toTypedArray()
