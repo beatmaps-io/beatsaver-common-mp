@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object Playlist : IntIdTable("playlist", "playlistId") {
@@ -81,6 +82,7 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     val type by Playlist.type
 }
 
+val bookmark by lazy { PlaylistMap.alias("bookmark") }
 object PlaylistMap : IntIdTable("playlist_map", "id") {
     val playlistId = reference("playlistId", Playlist)
     val mapId = reference("mapId", Beatmap)

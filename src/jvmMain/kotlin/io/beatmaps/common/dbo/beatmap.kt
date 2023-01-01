@@ -20,6 +20,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.wrapAsExpression
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -116,6 +117,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val sentiment by Beatmap.sentiment
     val reviews by Beatmap.reviews
 
+    var bookmarked: Boolean? = null
+
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }
         if (v.isNotEmpty()) {
@@ -145,6 +148,15 @@ fun ColumnSet.joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.
     }
 fun ColumnSet.joinUploader() = join(User, JoinType.INNER, onColumn = Beatmap.uploader, otherColumn = User.id)
 fun ColumnSet.joinCurator() = join(curatorAlias, JoinType.LEFT, onColumn = Beatmap.curator, otherColumn = curatorAlias[User.id])
+fun ColumnSet.joinBookmarked(userId: Int?) =
+    join(bookmark, JoinType.LEFT, onColumn = Beatmap.id, otherColumn = bookmark[PlaylistMap.mapId]) {
+        bookmark[PlaylistMap.playlistId] eq wrapAsExpression(
+            User
+                .slice(User.bookmarksId)
+                .select { User.id eq userId }
+                .limit(1)
+        )
+    }
 
 fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = {}) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
     map.also {
@@ -181,6 +193,8 @@ fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = 
                     }
                 }
             }
+
+            bookmarked = row.getOrNull(bookmark[PlaylistMap.id]) != null
         }
     }
 }.values.toList()
