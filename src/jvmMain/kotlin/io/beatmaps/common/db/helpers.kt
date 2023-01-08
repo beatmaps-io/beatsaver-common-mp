@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.GreaterEqOp
+import org.jetbrains.exposed.sql.IColumnType
 import org.jetbrains.exposed.sql.IntegerColumnType
 import org.jetbrains.exposed.sql.IsNullOp
 import org.jetbrains.exposed.sql.LessEqOp
@@ -81,6 +82,16 @@ fun <T : Any> isFalse(query: Op<T>) = object : Expression<T>() {
 }
 
 fun <T : Any> wrapAsExpressionNotNull(query: Query) = object : Expression<T>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        append("(")
+        query.prepareSQL(this)
+        append(")")
+    }
+}
+
+fun <T : Any> wrapAsExpressionNotNull(query: Query, columnType: IColumnType) = object : ExpressionWithColumnType<T>() {
+    override val columnType = columnType
+
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         append("(")
         query.prepareSQL(this)
