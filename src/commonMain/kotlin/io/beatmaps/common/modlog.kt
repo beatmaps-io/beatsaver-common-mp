@@ -52,7 +52,9 @@ enum class ModLogOpType(val actionClass: KClass<*>) {
 
     companion object {
         private val map = values().associateBy(ModLogOpType::actionClass)
+        private val nameMap = values().associateBy { it.name.lowercase() }
         fun fromAction(action: IModLogOpAction) = map[action::class]
+        fun fromName(name: String) = nameMap[name.lowercase()]
     }
 }
 
