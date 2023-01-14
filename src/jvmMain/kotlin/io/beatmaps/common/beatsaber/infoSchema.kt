@@ -30,6 +30,7 @@ import org.valiktor.functions.isBetween
 import org.valiktor.functions.isEqualTo
 import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotBlank
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNull
 import org.valiktor.functions.isPositiveOrZero
@@ -159,7 +160,7 @@ data class MapInfo(
         }
         validate(MapInfo::_allDirectionsEnvironmentName).isEqualTo("GlassDesertEnvironment")
         validate(MapInfo::_songTimeOffset).isZero()
-        validate(MapInfo::_difficultyBeatmapSets).validateForEach { it.validate(this, files, getFile, info) }
+        validate(MapInfo::_difficultyBeatmapSets).isNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info) }
     }
 }
 
@@ -223,7 +224,7 @@ data class DifficultyBeatmapSet(
 ) {
     fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo) = validator.apply {
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
-        validate(DifficultyBeatmapSet::_difficultyBeatmaps).validateForEach {
+        validate(DifficultyBeatmapSet::_difficultyBeatmaps).isNotNull().isNotEmpty().validateForEach {
             it.validate(this, self(), files, getFile, info)
         }
     }

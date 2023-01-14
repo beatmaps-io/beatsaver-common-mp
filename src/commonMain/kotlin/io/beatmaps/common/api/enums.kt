@@ -89,8 +89,13 @@ enum class MapAttr(val color: String) {
     Verified("bs-purple")
 }
 
-enum class EPlaylistType() {
+enum class EPlaylistType {
     Private,
     Public,
-    System
+    System;
+
+    companion object {
+        private val map = EPlaylistType.values().associateBy(EPlaylistType::name)
+        fun fromString(type: String?) = map[type]
+    }
 }

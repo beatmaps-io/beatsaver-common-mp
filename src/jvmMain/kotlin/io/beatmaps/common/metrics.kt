@@ -14,6 +14,7 @@ import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.userAgent
 import io.ktor.server.response.ApplicationSendPipeline
+import io.ktor.server.response.header
 import io.ktor.util.AttributeKey
 import io.micrometer.core.instrument.Clock
 import io.micrometer.core.instrument.Counter
@@ -135,10 +136,10 @@ fun Application.installMetrics() {
 
         call.attributes.put(extraTags, tags)
     }
-    sendPipeline.intercept(ApplicationSendPipeline.Before) {
+    sendPipeline.intercept(ApplicationSendPipeline.After) {
         val mk = call.attributes[reqTime]
         mk.end("req")
-        context.response.headers.append("Server-Timing", mk.getHeader())
+        context.response.header("Server-Timing", mk.getHeader())
     }
 
     val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
@@ -178,7 +179,7 @@ fun Application.installMetrics() {
                     }
                 }
 
-                val toRemove = meterExpiry.intersect(unusedMeters)
+                val toRemove = meterExpiry.intersect(unusedMeters.toHashSet())
                 meterExpiry = unusedMeters.minus(meterExpiry).toHashSet()
 
                 toRemove.forEach {
