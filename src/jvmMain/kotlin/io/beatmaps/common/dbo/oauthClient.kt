@@ -34,7 +34,6 @@ object AccessTokenTable : IdTable<String>("oa_access_token") {
     val expiration = timestamp("expiration")
     val scope = varchar("scope", 256)
     val userName = integer("user_name").nullable()
-    val metadata = text("metadata")
     val clientId = varchar("client_id", 256)
     val refreshToken = varchar("refresh_token", 256).nullable()
 }
@@ -44,6 +43,5 @@ object RefreshTokenTable : IdTable<String>("oa_refresh_token") {
     val expiration = timestamp("expiration")
     val scope = varchar("scope", 256)
     val userName = integer("user_name").nullable()
-    val metadata = text("metadata")
     val clientId = varchar("client_id", 256)
 }
