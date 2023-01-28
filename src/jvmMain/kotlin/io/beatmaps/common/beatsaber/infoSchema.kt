@@ -389,7 +389,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
     validate(BSDifficultyV3::colorNotes).isNotNull().validateForEach {
         validate(BSNoteV3::color).isNotNull().isIn(0, 1)
         validate(BSNoteV3::direction).isNotNull().validate(CutDirection) {
-            it == null || (it in 0..8)
+            it == null || (it in 0..8) || (it in 1000..1360)
         }
         validate(BSNoteV3::time).isNotNull().let {
             if (info.duration > 0) {
