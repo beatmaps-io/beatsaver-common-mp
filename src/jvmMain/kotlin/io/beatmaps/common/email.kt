@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.util.pipeline.PipelineContext
+import kotlinx.coroutines.delay
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
@@ -35,6 +36,8 @@ fun Application.emailQueue() {
                 }.send()
             } catch (e: EmailException) {
                 emailLogger.warning("Sending email resulted in exception ${e.message}")
+                delay(60 * 1000)
+                throw e
             }
         }
     }
