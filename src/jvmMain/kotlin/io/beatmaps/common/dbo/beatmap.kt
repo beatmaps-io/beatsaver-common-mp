@@ -194,7 +194,7 @@ fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = 
                 }
             }
 
-            bookmarked = row.getOrNull(bookmark[PlaylistMap.id]) != null
+            bookmarked = if (row.hasValue(bookmark[PlaylistMap.id])) row.getOrNull(bookmark[PlaylistMap.id]) != null else null
         }
     }
 }.values.toList()
