@@ -110,7 +110,7 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val qualified by Beatmap.qualified
 
     val minNps by Beatmap.minNps
-    val maxNps by Beatmap.minNps
+    val maxNps by Beatmap.maxNps
 
     val tags by Beatmap.tags
 
