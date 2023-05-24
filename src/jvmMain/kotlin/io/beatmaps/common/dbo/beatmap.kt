@@ -122,12 +122,15 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }
         if (v.isNotEmpty()) {
-            val feedback = TestplayDao.wrapRows(
-                Testplay.joinUploader()
-                    .select {
-                        Testplay.versionId inList v.map { it.key.value }.toList()
-                    }
-            ).toList().groupBy { it.versionId }
+            val testplayResults = Testplay.joinUploader()
+                .select {
+                    Testplay.versionId inList v.map { it.key.value }.toList()
+                }.toList()
+
+            val feedback = testplayResults.map { row ->
+                UserDao.wrapRow(row) // Cache user info from query
+                TestplayDao.wrapRow(row)
+            }.groupBy { it.versionId }
 
             v.forEach {
                 feedback[it.key]?.associateBy { inner -> inner.id }?.let { m ->

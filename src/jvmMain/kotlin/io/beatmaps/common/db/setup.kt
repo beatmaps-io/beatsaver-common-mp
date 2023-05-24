@@ -19,7 +19,7 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
         HikariConfig().apply {
             poolName = "pg-pool"
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?ApplicationName=$app"
+            jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?reWriteBatchedInserts=true&ApplicationName=$app"
             username = dbUser
             password = dbPass
             minimumIdle = 2

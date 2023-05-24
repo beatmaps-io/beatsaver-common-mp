@@ -29,7 +29,7 @@ object Alert : IntIdTable("alert", "alertId") {
 
         newAlert?.let { a ->
             val alert = AlertDao.wrapRow(a)
-            AlertRecipient.batchInsert(recipientIds) {
+            AlertRecipient.batchInsert(recipientIds, shouldReturnGeneratedValues = false) {
                 this[AlertRecipient.recipientId] = it
                 this[AlertRecipient.alertId] = alert.id
             }
