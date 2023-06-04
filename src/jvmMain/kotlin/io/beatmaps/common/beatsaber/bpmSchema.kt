@@ -47,7 +47,7 @@ data class BPMInfo(
         } ?: 0f
 
     override fun timeToSeconds(time: Float) =
-        _regions.find { it._startBeat < time && time < it._endBeat }?.let {
+        _regions.find { it._startBeat <= time && time < it._endBeat }?.let {
             // We're in this region. Interpolate!
             val lengthInBeats = it._endBeat - it._startBeat
             val percent = (time - it._startBeat) / lengthInBeats
