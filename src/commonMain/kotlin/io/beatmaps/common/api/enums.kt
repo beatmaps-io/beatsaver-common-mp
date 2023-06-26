@@ -72,7 +72,8 @@ enum class EAlertType(val color: String, val icon: String, private val readableN
     ReviewDeletion("danger", "fa-comment-slash", "Review Deletion"),
     MapRelease("info", "fa-map", "Map Release"),
     Curation("success", "fa-award"),
-    Uncuration("danger", "fa-award");
+    Uncuration("danger", "fa-award"),
+    Collaboration("warning", "fa-user-friends");
 
     fun readable(): String = readableName ?: name
 
