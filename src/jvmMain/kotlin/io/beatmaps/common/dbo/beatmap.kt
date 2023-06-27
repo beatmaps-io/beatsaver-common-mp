@@ -161,6 +161,10 @@ fun ColumnSet.joinBookmarked(userId: Int?) =
         )
     }
 
+fun ColumnSet.joinCollaborations() = join(Collaboration, JoinType.LEFT, Beatmap.id, Collaboration.mapId) {
+    Collaboration.accepted eq true
+}
+
 fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = {}) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
     map.also {
         map.getOrPut(row[alias?.get(Beatmap.id) ?: Beatmap.id]) {
