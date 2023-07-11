@@ -19,15 +19,12 @@ object Alert : IntIdTable("alert", "alertId") {
 
     val sentAt = timestamp("sentAt")
 
-    val collaborationId = reference("collaborationId", Collaboration).nullable()
-
-    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientIds: List<Int>, collaborationId: Int? = null) {
+    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientIds: List<Int>) {
         val newAlert = insert {
             it[head] = alertHead
             it[body] = alertBody
             it[type] = alertType
             it[sentAt] = NowExpression(sentAt.columnType)
-            it[Alert.collaborationId] = collaborationId
         }.resultedValues?.first()
 
         newAlert?.let { a ->
@@ -39,8 +36,8 @@ object Alert : IntIdTable("alert", "alertId") {
         }
     }
 
-    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientId: Int , collaborationId: Int? = null) =
-        insert(alertHead, alertBody, alertType, listOf(recipientId), collaborationId)
+    fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientId: Int) =
+        insert(alertHead, alertBody, alertType, listOf(recipientId))
 }
 
 data class AlertDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -50,8 +47,6 @@ data class AlertDao(val key: EntityID<Int>) : IntEntity(key) {
     val type by Alert.type
 
     val sentAt by Alert.sentAt
-
-    val collaborationId by Alert.collaborationId
 }
 
 object AlertRecipient : IntIdTable("alert_recipient", "id") {
