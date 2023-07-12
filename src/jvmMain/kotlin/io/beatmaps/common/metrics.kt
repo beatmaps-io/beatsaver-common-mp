@@ -160,6 +160,7 @@ fun Application.installMetrics() {
             call.attributes[extraTags].forEach {
                 tag(it.key, it.value)
             }
+            tag("address", call.request.local.let { "${it.serverHost}:${it.serverPort}" })
             tag("cn", call.getCountry().countryCode)
             call.getCountry().state?.let { state ->
                 tag("state", state)
