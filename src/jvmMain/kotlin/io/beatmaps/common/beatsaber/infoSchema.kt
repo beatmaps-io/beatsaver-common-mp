@@ -301,7 +301,7 @@ data class DifficultyBeatmap(
             arrayOf("_warnings", "_information", "_suggestions", "_requirements", "_difficultyLabel", "_envColorLeft", "_envColorRight", "_colorLeft", "_colorRight")
         )
 
-        val allowedDiffNames = setOf("Easy", "Normal", "Hard", "Expert", "ExpertPlus")
+        val allowedDiffNames = EDifficulty.values().map { it.name }.toSet()
         validate(DifficultyBeatmap::_difficulty).isNotNull()
             .validate(In(allowedDiffNames)) { it == null || allowedDiffNames.any { dn -> dn.equals(it, true) } }
             .validate(UniqueDiff(_difficulty)) {
@@ -309,7 +309,12 @@ data class DifficultyBeatmap(
                     it != self() && it._difficulty == self()._difficulty
                 }
             }
-        validate(DifficultyBeatmap::_difficultyRank).isNotNull().isIn(1, 3, 5, 7, 9)
+        validate(DifficultyBeatmap::_difficultyRank).isNotNull().isIn(EDifficulty.values().map { it.idx })
+            .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank)?.name ?: "Unknown")) {
+                !characteristic._difficultyBeatmaps.any {
+                    it != self() && it._difficultyRank == self()._difficultyRank
+                }
+            }
         validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
             .also {
                 if (files.contains(_beatmapFilename.lowercase())) {
