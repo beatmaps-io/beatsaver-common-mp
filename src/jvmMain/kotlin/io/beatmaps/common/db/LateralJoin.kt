@@ -36,7 +36,6 @@ class LateralAlias(val query: Query) : AbstractQuery<Query>(query.targets) {
         return builder.toString()
     }
 
-
     override fun withDistinct(value: Boolean) = query.withDistinct(value)
 
     override fun PreparedStatementApi.executeInternal(transaction: Transaction) =
