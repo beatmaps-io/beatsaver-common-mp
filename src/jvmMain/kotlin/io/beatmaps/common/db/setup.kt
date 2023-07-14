@@ -14,6 +14,7 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
     val dbUser = System.getenv("DB_USER") ?: "beatmaps"
     val dbName = System.getenv("DB_NAME") ?: defaultDb
     val dbPass = System.getenv("DB_PASSWORD") ?: "insecure-password"
+    val dbLeakThreshold = System.getenv("DB_LEAK_THRESHOLD").toLongOrNull() ?: 60000
 
     return HikariDataSource(
         HikariConfig().apply {
@@ -24,7 +25,7 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
             password = dbPass
             minimumIdle = 2
             idleTimeout = 10000
-            leakDetectionThreshold = 5000
+            leakDetectionThreshold = dbLeakThreshold
             maximumPoolSize = 20
             connectionTestQuery = "SELECT 1"
         }
