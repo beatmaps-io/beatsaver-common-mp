@@ -57,6 +57,7 @@ object User : IntIdTable("uploader", "id") {
     val verifiedMapper = bool("verifiedMapper")
     val suspendedAt = timestamp("suspendedAt").nullable()
     val bookmarksId = reference("bookmarksId", Playlist).nullable()
+    val emailChangedAt = timestamp("emailChangedAt")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -82,4 +83,5 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val verifiedMapper by User.verifiedMapper
     val suspendedAt by User.suspendedAt
     val bookmarksId by User.bookmarksId
+    val emailChangedAt by User.emailChangedAt
 }
