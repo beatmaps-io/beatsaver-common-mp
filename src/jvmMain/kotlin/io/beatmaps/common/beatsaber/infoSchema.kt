@@ -44,6 +44,7 @@ import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.lang.Integer.max
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
 import kotlin.reflect.KProperty1
@@ -214,7 +215,9 @@ data class ColorScheme(
     val environmentColor1: BSColor?,
     val obstaclesColor: BSColor?,
     val environmentColor0Boost: BSColor?,
-    val environmentColor1Boost: BSColor?
+    val environmentColor1Boost: BSColor?,
+    val environmentColorW: BSColor?,
+    val environmentColorWBoost: BSColor?
 )
 
 data class BSColor(
@@ -367,8 +370,8 @@ data class DifficultyBeatmap(
             }
 
         // V2.1
-        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(info.mapInfo._colorSchemes?.size ?: 0) else it.isNull() }
-        validate(DifficultyBeatmap::_environmentNameIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(info.mapInfo._environmentNames?.size ?: 0) else it.isNull() }
+        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1,info.mapInfo._colorSchemes?.size ?: 0)) else it.isNull() }
+        validate(DifficultyBeatmap::_environmentNameIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1,info.mapInfo._environmentNames?.size ?: 0)) else it.isNull() }
     }
 
     fun enumValue() = EDifficulty.fromInt(_difficultyRank) ?: searchEnum(_difficulty)
