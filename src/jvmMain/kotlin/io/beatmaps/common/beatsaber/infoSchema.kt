@@ -370,8 +370,12 @@ data class DifficultyBeatmap(
             }
 
         // V2.1
-        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1,info.mapInfo._colorSchemes?.size ?: 0)) else it.isNull() }
-        validate(DifficultyBeatmap::_environmentNameIdx).let { if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1,info.mapInfo._environmentNames?.size ?: 0)) else it.isNull() }
+        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).let {
+            if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1, info.mapInfo._colorSchemes?.size ?: 0)) else it.isNull()
+        }
+        validate(DifficultyBeatmap::_environmentNameIdx).let {
+            if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1, info.mapInfo._environmentNames?.size ?: 0)) else it.isNull()
+        }
     }
 
     fun enumValue() = EDifficulty.fromInt(_difficultyRank) ?: searchEnum(_difficulty)
