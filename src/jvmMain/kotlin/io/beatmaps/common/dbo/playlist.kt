@@ -1,6 +1,5 @@
 package io.beatmaps.common.dbo
 
-import io.beatmaps.common.api.EMapState
 import io.beatmaps.common.api.EPlaylistType
 import io.beatmaps.common.db.postgresEnumeration
 import org.jetbrains.exposed.dao.IntEntity
