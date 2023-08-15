@@ -13,12 +13,22 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.avg
+import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.sum
 
 object Playlist : IntIdTable("playlist", "playlistId") {
+    val beatmapSubQuery = Beatmap
+        .joinVersions(false)
+        .slice(Beatmap.columns)
+        .selectAll()
+        .alias("maps")
+
     fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
         join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
-            .join(Beatmap, type, Beatmap.id, PlaylistMap.mapId) { Beatmap.deletedAt.isNull() }
+            .join(beatmapSubQuery, type, beatmapSubQuery[Beatmap.id], PlaylistMap.mapId) { beatmapSubQuery[Beatmap.deletedAt].isNull() }
 
     val name = varchar("name", 255)
     val owner = reference("owner", User)
@@ -38,6 +48,16 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val maxNps = decimal("maxNps", 8, 3)
 
     val type = postgresEnumeration<EPlaylistType>("type", "playlistType")
+
+    object Stats {
+        val mapperCount = beatmapSubQuery[Beatmap.uploader].countDistinct()
+        val totalDuration = beatmapSubQuery[Beatmap.duration].sum()
+        val totalUpvotes = beatmapSubQuery[Beatmap.upVotesInt].sum()
+        val totalDownvotes = beatmapSubQuery[Beatmap.downVotesInt].sum()
+        val averageScore = beatmapSubQuery[Beatmap.score].avg(4)
+
+        val all = listOf(mapperCount, totalDuration, totalUpvotes, totalDownvotes, averageScore)
+    }
 }
 
 fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
@@ -97,7 +117,7 @@ data class PlaylistMapDao(val key: EntityID<Int>) : IntEntity(key) {
     val playlist by PlaylistDao referencedOn PlaylistMap.playlistId
     val map by BeatmapDao referencedOn PlaylistMap.mapId
 
-    val playlistId by PlaylistMap.id
+    val playlistId by PlaylistMap.playlistId
 
     val order by PlaylistMap.order
 }

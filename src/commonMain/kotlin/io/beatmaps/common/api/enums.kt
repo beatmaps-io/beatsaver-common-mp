@@ -40,7 +40,8 @@ inline fun <reified T : Enum<T>> searchEnum(search: String): T {
 
 @Serializable(with = ECharacteristicSerializer::class)
 enum class ECharacteristic(val color: String) : HumanEnum<ECharacteristic> {
-    Standard("primary"), OneSaber("info"), NoArrows("info"), _90Degree("warning"), _360Degree("warning"), Lightshow("danger"), Lawless("danger");
+    Standard("primary"), OneSaber("info"), NoArrows("info"), _90Degree("warning"), _360Degree("warning"), Lightshow("danger"),
+    Lawless("danger"), Legacy("danger");
 
     override fun human() = toString().removePrefix("_")
     override fun enumName() = human()
