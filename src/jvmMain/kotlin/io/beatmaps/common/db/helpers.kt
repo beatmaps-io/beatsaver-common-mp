@@ -16,9 +16,11 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.QueryParameter
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.TextColumnType
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.floatParam
+import org.jetbrains.exposed.sql.function
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.math.BigDecimal
@@ -72,6 +74,8 @@ class PgConcat(
 class InsensitiveLikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
 infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: String): Op<Boolean> = InsensitiveLikeOp(this, QueryParameter(pattern, columnType))
 infix fun <T : String?> ExpressionWithColumnType<T>.ilike(exp: ExpressionWithColumnType<T>): Op<Boolean> = InsensitiveLikeOp(this, exp)
+
+infix fun <T : String?> ExpressionWithColumnType<T>.startsWith(str: String?): Op<Boolean> = this like (str ?: "") + "%"
 
 fun <T : Any> isFalse(query: Op<T>) = object : Expression<T>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
@@ -171,3 +175,5 @@ class DateMinusDays(val dateExp: Expression<Instant>, val d: Int) : Expression<I
         +" - INTERVAL '$d DAYS'"
     }
 }
+
+fun length(column: Column<*>) = column.function("LENGTH")

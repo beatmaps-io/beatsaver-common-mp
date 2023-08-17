@@ -119,6 +119,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
 
     var bookmarked: Boolean? = null
 
+    val collaborators = mutableMapOf<EntityID<Int>, UserDao>()
+
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }
         if (v.isNotEmpty()) {
@@ -161,6 +163,13 @@ fun ColumnSet.joinBookmarked(userId: Int?) =
         )
     }
 
+fun ColumnSet.joinCollaborations() = join(Collaboration, JoinType.LEFT, Beatmap.id, Collaboration.mapId) {
+    Collaboration.accepted eq true
+}
+
+fun ColumnSet.joinCollaborators() = joinCollaborations()
+    .join(collaboratorAlias, JoinType.LEFT, Collaboration.collaboratorId, collaboratorAlias[User.id])
+
 fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = {}) = this.fold(mutableMapOf<EntityID<Int>, BeatmapDao>()) { map, row ->
     map.also {
         map.getOrPut(row[alias?.get(Beatmap.id) ?: Beatmap.id]) {
@@ -198,6 +207,12 @@ fun Query.complexToBeatmap(alias: QueryAlias? = null, cb: (ResultRow) -> Unit = 
             }
 
             bookmarked = if (row.hasValue(bookmark[PlaylistMap.id])) row.getOrNull(bookmark[PlaylistMap.id]) != null else null
+
+            row.getOrNull(collaboratorAlias[User.id])?.let {
+                collaborators.getOrPut(it) {
+                    UserDao.wrapRow(row, collaboratorAlias)
+                }
+            }
         }
     }
 }.values.toList()
