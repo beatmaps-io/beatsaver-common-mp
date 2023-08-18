@@ -20,11 +20,13 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.sum
 
 object Playlist : IntIdTable("playlist", "playlistId") {
-    val beatmapSubQuery = Beatmap
-        .joinVersions(false)
-        .slice(Beatmap.columns)
-        .selectAll()
-        .alias("maps")
+    val beatmapSubQuery by lazy {
+        Beatmap
+            .joinVersions(false)
+            .slice(Beatmap.columns)
+            .selectAll()
+            .alias("maps")
+    }
 
     fun joinMaps(type: JoinType = JoinType.LEFT, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) =
         join(PlaylistMap, type, Playlist.id, PlaylistMap.playlistId, state)
