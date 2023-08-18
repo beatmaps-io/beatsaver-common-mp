@@ -8,7 +8,6 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
-import java.lang.StringBuilder
 import java.sql.ResultSet
 
 interface ConflictType {
@@ -72,7 +71,6 @@ class UpsertStatement<Key : Any>(table: Table, private val conflict: ConflictTyp
                 }
             }
         } else {
-
             append(" ON DUPLICATE KEY UPDATE ")
             values.keys.filter(conflict::shouldUpdate)
                 .joinTo(this) { "${transaction.identity(it)}=VALUES(${transaction.identity(it)})" }
@@ -87,7 +85,7 @@ class UpsertStatement<Key : Any>(table: Table, private val conflict: ConflictTyp
         arguments = listOf()
         val rs = if (autoIncColumns.isNotEmpty()) {
             resultSet
-        } else null
+        } else { null }
         return inserted to rs
     }
 }

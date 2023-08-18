@@ -16,8 +16,8 @@ object Collaboration : IntIdTable("collaboration", "collaborationId") {
     val link = Index(listOf(mapId, collaboratorId), true, "collaborationLink")
 }
 
-data class CollaborationDAO(val key: EntityID<Int>) : IntEntity(key) {
-    companion object : IntEntityClass<CollaborationDAO>(Collaboration)
+data class CollaborationDao(val key: EntityID<Int>) : IntEntity(key) {
+    companion object : IntEntityClass<CollaborationDao>(Collaboration)
     val mapId by Collaboration.mapId
     val collaboratorId by Collaboration.collaboratorId
     val requestedAt by Collaboration.requestedAt

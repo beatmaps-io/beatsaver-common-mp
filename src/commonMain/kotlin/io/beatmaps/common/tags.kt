@@ -78,5 +78,5 @@ class MapTagSlugSerializable : KSerializer<MapTag> {
 }
 
 enum class MapTagType(val color: String) {
-    None(""), Style("blue"), Genre("green");
+    None(""), Style("blue"), Genre("green")
 }

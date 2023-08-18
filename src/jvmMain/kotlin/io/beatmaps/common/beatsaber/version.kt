@@ -1,4 +1,3 @@
-// ktlint-disable filename
 package io.beatmaps.common.beatsaber
 
 class Version(val version: String?) : Comparable<Version?> {

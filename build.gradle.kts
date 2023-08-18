@@ -3,7 +3,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     kotlin("multiplatform") version "1.8.22"
     kotlin("plugin.serialization") version "1.8.22"
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("maven-publish")
 }
 
@@ -109,6 +109,7 @@ kotlin {
 }
 
 ktlint {
+    version.set("0.50.0")
     reporters {
         reporter(ReporterType.CHECKSTYLE)
     }

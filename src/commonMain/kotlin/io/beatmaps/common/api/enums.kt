@@ -39,6 +39,7 @@ inline fun <reified T : Enum<T>> searchEnum(search: String): T {
 }
 
 @Serializable(with = ECharacteristicSerializer::class)
+@Suppress("ktlint:standard:enum-entry-name-case")
 enum class ECharacteristic(val color: String) : HumanEnum<ECharacteristic> {
     Standard("primary"), OneSaber("info"), NoArrows("info"), _90Degree("warning"), _360Degree("warning"), Lightshow("danger"),
     Lawless("danger"), Legacy("danger");

@@ -42,7 +42,9 @@ data class BSDifficulty(
         _notes.sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 sorted.last().time - sorted.first().time
-            } else 0f
+            } else {
+                0f
+            }
         }
     }
     override fun songLength() = songLengthLazy
@@ -149,7 +151,9 @@ data class BSDifficultyV3(
         colorNotes.sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 sorted.first().time to sorted.last().time
-            } else 0f to 0f
+            } else {
+                0f to 0f
+            }
         }
     }
     override fun songLength() = firstAndLastLazy.second - firstAndLastLazy.first

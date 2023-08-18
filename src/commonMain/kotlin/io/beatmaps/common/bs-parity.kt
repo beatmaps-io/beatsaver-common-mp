@@ -169,7 +169,9 @@ fun outputWarn(output: MutableList<Error>, note: BSNote, parity: HitParity, type
  * @returns {Number} - the index of the last note of the same colour in the array, or -1 if not found
  */
 fun findCol(jsonData: List<BSNote>, type: Types, lastVal: Int) =
-    if (lastVal < 0) -1 else {
+    if (lastVal < 0) {
+        -1
+    } else {
         jsonData.indexOf(
             jsonData.subList(0, lastVal).lastOrNull {
                 Types.fromInt(it.type) === type
