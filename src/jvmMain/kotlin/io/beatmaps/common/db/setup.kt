@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.beatmaps.common.api.searchEnum
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
 import org.postgresql.util.PGobject
 import javax.sql.DataSource
 
@@ -16,11 +17,13 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
     val dbPass = System.getenv("DB_PASSWORD") ?: "insecure-password"
     val dbLeakThreshold = System.getenv("DB_LEAK_THRESHOLD")?.toLongOrNull() ?: 60000
 
+    Database.registerDialect(BMPGDialect.dialectName) { BMPGDialect() }
+
     return HikariDataSource(
         HikariConfig().apply {
             poolName = "pg-pool"
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?reWriteBatchedInserts=true&ApplicationName=$app"
+            jdbcUrl = "jdbc:${BMPGDialect.dialectName}://$dbHost:$dbPort/$dbName?reWriteBatchedInserts=true&ApplicationName=$app"
             username = dbUser
             password = dbPass
             minimumIdle = 2
@@ -31,6 +34,15 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
         }
     ).also {
         Database.connect(it)
+    }
+}
+
+class BMPGDialect : PostgreSQLDialect() {
+    override val supportsSubqueryUnions: Boolean
+        get() = true
+
+    companion object {
+        const val dialectName: String = "postgresql"
     }
 }
 

@@ -12,6 +12,7 @@ object Collaboration : IntIdTable("collaboration", "collaborationId") {
     val collaboratorId = reference("collaboratorId", User)
     val requestedAt = timestamp("requestedAt")
     val accepted = bool("accepted")
+    val uploadedAt = timestamp("uploadedAt").nullable()
 
     val link = Index(listOf(mapId, collaboratorId), true, "collaborationLink")
 }

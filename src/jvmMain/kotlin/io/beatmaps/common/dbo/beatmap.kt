@@ -10,6 +10,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ColumnSet
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Index
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
@@ -143,8 +144,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     }
 }
 
-fun ColumnSet.joinVersions(stats: Boolean = false, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
-    join(Versions, JoinType.INNER, onColumn = Beatmap.id, otherColumn = Versions.mapId, additionalConstraint = state).run {
+fun ColumnSet.joinVersions(stats: Boolean = false, column: Expression<*>? = Beatmap.id, state: (SqlExpressionBuilder.() -> Op<Boolean>)? = { Versions.state eq EMapState.Published }) =
+    join(Versions, JoinType.INNER, onColumn = column, otherColumn = Versions.mapId, additionalConstraint = state).run {
         if (stats) {
             join(Difficulty, JoinType.INNER, onColumn = Versions.id, otherColumn = Difficulty.versionId)
         } else {
