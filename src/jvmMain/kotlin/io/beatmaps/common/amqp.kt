@@ -75,6 +75,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     val logger = Logger.getLogger("bmio.RabbitMQ.consumeAck")
     GlobalScope.launch(Dispatchers.IO) {
         getConnection().createChannel().apply {
+            basicQos(20)
             basicConsume(
                 queue,
                 false,
