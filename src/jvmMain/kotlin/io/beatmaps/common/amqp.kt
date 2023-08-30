@@ -52,11 +52,14 @@ fun Application.rabbitOptional(configuration: RabbitMQInstance.() -> Unit) {
     }
 }
 
-fun <T> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) {
+fun <T> Application.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) {
     if (rabbitHost.isNotEmpty()) {
-        application.attributes[RabbitMQ.RabbitMQKey].publish(exchange, routingKey, props, body)
+        attributes[RabbitMQ.RabbitMQKey].publish(exchange, routingKey, props, body)
     }
 }
+
+fun <T> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
+    application.pub(exchange, routingKey, props, body)
 
 private fun RabbitMQInstance.getConnection() =
     javaClass.getDeclaredField("connection").let {
