@@ -59,6 +59,7 @@ object User : IntIdTable("uploader", "id") {
     val suspendedAt = timestamp("suspendedAt").nullable()
     val bookmarksId = reference("bookmarksId", Playlist).nullable()
     val emailChangedAt = timestamp("emailChangedAt")
+    val patreonId = reference("patreonId", Patreon).nullable()
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
