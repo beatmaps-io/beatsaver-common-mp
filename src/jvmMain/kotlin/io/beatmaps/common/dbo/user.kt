@@ -5,6 +5,8 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.ColumnSet
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.TextColumnType
 import org.jetbrains.exposed.sql.alias
@@ -86,4 +88,8 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val suspendedAt by User.suspendedAt
     val bookmarksId by User.bookmarksId
     val emailChangedAt by User.emailChangedAt
+
+    val patreon by PatreonDao optionalReferencedOn User.patreonId
 }
+
+fun ColumnSet.joinPatreon() = join(Patreon, JoinType.LEFT, onColumn = User.patreonId, otherColumn = Patreon.id)
