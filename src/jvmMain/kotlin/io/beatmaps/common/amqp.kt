@@ -52,11 +52,11 @@ fun Application.rabbitOptional(configuration: RabbitMQInstance.() -> Unit) {
     }
 }
 
-fun <T> Application.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) {
-    if (rabbitHost.isNotEmpty()) {
-        attributes[RabbitMQ.RabbitMQKey].publish(exchange, routingKey, props, body)
-    }
-}
+fun Application.rb() = if (rabbitHost.isNotEmpty()) { attributes[RabbitMQ.RabbitMQKey] } else null
+fun ApplicationCall.rb() = application.rb()
+
+fun <T> Application.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
+    rb()?.publish(exchange, routingKey, props, body)
 
 fun <T> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
     application.pub(exchange, routingKey, props, body)
