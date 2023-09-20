@@ -23,7 +23,7 @@ data class UnpublishData(val reason: String) : IModLogOpAction
 
 @Serializable
 @SerialName("UploadLimit")
-class UploadLimitData(val newValue: Int, val newCurator: Boolean, val verifiedMapper: Boolean?) : IModLogOpAction
+class UploadLimitData(val newValue: Int, val newCurator: Boolean, val verifiedMapper: Boolean?, val curatorTab: Boolean?) : IModLogOpAction
 
 @Serializable
 @SerialName("Suspend")
