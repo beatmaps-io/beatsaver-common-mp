@@ -25,6 +25,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.DigestOutputStream
 import java.util.ServiceLoader
@@ -142,7 +144,12 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
 
     fun getPathDirect(path: String) = path.removePrefix("/").let { op -> ZipPath(fs, op, fs.getFileHeader(op)) }
 
-    fun moveFile(old: ZipPath?, new: String) = if (old != null) fs.renameFile(old.header, new.removePrefix("/")) else Unit
+    fun moveFile(old: ZipPath?, new: String) = if (old != null) {
+        fs.charset = if (old.header?.isFileNameUTF8Encoded == true) StandardCharsets.UTF_8 else Charset.forName("Cp437")
+        fs.renameFile(old.header, new.removePrefix("/"))
+    } else {
+        Unit
+    }
 
     fun scoreMap() =
         ServiceLoader.load(IMapScorerProvider::class.java)
