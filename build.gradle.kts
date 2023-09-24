@@ -82,7 +82,7 @@ kotlin {
                 // Serialization
                 implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.1")
+                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
                 // Metrics
                 implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
@@ -100,7 +100,7 @@ kotlin {
                 implementation("org.sejda.imageio:webp-imageio:0.1.6")
                 implementation("nwaldispuehl:java-lame:3.98.4")
 
-                implementation("net.lingala.zip4j:zip4j:2.11.1")
+                implementation("net.lingala.zip4j:zip4j:2.11.6-SNAPSHOT")
 
                 implementation("org.valiktor:valiktor-core:0.12.0")
             }
