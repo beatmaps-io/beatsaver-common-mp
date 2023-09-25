@@ -230,6 +230,7 @@ object Versions : IntIdTable("versions", "versionId") {
     val scheduledAt = timestamp("scheduledAt").nullable()
     val r2 = bool("r2")
     val deletedAt = timestamp("deletedAt").nullable()
+    val lastPublishedAt = timestamp("lastPublishedAt").nullable()
 }
 
 data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -246,6 +247,7 @@ data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
     val scheduledAt by Versions.scheduledAt
     val r2 by Versions.r2
     val deletedAt by Versions.deletedAt
+    val lastPublishedAt by Versions.lastPublishedAt
 
     val testplays = mutableMapOf<EntityID<Int>, TestplayDao>()
     val difficulties = mutableMapOf<EntityID<Int>, DifficultyDao>()
