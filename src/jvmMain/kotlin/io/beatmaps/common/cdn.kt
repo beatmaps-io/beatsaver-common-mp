@@ -10,6 +10,8 @@ import io.ktor.server.response.header
 import io.ktor.server.response.respondFile
 import io.ktor.util.pipeline.PipelineContext
 import java.io.File
+import java.net.URI
+import java.net.URISyntaxException
 
 private val illegalCharacters = arrayOf(
     '<', '>', ':', '/', '\\', '|', '?', '*', '"',
@@ -43,12 +45,20 @@ fun localPlaylistCoverFolder(size: Int = 256) = File(System.getenv("PLAYLIST_COV
     }
 }
 
+fun encodeURLPathComponent(path: String?): String =
+    try {
+        URI(null, null, path, null).toASCIIString()
+    } catch (e: URISyntaxException) {
+        ""
+    }
+
 suspend fun PipelineContext<*, ApplicationCall>.returnFile(file: File?, filename: String? = null) {
     if (file != null && file.exists()) {
         filename?.let {
+            val encoded = encodeURLPathComponent(it)
             call.response.header(
                 HttpHeaders.ContentDisposition,
-                "attachment; filename=\"$it\""
+                "attachment; filename=\"$it\"; filename*=utf-8''$encoded"
             )
         }
 
