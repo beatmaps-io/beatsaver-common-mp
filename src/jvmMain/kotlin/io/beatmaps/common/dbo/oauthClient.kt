@@ -1,19 +1,22 @@
 package io.beatmaps.common.dbo
 
+import io.beatmaps.common.db.array
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.TextColumnType
+import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object OauthClient : IntIdTable("oauthClients", "id") {
     val clientId = text("clientId")
     val secret = text("secret")
     val name = text("name")
-    val scopes = text("scopes").nullable()
-    val redirectUrl = text("redirectUrl").nullable()
+    val scopes = array<String>("requirements", VarCharColumnType(64))
+    val redirectUrl = array<String>("redirectUrl", TextColumnType())
     val iconUrl = text("iconUrl").nullable()
 }
 
@@ -23,8 +26,8 @@ data class OauthClientDao(val key: EntityID<Int>) : IntEntity(key) {
     val secret: String by OauthClient.secret
     val name: String by OauthClient.name
 
-    val scopes: String? by OauthClient.scopes
-    val redirectUrl: String? by OauthClient.redirectUrl
+    val scopes by OauthClient.scopes
+    val redirectUrl by OauthClient.redirectUrl
     val iconUrl: String? by OauthClient.iconUrl
 }
 
