@@ -15,7 +15,7 @@ object OauthClient : IntIdTable("oauthClients", "id") {
     val clientId = text("clientId")
     val secret = text("secret")
     val name = text("name")
-    val scopes = array<String>("requirements", VarCharColumnType(64))
+    val scopes = array<String>("scopes", VarCharColumnType(64))
     val redirectUrl = array<String>("redirectUrl", TextColumnType())
     val iconUrl = text("iconUrl").nullable()
 }
