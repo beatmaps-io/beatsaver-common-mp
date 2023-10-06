@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
@@ -12,7 +13,7 @@ import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
-import io.beatmaps.common.zip.ZipPath
+import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -25,9 +26,7 @@ import org.valiktor.ConstraintViolationException
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.In
-import org.valiktor.constraints.NotNull
 import org.valiktor.functions.isBetween
-import org.valiktor.functions.isEqualTo
 import org.valiktor.functions.isGreaterThanOrEqualTo
 import org.valiktor.functions.isIn
 import org.valiktor.functions.isLessThan
@@ -70,7 +69,7 @@ data class MapInfo(
     val _customData: MapCustomData?,
     val _difficultyBeatmapSets: List<DifficultyBeatmapSet>
 ) {
-    fun imageInfo(path: ZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
+    fun imageInfo(path: IZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
         try {
             ImageIO.createImageInputStream(stream).use { iis ->
                 val readers = ImageIO.getImageReaders(iis)
@@ -120,7 +119,7 @@ data class MapInfo(
             }
         } != null && info.duration > 0
 
-    private fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> ZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
+    private fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
         getFile("BPMInfo.dat")?.inputStream()?.use { stream ->
             val byteArrayOutputStream = ByteArrayOutputStream()
             stream.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
@@ -140,7 +139,7 @@ data class MapInfo(
             }
         } ?: LegacySongLengthInfo(info)
 
-    fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> ZipPath?) = validate(this) {
+    fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         val ver = Version(_version)
 
@@ -164,7 +163,7 @@ data class MapInfo(
                 it.additionalInformation.keys
             )
         }
-        validate(MapInfo::_allDirectionsEnvironmentName).isEqualTo("GlassDesertEnvironment")
+        validate(MapInfo::_allDirectionsEnvironmentName).isIn("GlassDesertEnvironment")
         validate(MapInfo::_songTimeOffset).isZero()
         validate(MapInfo::_difficultyBeatmapSets).isNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
@@ -176,6 +175,9 @@ data class MapInfo(
 
 data class ImageInfo(val format: String, val width: Int, val height: Int)
 
+object NodePresent : Constraint
+object NodeNotPresent : Constraint
+
 object InFiles : Constraint
 object ImageSquare : Constraint
 object ImageSize : Constraint
@@ -185,6 +187,9 @@ object CutDirection : Constraint
 object MisplacedCustomData : Constraint
 data class UniqueDiff(val diff: String) : Constraint
 object MetadataLength : Constraint
+
+val Schema3_1 = Version("3.1.0")
+val Schema3_3 = Version("3.3.0")
 
 data class MapCustomData(
     val _contributors: List<Contributor>?,
@@ -263,7 +268,7 @@ data class DifficultyBeatmapSet(
     val _difficultyBeatmaps: List<DifficultyBeatmap>,
     val _customData: DifficultyBeatmapSetCustomData?
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> ZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
+    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
         val allowedCharacteristics = mutableSetOf("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         if (ver.minor > 0) allowedCharacteristics.add("Legacy")
 
@@ -296,7 +301,7 @@ data class DifficultyBeatmap(
 
     private fun diffValid(
         parent: Validator<*>.Property<*>,
-        path: ZipPath?,
+        path: IZipPath?,
         characteristic: DifficultyBeatmapSet,
         difficulty: DifficultyBeatmap,
         info: ExtractedInfo
@@ -338,7 +343,7 @@ data class DifficultyBeatmap(
         validator: Validator<DifficultyBeatmap>,
         characteristic: DifficultyBeatmapSet,
         files: Set<String>,
-        getFile: (String) -> ZipPath?,
+        getFile: (String) -> IZipPath?,
         info: ExtractedInfo,
         ver: Version
     ) = validator.apply {
@@ -408,180 +413,207 @@ fun extraFieldsViolation(
 
 fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
     validate(BSDifficulty::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-    validate(BSDifficulty::_notes).isNotNull().validateForEach {
-        validate(BSNote::_type).isNotNull().isIn(0, 1, 3)
-        validate(BSNote::_cutDirection).isNotNull().validate(CutDirection) {
-            it == null || (it in 0..8) || (it in 1000..1360)
-        }
-        validate(BSNote::_time).isNotNull().let {
-            if (info.duration > 0) {
-                it.isBetween(0f, maxBeat)
+    validate(BSDifficulty::_notes).exists().optionalNotNull().validateForEach {
+        validate(BSNote::_type).exists().isIn(0, 1, 3)
+        validate(BSNote::_cutDirection).exists().optionalNotNull().validate(CutDirection) {
+            it == null || it.validate { q ->
+                q == null || (q in 0..8) || (q in 1000..1360)
             }
         }
-        validate(BSNote::_lineIndex).isNotNull()
-        validate(BSNote::_lineLayer).isNotNull()
+        validate(BSNote::_time).exists().optionalNotNull().let {
+            if (info.duration > 0) it.isBetween(0f, maxBeat)
+        }
+        validate(BSNote::_lineIndex).exists().optionalNotNull()
+        validate(BSNote::_lineLayer).exists().optionalNotNull()
     }
-    validate(BSDifficulty::_obstacles).isNotNull().validateForEach {
-        validate(BSObstacle::_type).isNotNull()
-        validate(BSObstacle::_duration).isNotNull()
-        validate(BSObstacle::_time).isNotNull()
-        validate(BSObstacle::_lineIndex).isNotNull()
-        validate(BSObstacle::_width).isNotNull()
+    validate(BSDifficulty::_obstacles).exists().optionalNotNull().validateForEach {
+        validate(BSObstacle::_type).exists().optionalNotNull()
+        validate(BSObstacle::_duration).exists().optionalNotNull()
+        validate(BSObstacle::_time).exists().optionalNotNull()
+        validate(BSObstacle::_lineIndex).exists().optionalNotNull()
+        validate(BSObstacle::_width).exists().optionalNotNull()
     }
-    validate(BSDifficulty::_events).isNotNull().validateForEach {
-        validate(BSEvent::_time).isNotNull()
-        validate(BSEvent::_type).isNotNull()
-        validate(BSEvent::_value).validate(NotNull) { it != null && it != Int.MIN_VALUE }
+    validate(BSDifficulty::_events).exists().optionalNotNull().validateForEach {
+        validate(BSEvent::_time).exists().optionalNotNull()
+        validate(BSEvent::_type).exists().optionalNotNull()
+        validate(BSEvent::_value).exists().optionalNotNull()
     }
 }
 
 fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
     validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-    validate(BSDifficultyV3::bpmEvents).isNotNull().validateForEach {
-        validate(BSBpmChange::bpm).isNotNull()
-        validate(BSBpmChange::beat).isNotNull()
+    validate(BSDifficultyV3::bpmEvents).exists().validateForEach {
+        validate(BSBpmChange::bpm).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBpmChange::beat).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::rotationEvents).isNotNull().validateForEach {
-        validate(BSRotationEvent::executionTime).isNotNull().isIn(0, 1)
-        validate(BSRotationEvent::beat).isNotNull()
-        validate(BSRotationEvent::rotation).isNotNull()
+    validate(BSDifficultyV3::rotationEvents).exists().validateForEach {
+        validate(BSRotationEvent::executionTime).existsBefore(ver, Schema3_3).isIn(0, 1)
+        validate(BSRotationEvent::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSRotationEvent::rotation).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::colorNotes).isNotNull().validateForEach {
-        validate(BSNoteV3::color).isNotNull().isIn(0, 1)
-        validate(BSNoteV3::direction).isNotNull().validate(CutDirection) {
-            it == null || (it in 0..8) || (it in 1000..1360)
-        }
-        validate(BSNoteV3::time).isNotNull().let {
-            if (info.duration > 0) {
-                it.isBetween(0f, maxBeat)
+    validate(BSDifficultyV3::colorNotes).exists().validateForEach {
+        validate(BSNoteV3::color).existsBefore(ver, Schema3_3).isIn(0, 1)
+        validate(BSNoteV3::direction).existsBefore(ver, Schema3_3).optionalNotNull().validate(CutDirection) {
+            it == null || it.validate { q ->
+                q == null || (q in 0..8) || (q in 1000..1360)
             }
         }
-        validate(BSNoteV3::x).isNotNull()
-        validate(BSNoteV3::y).isNotNull()
-        validate(BSNoteV3::angleOffset).isNotNull()
-    }
-    validate(BSDifficultyV3::bombNotes).isNotNull().validateForEach {
-        validate(BSBomb::beat).isNotNull()
-        validate(BSBomb::x).isNotNull()
-        validate(BSBomb::y).isNotNull()
-    }
-    validate(BSDifficultyV3::obstacles).isNotNull().validateForEach {
-        validate(BSObstacleV3::duration).isNotNull()
-        validate(BSObstacleV3::beat).isNotNull()
-        validate(BSObstacleV3::x).isNotNull()
-        validate(BSObstacleV3::y).isNotNull()
-        validate(BSObstacleV3::width).isNotNull()
-        validate(BSObstacleV3::height).isNotNull()
-    }
-    validate(BSDifficultyV3::sliders).isNotNull().validateForEach {
-        validate(BSSlider::time).isNotNull()
-        validate(BSSlider::color).isNotNull().isIn(0, 1)
-        validate(BSSlider::x).isNotNull()
-        validate(BSSlider::y).isNotNull()
-        validate(BSSlider::direction).isNotNull()
-        validate(BSSlider::tailBeat).isNotNull()
-        validate(BSSlider::tailX).isNotNull()
-        validate(BSSlider::tailY).isNotNull()
-        validate(BSSlider::headControlPointLengthMultiplier).isNotNull()
-        validate(BSSlider::tailControlPointLengthMultiplier).isNotNull()
-        validate(BSSlider::tailCutDirection).isNotNull()
-        validate(BSSlider::sliderMidAnchorMode).isNotNull()
-    }
-    validate(BSDifficultyV3::burstSliders).isNotNull().validateForEach {
-        validate(BSBurstSlider::time).isNotNull().let {
+        validate(BSNoteV3::_time).existsBefore(ver, Schema3_3).let {
             if (info.duration > 0) {
                 it.isBetween(0f, maxBeat)
+            } else {
+                it.optionalNotNull()
             }
         }
-        validate(BSBurstSlider::color).isNotNull().isIn(0, 1)
-        validate(BSBurstSlider::x).isNotNull()
-        validate(BSBurstSlider::y).isNotNull()
-        validate(BSBurstSlider::direction).isNotNull()
-        validate(BSBurstSlider::tailBeat).isNotNull().let {
+
+        validate(BSNoteV3::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSNoteV3::y).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSNoteV3::angleOffset).existsBefore(ver, Schema3_3).optionalNotNull()
+    }
+    validate(BSDifficultyV3::bombNotes).exists().validateForEach {
+        validate(BSBomb::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBomb::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBomb::y).existsBefore(ver, Schema3_3).optionalNotNull()
+    }
+    validate(BSDifficultyV3::obstacles).exists().validateForEach {
+        validate(BSObstacleV3::duration).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSObstacleV3::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSObstacleV3::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSObstacleV3::y).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSObstacleV3::width).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSObstacleV3::height).existsBefore(ver, Schema3_3).optionalNotNull()
+    }
+    validate(BSDifficultyV3::sliders).exists().validateForEach {
+        validate(BSSlider::_time).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::color).existsBefore(ver, Schema3_3).isIn(0, 1)
+        validate(BSSlider::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::y).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::direction).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::tailBeat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::tailX).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::tailY).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::headControlPointLengthMultiplier).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::tailControlPointLengthMultiplier).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::tailCutDirection).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::sliderMidAnchorMode).existsBefore(ver, Schema3_3).optionalNotNull()
+    }
+    validate(BSDifficultyV3::burstSliders).exists().validateForEach {
+        validate(BSBurstSlider::_time).existsBefore(ver, Schema3_3).let {
             if (info.duration > 0) {
                 it.isBetween(0f, maxBeat)
+            } else {
+                it.optionalNotNull()
             }
         }
-        validate(BSBurstSlider::tailX).isNotNull()
-        validate(BSBurstSlider::tailY).isNotNull()
-        validate(BSBurstSlider::sliceCount).isNotNull()
-        validate(BSBurstSlider::squishAmount).isNotNull()
+        validate(BSBurstSlider::color).existsBefore(ver, Schema3_3).isIn(0, 1)
+        validate(BSBurstSlider::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::y).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::direction).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::tailBeat).existsBefore(ver, Schema3_3).let {
+            if (info.duration > 0) {
+                it.isBetween(0f, maxBeat)
+            } else {
+                it.optionalNotNull()
+            }
+        }
+        validate(BSBurstSlider::tailX).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::tailY).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::sliceCount).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBurstSlider::squishAmount).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::waypoints).isNotNull().validateForEach {
-        validate(BSWaypoint::beat).isNotNull()
-        validate(BSWaypoint::x).isNotNull()
-        validate(BSWaypoint::y).isNotNull()
-        validate(BSWaypoint::offsetDirection).isNotNull()
+    validate(BSDifficultyV3::waypoints).exists().validateForEach {
+        validate(BSWaypoint::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSWaypoint::x).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSWaypoint::y).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSWaypoint::offsetDirection).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::basicBeatmapEvents).isNotNull().validateForEach {
-        validate(BSEventV3::beat).isNotNull()
-        validate(BSEventV3::eventType).isNotNull()
-        validate(BSEventV3::value).isNotNull()
-        validate(BSEventV3::floatValue).isNotNull()
+    validate(BSDifficultyV3::basicBeatmapEvents).exists().validateForEach {
+        validate(BSEventV3::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSEventV3::eventType).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSEventV3::value).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSEventV3::floatValue).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::colorBoostBeatmapEvents).isNotNull().validateForEach {
-        validate(BSBoostEvent::beat).isNotNull()
-        validate(BSBoostEvent::boost).isNotNull()
+    validate(BSDifficultyV3::colorBoostBeatmapEvents).exists().validateForEach {
+        validate(BSBoostEvent::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBoostEvent::boost).existsBefore(ver, Schema3_3).optionalNotNull()
     }
-    validate(BSDifficultyV3::lightColorEventBoxGroups).isNotNull().validateForEach {
-        validate(BSLightColorEventBoxGroup::beat).isNotNull()
-        validate(BSLightColorEventBoxGroup::groupId).isNotNull()
-        validate(BSLightColorEventBoxGroup::eventBoxes).isNotNull().validateForEach {
+    validate(BSDifficultyV3::lightColorEventBoxGroups).exists().validateForEach {
+        validate(BSLightColorEventBoxGroup::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSLightColorEventBoxGroup::groupId).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSLightColorEventBoxGroup::eventBoxes).optionalNotNull().validateForEach {
             validateEventBox(BSLightColorEventBox::indexFilter, ver)
-            validate(BSLightColorEventBox::beatDistributionParam).isNotNull()
-            validate(BSLightColorEventBox::beatDistributionParamType).isNotNull()
-            validate(BSLightColorEventBox::brightnessDistributionParam).isNotNull()
-            validate(BSLightColorEventBox::brightnessDistributionParamType).isNotNull()
-            validate(BSLightColorEventBox::brightnessDistributionShouldAffectFirstBaseEvent).isNotNull()
-            validate(BSLightColorEventBox::lightColorBaseDataList).isNotNull().validateForEach {
-                validate(BSLightColorBaseData::beat).isNotNull()
-                validate(BSLightColorBaseData::transitionType).isNotNull()
-                validate(BSLightColorBaseData::colorType).isNotNull()
-                validate(BSLightColorBaseData::colorType).isNotNull()
-                validate(BSLightColorBaseData::brightness).isNotNull()
-                validate(BSLightColorBaseData::strobeFrequency).isNotNull()
+            validate(BSLightColorEventBox::beatDistributionParam).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightColorEventBox::beatDistributionParamType).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionParam).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionParamType).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightColorEventBox::brightnessDistributionShouldAffectFirstBaseEvent).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightColorEventBox::lightColorBaseDataList).optionalNotNull().validateForEach {
+                validate(BSLightColorBaseData::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(BSLightColorBaseData::transitionType).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(BSLightColorBaseData::colorType).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(BSLightColorBaseData::colorType).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(BSLightColorBaseData::brightness).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(BSLightColorBaseData::strobeFrequency).existsBefore(ver, Schema3_3).optionalNotNull()
             }
         }
     }
-    validate(BSDifficultyV3::lightRotationEventBoxGroups).isNotNull().validateForEach {
-        validate(BSLightRotationEventBoxGroup::beat).isNotNull()
-        validate(BSLightRotationEventBoxGroup::groupId).isNotNull()
-        validate(BSLightRotationEventBoxGroup::eventBoxes).isNotNull().validateForEach {
+    validate(BSDifficultyV3::lightRotationEventBoxGroups).exists().validateForEach {
+        validate(BSLightRotationEventBoxGroup::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSLightRotationEventBoxGroup::groupId).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSLightRotationEventBoxGroup::eventBoxes).optionalNotNull().validateForEach {
             validateEventBox(BSLightRotationEventBox::indexFilter, ver)
-            validate(BSLightRotationEventBox::beatDistributionParam).isNotNull()
-            validate(BSLightRotationEventBox::beatDistributionParamType).isNotNull()
-            validate(BSLightRotationEventBox::rotationDistributionParam).isNotNull()
-            validate(BSLightRotationEventBox::rotationDistributionParamType).isNotNull()
-            validate(BSLightRotationEventBox::axis).isNotNull()
-            validate(BSLightRotationEventBox::flipRotation).isNotNull()
-            validate(BSLightRotationEventBox::brightnessDistributionShouldAffectFirstBaseEvent).isNotNull()
+            validate(BSLightRotationEventBox::beatDistributionParam).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::beatDistributionParamType).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::rotationDistributionParam).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::rotationDistributionParamType).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::axis).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::flipRotation).existsBefore(ver, Schema3_3).optionalNotNull()
+            validate(BSLightRotationEventBox::brightnessDistributionShouldAffectFirstBaseEvent).existsBefore(ver, Schema3_3).optionalNotNull()
             validate(BSLightRotationEventBox::lightRotationBaseDataList).isNotNull().validateForEach {
-                validate(LightRotationBaseData::beat).isNotNull()
-                validate(LightRotationBaseData::usePreviousEventRotationValue).isNotNull()
-                validate(LightRotationBaseData::easeType).isNotNull()
-                validate(LightRotationBaseData::loopsCount).isNotNull()
-                validate(LightRotationBaseData::rotation).isNotNull()
-                validate(LightRotationBaseData::rotationDirection).isNotNull()
+                validate(LightRotationBaseData::beat).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(LightRotationBaseData::usePreviousEventRotationValue).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(LightRotationBaseData::easeType).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(LightRotationBaseData::loopsCount).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(LightRotationBaseData::rotation).existsBefore(ver, Schema3_3).optionalNotNull()
+                validate(LightRotationBaseData::rotationDirection).existsBefore(ver, Schema3_3).optionalNotNull()
             }
         }
     }
-    validate(BSDifficultyV3::basicEventTypesWithKeywords).isNotNull()
-    validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).isNotNull()
+    validate(BSDifficultyV3::vfxEventBoxGroups).onlyExistsAfter(ver, Schema3_3).validateForEach {
+        validate(BSVfxEventBoxGroup::beat).optionalNotNull()
+        validate(BSVfxEventBoxGroup::groupId).optionalNotNull()
+        validate(BSVfxEventBoxGroup::eventBoxes).optionalNotNull().validateForEach {
+            validateEventBox(BSVfxEventBox::indexFilter, ver)
+            validate(BSVfxEventBox::beatDistributionParam).optionalNotNull()
+            validate(BSVfxEventBox::beatDistributionParamType).optionalNotNull()
+            validate(BSVfxEventBox::vfxDistributionParam).optionalNotNull()
+            validate(BSVfxEventBox::vfxDistributionParamType).optionalNotNull()
+            validate(BSVfxEventBox::vfxDistributionEaseType).optionalNotNull()
+            validate(BSVfxEventBox::vfxDistributionShouldAffectFirstBaseEvent).optionalNotNull()
+            validate(BSVfxEventBox::vfxBaseDataList).optionalNotNull()
+        }
+    }
+    validate(BSDifficultyV3::_fxEventsCollection).onlyExistsAfter(ver, Schema3_3).validateOptional {
+        validate(BSFxEventsCollection::intEventsList).exists()
+        validate(BSFxEventsCollection::floatEventsList).exists()
+    }
+    validate(BSDifficultyV3::basicEventTypesWithKeywords).existsBefore(ver, Schema3_3).optionalNotNull()
+    validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).existsBefore(ver, Schema3_3).optionalNotNull()
 }
 
-fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty1<T, BSIndexFilter?>, ver: Version) {
-    validate(indexFilter).isNotNull().validate {
-        validate(BSIndexFilter::type).isNotNull()
-        validate(BSIndexFilter::param0).isNotNull()
-        validate(BSIndexFilter::param1).isNotNull()
-        validate(BSIndexFilter::reversed).isNotNull()
+fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty1<T, OptionalProperty<BSIndexFilter?>>, ver: Version) {
+    validate(indexFilter).exists().validateOptional {
+        validate(BSIndexFilter::type).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSIndexFilter::param0).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSIndexFilter::param1).existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSIndexFilter::reversed).existsBefore(ver, Schema3_3).optionalNotNull()
         listOf(
             BSIndexFilter::chunks,
             BSIndexFilter::randomType,
             BSIndexFilter::seed,
             BSIndexFilter::limit,
             BSIndexFilter::alsoAffectsType
-        ).map { validate(it) }.forEach { if (ver.minor > 0) it.isNotNull() else it.isNull() }
+        ).map { validate(it) }.forEach { it.notExistsBefore(ver, Schema3_1).existsBetween(ver, Schema3_1, Schema3_3).optionalNotNull() }
     }
 }
 
