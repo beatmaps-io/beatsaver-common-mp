@@ -1,263 +1,39 @@
-package io.beatmaps.common
+package io.beatmaps.common.schema
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.beatsaber.BSFxEventsCollection
 import io.beatmaps.common.beatsaber.BSVfxEventBoxGroup
-import io.beatmaps.common.beatsaber.CutDirection
-import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
-import io.beatmaps.common.zip.ExtractedInfo
-import io.beatmaps.common.zip.IZipPath
+import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
-import org.valiktor.ConstraintViolationException
 import org.valiktor.DefaultConstraintViolation
-import org.valiktor.constraints.Between
-import org.valiktor.constraints.In
-import org.valiktor.constraints.NotNull
-import java.io.File
-import java.io.OutputStream
-import java.security.DigestOutputStream
-import java.security.MessageDigest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class SchemaTest {
-    private fun validateFolder(name: String): ConstraintViolationException? {
-        val info = javaClass.getResourceAsStream("/$name/Info.dat")!!
-        val audio = File(javaClass.getResource("/shared/click.ogg")!!.toURI())
-        val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
-        val md = MessageDigest.getInstance("SHA1")
-        val mapInfo = jackson.readValue<MapInfo>(info)
-
-        try {
-            DigestOutputStream(OutputStream.nullOutputStream(), md).use { dos ->
-                val extractedInfo = ExtractedInfo(files, dos, mapInfo, 0)
-                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio) {
-                    if (files.contains(it)) {
-                        object : IZipPath {
-                            override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
-                                javaClass.getResourceAsStream("/$fn/$it")
-                            }
-                            override val fileName = it
-                        }
-                    } else {
-                        null
-                    }
-                }
-            }
-        } catch (e: ConstraintViolationException) {
-            return e
-        }
-
-        return null
-    }
-
-    @Test
-    fun basic() {
-        val ex = validateFolder("basic")
-        assertNull(ex)
-    }
-
-    @Test
-    fun basic2_2() {
-        val ex = validateFolder("basic2_2")
-
-        ex?.constraintViolations?.forEach {
-            println(it)
-        }
-
-        assertNull(ex)
-    }
-
-    @Test
-    fun schema2_2() {
-        val ex = validateFolder("2_2")
-        assertNull(ex)
-    }
-
-    @Test
-    fun error2_2() {
-        val ex = validateFolder("error2_2")
-        assertNotNull(ex)
-
-        ex.constraintViolations.forEach {
-            println(it)
-        }
-
-        assertEquals(16, ex.constraintViolations.size)
-        assertEquals(
-            setOf(
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[0]._type",
-                    OptionalProperty.Present(50),
-                    In(setOf(0, 1, 3))
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[0]._cutDirection",
-                    OptionalProperty.Present(50),
-                    CutDirection
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[0]._time",
-                    OptionalProperty.Present(100.0f),
-                    Between(0.0f, 64f)
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[1]._type",
-                    OptionalProperty.Present<Int?>(null),
-                    In(setOf(0, 1, 3))
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[1]._cutDirection",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[1]._time",
-                    OptionalProperty.Present<Float?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[1]._lineIndex",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._notes[1]._lineLayer",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._obstacles[1]._type",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._obstacles[1]._duration",
-                    OptionalProperty.Present<Float?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._obstacles[1]._time",
-                    OptionalProperty.Present<Float?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._obstacles[1]._lineIndex",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._obstacles[1]._width",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._events[1]._time",
-                    OptionalProperty.Present<Float?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._events[1]._type",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                ),
-                DefaultConstraintViolation(
-                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._events[1]._value",
-                    OptionalProperty.Present<Int?>(null),
-                    NotNull
-                )
-            ),
-            ex.constraintViolations
-        )
-    }
-
-    @Test
-    fun schema3_2() {
-        val ex = validateFolder("3_2")
-        assertNull(ex)
-    }
-
+class SchemaTest33 {
     @Test
     fun schema3_2as3_3() {
         val ex = validateFolder("3_2as3_3")
         assertNotNull(ex)
 
         assertEquals(2, ex.constraintViolations.size)
-        assertEquals(setOf(
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.vfxEventBoxGroups",
-                OptionalProperty.NotPresent,
-                NodePresent
+        assertEquals(
+            setOf(
+                DefaultConstraintViolation(
+                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.vfxEventBoxGroups",
+                    OptionalProperty.NotPresent,
+                    NodePresent
+                ),
+                DefaultConstraintViolation(
+                    "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._fxEventsCollection",
+                    OptionalProperty.NotPresent,
+                    NodePresent
+                )
             ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`._fxEventsCollection",
-                OptionalProperty.NotPresent,
-                NodePresent
-            )
-        ), ex.constraintViolations)
-    }
-
-    @Test
-    fun schema3_2as3_0() {
-        val ex = validateFolder("3_2as3_0")
-        assertNotNull(ex)
-
-        assertEquals(10, ex.constraintViolations.size)
-        assertEquals(setOf(
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.chunks",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.randomType",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.seed",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.limit",
-                OptionalProperty.Present(0.0f),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.chunks",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.randomType",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.seed",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.limit",
-                OptionalProperty.Present(0.0f),
-                NodeNotPresent
-            ),
-            DefaultConstraintViolation(
-                "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType",
-                OptionalProperty.Present(0),
-                NodeNotPresent
-            )
-        ), ex.constraintViolations)
+            ex.constraintViolations
+        )
     }
 
     @Test

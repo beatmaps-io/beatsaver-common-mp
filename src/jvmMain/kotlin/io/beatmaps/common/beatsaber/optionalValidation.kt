@@ -72,7 +72,7 @@ fun <E, Q, T : OptionalProperty<Iterable<Q>?>> Validator<E>.Property<T?>.validat
     return this
 }
 
-inline fun <E, Q : Any, T: OptionalProperty<Q?>> Validator<E>.Property<T?>.validateOptional(block: Validator<Q>.(Q) -> Unit): Validator<E>.Property<T?> {
+inline fun <E, Q : Any, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.validateOptional(block: Validator<Q>.(Q) -> Unit): Validator<E>.Property<T?> {
     val value = this.property.get(this.obj)?.orNull()
     if (value != null) {
         this.addConstraintViolations(

@@ -454,7 +454,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
     validate(BSDifficultyV3::colorNotes).exists().validateForEach {
         validate(BSNoteV3::color).existsBefore(ver, Schema3_3).isIn(0, 1)
         validate(BSNoteV3::direction).existsBefore(ver, Schema3_3).optionalNotNull().validate(CutDirection) {
-            it == null || it.validate {  q ->
+            it == null || it.validate { q ->
                 q == null || (q in 0..8) || (q in 1000..1360)
             }
         }

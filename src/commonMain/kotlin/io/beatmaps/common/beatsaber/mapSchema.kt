@@ -192,7 +192,7 @@ data class BSObstacleV3(
     @SerialName("w")
     val width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("h")
-    val height: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val height: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
@@ -200,7 +200,7 @@ data class BSBpmChange(
     @SerialName("b")
     val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("m")
-    val bpm: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val bpm: OptionalProperty<Float?> = OptionalProperty.NotPresent
 )
 
 @Serializable
@@ -208,7 +208,7 @@ data class BSBoostEvent(
     @SerialName("b")
     val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
-    val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
+    val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent
 )
 
 typealias BSVfxEventBoxGroup = BSEventBoxGroup<BSVfxEventBox>

@@ -46,8 +46,7 @@ open class OptionalPropertySerializer<T>(
     final override fun serialize(encoder: Encoder, value: OptionalProperty<T>) {
         when (value) {
             OptionalProperty.NotPresent -> throw SerializationException(
-                "Tried to serialize an optional property that had no value present." +
-                        " Is encodeDefaults false?"
+                "Tried to serialize an optional property that had no value present. Is encodeDefaults false?"
             )
             is OptionalProperty.Present ->
                 valueSerializer.serialize(encoder, value.value)
