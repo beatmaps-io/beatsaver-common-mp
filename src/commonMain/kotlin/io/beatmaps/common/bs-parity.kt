@@ -115,7 +115,7 @@ class Parity(private val type: Types) {
  * @returns {Array} - filtered, tagged & sorted notes
  */
 fun getNotes(obj: BSDifficulty) =
-    obj._notes.sortedBy {
+    obj.notes().sortedBy {
         it.time
     }.filter {
         Types.fromInt(it.type) != null
@@ -197,7 +197,7 @@ fun checkParity(map: BSDifficulty): Result {
 
     val parity = ParityPair().also { it.init(notes) }
 
-    val ohno = map._notes.any { it.lineIndex > 3 || it.lineIndex < 0 || it.lineLayer < 0 || it.lineLayer > 2 }
+    val ohno = map.notes().any { it.lineIndex > 3 || it.lineIndex < 0 || it.lineLayer < 0 || it.lineLayer > 2 }
     if (ohno) {
         // ME is too complicated for me
         return Result(errors, 0, 0, 0)

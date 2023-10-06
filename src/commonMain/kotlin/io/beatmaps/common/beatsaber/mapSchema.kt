@@ -1,7 +1,12 @@
+@file:UseSerializers(OptionalPropertySerializer::class)
+
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.OptionalProperty
+import io.beatmaps.common.OptionalPropertySerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -23,23 +28,29 @@ fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> (obj.getCust
 data class BSDifficulty(
     @SerialName("_version")
     override val version: String? = null,
-    val _notes: List<BSNote> = listOf(),
-    val _obstacles: List<BSObstacle> = listOf(),
-    val _events: List<BSEvent> = listOf(),
-    val _waypoints: JsonArray? = null,
-    val _specialEventsKeywordFilters: JsonObject? = null,
-    override val _customData: JsonObject? = null,
-    val _BPMChanges: JsonArray? = null
+    val _notes: OptionalProperty<List<BSNote>?> = OptionalProperty.NotPresent,
+    val _obstacles: OptionalProperty<List<BSObstacle>?> = OptionalProperty.NotPresent,
+    val _events: OptionalProperty<List<BSEvent>?> = OptionalProperty.NotPresent,
+    val _waypoints: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent,
+    val _specialEventsKeywordFilters: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
+    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
+    val _BPMChanges: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent
 ) : BSDiff {
-    private val noteCountLazy by lazy { _notes.withoutFake().partition { note -> note._type != 3 } }
+    fun notes() = _notes.orNull() ?: listOf()
+    fun events() = _events.orNull() ?: listOf()
+    fun obstacles() = _notes.orNull() ?: listOf()
+
+    private val noteCountLazy by lazy {
+        notes().withoutFake().partition { note -> note._type.orNull() != 3 }
+    }
     override fun noteCount() = noteCountLazy.first.size
     override fun bombCount() = noteCountLazy.second.size
     override fun arcCount() = 0
     override fun chainCount() = 0
-    override fun obstacleCount() = _obstacles.withoutFake().size
-    override fun eventCount() = _events.size
+    override fun obstacleCount() = obstacles().withoutFake().size
+    override fun eventCount() = events().size
     private val songLengthLazy by lazy {
-        _notes.sortedBy { note -> note.time }.let { sorted ->
+        notes().sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 sorted.last().time - sorted.first().time
             } else {
@@ -64,24 +75,24 @@ data class BSDifficulty(
         }
 }
 
-fun <T> orNegativeInfinity(block: (T) -> Float?): ReadOnlyProperty<T, Float> =
-    ReadOnlyProperty { thisRef, _ -> block(thisRef) ?: Float.NEGATIVE_INFINITY }
-fun <T> orMinValue(block: (T) -> Int?): ReadOnlyProperty<T, Int> =
-    ReadOnlyProperty { thisRef, _ -> block(thisRef) ?: Int.MIN_VALUE }
+fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProperty<T, Float> =
+    ReadOnlyProperty { thisRef, _ -> block(thisRef).orNull() ?: Float.NEGATIVE_INFINITY }
+fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, Int> =
+    ReadOnlyProperty { thisRef, _ -> block(thisRef).orNull() ?: Int.MIN_VALUE }
 
 abstract class BSObject {
-    abstract val _time: Float?
+    abstract val _time: OptionalProperty<Float?>
     val time by orNegativeInfinity { _time }
 }
 
 @Serializable
 data class BSNote(
-    override val _time: Float? = null,
-    val _lineIndex: Int? = null,
-    val _lineLayer: Int? = null,
-    val _type: Int? = null,
-    val _cutDirection: Int? = null,
-    override val _customData: JsonObject? = null
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _cutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject() {
     val lineIndex by orMinValue { _lineIndex }
     val lineLayer by orMinValue { _lineLayer }
@@ -91,20 +102,20 @@ data class BSNote(
 
 @Serializable
 data class BSObstacle(
-    override val _time: Float? = null,
-    val _lineIndex: Int? = null,
-    val _type: Int? = null,
-    val _duration: Float? = null,
-    val _width: Int? = null,
-    override val _customData: JsonObject? = null
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _duration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject()
 
 @Serializable
 data class BSEvent(
-    override val _time: Float? = null,
-    val _type: Int? = null,
-    val _value: Int? = null,
-    override val _customData: JsonObject? = null
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject()
 
 sealed interface BSDiff : BSCustomData {
@@ -123,32 +134,34 @@ sealed interface BSDiff : BSCustomData {
 @Serializable
 data class BSDifficultyV3(
     override val version: String? = null,
-    val bpmEvents: List<BSBpmChange>,
-    val rotationEvents: List<BSRotationEvent>,
-    val colorNotes: List<BSNoteV3>,
-    val bombNotes: List<BSBomb>,
-    val obstacles: List<BSObstacleV3>,
-    val sliders: List<BSSlider>,
-    val burstSliders: List<BSBurstSlider>,
-    val waypoints: List<BSWaypoint>,
-    val basicBeatmapEvents: List<BSEventV3>,
-    val colorBoostBeatmapEvents: List<BSBoostEvent>,
-    val lightColorEventBoxGroups: List<BSLightColorEventBoxGroup>,
-    val lightRotationEventBoxGroups: List<BSLightRotationEventBoxGroup>,
-    val basicEventTypesWithKeywords: JsonObject? = null,
-    val useNormalEventsAsCompatibleEvents: Boolean? = null,
+    val bpmEvents: OptionalProperty<List<BSBpmChange>?> = OptionalProperty.NotPresent,
+    val rotationEvents: OptionalProperty<List<BSRotationEvent>?> = OptionalProperty.NotPresent,
+    val colorNotes: OptionalProperty<List<BSNoteV3>> = OptionalProperty.NotPresent,
+    val bombNotes: OptionalProperty<List<BSBomb>> = OptionalProperty.NotPresent,
+    val obstacles: OptionalProperty<List<BSObstacleV3>> = OptionalProperty.NotPresent,
+    val sliders: OptionalProperty<List<BSSlider>> = OptionalProperty.NotPresent,
+    val burstSliders: OptionalProperty<List<BSBurstSlider>> = OptionalProperty.NotPresent,
+    val waypoints: OptionalProperty<List<BSWaypoint>> = OptionalProperty.NotPresent,
+    val basicBeatmapEvents: OptionalProperty<List<BSEventV3>> = OptionalProperty.NotPresent,
+    val colorBoostBeatmapEvents: OptionalProperty<List<BSBoostEvent>> = OptionalProperty.NotPresent,
+    val lightColorEventBoxGroups: OptionalProperty<List<BSLightColorEventBoxGroup>> = OptionalProperty.NotPresent,
+    val lightRotationEventBoxGroups: OptionalProperty<List<BSLightRotationEventBoxGroup>> = OptionalProperty.NotPresent,
+    val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
+    val vfxEventBoxGroups: OptionalProperty<List<BSVfxEventBoxGroup>> = OptionalProperty.NotPresent,
+    val _fxEventsCollection: OptionalProperty<BSFxEventsCollection> = OptionalProperty.NotPresent,
+    val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
 
     override val _customData: JsonObject? = null
 ) : BSDiff {
-    override fun noteCount() = colorNotes.size
-    override fun bombCount() = bombNotes.size
-    override fun arcCount() = sliders.size
-    override fun chainCount() = burstSliders.size
+    override fun noteCount() = colorNotes.orNull()?.size ?: 0
+    override fun bombCount() = bombNotes.orNull()?.size ?: 0
+    override fun arcCount() = sliders.orNull()?.size ?: 0
+    override fun chainCount() = burstSliders.orNull()?.size ?: 0
 
-    override fun eventCount() = basicBeatmapEvents.size
-    override fun obstacleCount() = obstacles.size
+    override fun eventCount() = basicBeatmapEvents.orNull()?.size ?: 0
+    override fun obstacleCount() = obstacles.orNull()?.size ?: 0
     private val firstAndLastLazy by lazy {
-        colorNotes.sortedBy { note -> note.time }.let { sorted ->
+        (colorNotes.orNull() ?: listOf()).sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 sorted.first().time to sorted.last().time
             } else {
@@ -171,198 +184,220 @@ data class BSDifficultyV3(
 @Serializable
 data class BSObstacleV3(
     @SerialName("b")
-    val beat: Float? = null,
-    val x: Int? = null,
-    val y: Int? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val duration: Float? = null,
+    val duration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("w")
-    val width: Int? = null,
+    val width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("h")
-    val height: Int? = null
+    val height: OptionalProperty<Int?> = OptionalProperty.NotPresent,
 )
 
 @Serializable
 data class BSBpmChange(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("m")
-    val bpm: Float? = null
+    val bpm: OptionalProperty<Float?> = OptionalProperty.NotPresent,
 )
 
 @Serializable
 data class BSBoostEvent(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
-    val boost: Boolean? = null
+    val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
 )
 
+typealias BSVfxEventBoxGroup = BSEventBoxGroup<BSVfxEventBox>
 typealias BSLightColorEventBoxGroup = BSEventBoxGroup<BSLightColorEventBox>
 typealias BSLightRotationEventBoxGroup = BSEventBoxGroup<BSLightRotationEventBox>
 
 @Serializable
 data class BSEventBoxGroup<T : GroupableEventBox>(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("g")
-    val groupId: Int? = null,
+    val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    val eventBoxes: List<T>? = null
+    val eventBoxes: OptionalProperty<List<T>?> = OptionalProperty.NotPresent
 )
 
 interface GroupableEventBox {
-    val indexFilter: BSIndexFilter?
-    val beatDistributionParam: Float?
-    val beatDistributionParamType: Int?
+    val indexFilter: OptionalProperty<BSIndexFilter?>
+    val beatDistributionParam: OptionalProperty<Float?>
+    val beatDistributionParamType: OptionalProperty<Int?>
 }
+
+@Serializable
+data class BSVfxEventBox(
+    @SerialName("f")
+    override val indexFilter: OptionalProperty<BSIndexFilter?> = OptionalProperty.NotPresent,
+    @SerialName("w")
+    override val beatDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("d")
+    override val beatDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+
+    @SerialName("s")
+    val vfxDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("t")
+    val vfxDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("i")
+    val vfxDistributionEaseType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("b")
+    val vfxDistributionShouldAffectFirstBaseEvent: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("l")
+    val vfxBaseDataList: OptionalProperty<List<Int>?> = OptionalProperty.NotPresent
+) : GroupableEventBox
 
 @Serializable
 data class BSLightColorEventBox(
     @SerialName("f")
-    override val indexFilter: BSIndexFilter? = null,
+    override val indexFilter: OptionalProperty<BSIndexFilter?> = OptionalProperty.NotPresent,
     @SerialName("w")
-    override val beatDistributionParam: Float? = null,
+    override val beatDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    override val beatDistributionParamType: Int? = null,
+    override val beatDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
 
     @SerialName("r")
-    val brightnessDistributionParam: Float? = null,
+    val brightnessDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("t")
-    val brightnessDistributionParamType: Int? = null,
+    val brightnessDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("b")
-    val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
+    val brightnessDistributionShouldAffectFirstBaseEvent: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    val lightColorBaseDataList: List<BSLightColorBaseData>? = null
+    val lightColorBaseDataList: OptionalProperty<List<BSLightColorBaseData>?> = OptionalProperty.NotPresent
 ) : GroupableEventBox
 
 @Serializable
 data class BSLightColorBaseData(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("i")
-    val transitionType: Int? = null,
+    val transitionType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("c")
-    val colorType: Int? = null,
+    val colorType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("s")
-    val brightness: Float? = null,
+    val brightness: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("f")
-    val strobeFrequency: Int? = null
+    val strobeFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSLightRotationEventBox(
     @SerialName("f")
-    override val indexFilter: BSIndexFilter? = null,
+    override val indexFilter: OptionalProperty<BSIndexFilter?> = OptionalProperty.NotPresent,
     @SerialName("w")
-    override val beatDistributionParam: Float? = null,
+    override val beatDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    override val beatDistributionParamType: Int? = null,
+    override val beatDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
 
     @SerialName("s")
-    val rotationDistributionParam: Float? = null,
+    val rotationDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("t")
-    val rotationDistributionParamType: Int? = null,
+    val rotationDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("a")
-    val axis: Int? = null,
+    val axis: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
-    val flipRotation: Int? = null,
+    val flipRotation: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("b")
-    val brightnessDistributionShouldAffectFirstBaseEvent: Int? = null,
+    val brightnessDistributionShouldAffectFirstBaseEvent: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("l")
-    val lightRotationBaseDataList: List<LightRotationBaseData>? = null
+    val lightRotationBaseDataList: OptionalProperty<List<LightRotationBaseData>?> = OptionalProperty.NotPresent
 ) : GroupableEventBox
 
 @Serializable
 data class LightRotationBaseData(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
-    val usePreviousEventRotationValue: Int? = null,
+    val usePreviousEventRotationValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    val easeType: Int? = null,
+    val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("l")
-    val loopsCount: Int? = null,
+    val loopsCount: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
-    val rotation: Float? = null,
+    val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
-    val rotationDirection: Int? = null
+    val rotationDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSIndexFilter(
     @SerialName("f")
-    val type: Int? = null,
+    val type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("p")
-    val param0: Int? = null,
+    val param0: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("t")
-    val param1: Int? = null,
+    val param1: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
-    val reversed: Int? = null,
+    val reversed: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("c")
-    val chunks: Int? = null,
+    val chunks: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("n")
-    val randomType: Int? = null,
+    val randomType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("s")
-    val seed: Int? = null,
+    val seed: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("l")
-    val limit: Float? = null,
+    val limit: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val alsoAffectsType: Int? = null
+    val alsoAffectsType: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSWaypoint(
     @SerialName("b")
-    val beat: Float? = null,
-    val x: Int? = null,
-    val y: Int? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val offsetDirection: Int? = null
+    val offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSBomb(
     @SerialName("b")
-    val beat: Float? = null,
-    val x: Int? = null,
-    val y: Int? = null
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSNoteV3(
     @SerialName("b")
-    override val _time: Float? = null,
-    val x: Int? = null,
-    val y: Int? = null,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("a")
-    val angleOffset: Int? = null,
+    val angleOffset: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("c")
-    val color: Int? = null,
+    val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val direction: Int? = null
+    val direction: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSObject()
 
 @Serializable
 data class BSBurstSlider(
     @SerialName("b")
-    override val _time: Float? = null,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("c")
-    val color: Int? = null,
-    val x: Int? = null,
-    val y: Int? = null,
+    val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val direction: Int? = null,
+    val direction: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("tb")
-    val tailBeat: Float? = null,
+    val tailBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("tx")
-    val tailX: Int? = null,
+    val tailX: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("ty")
-    val tailY: Int? = null,
+    val tailY: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("sc")
-    val sliceCount: Int? = null,
+    val sliceCount: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("s")
-    val squishAmount: Float? = null
+    val squishAmount: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) : BSObject() {
     val tailTime by orNegativeInfinity { tailBeat }
 }
@@ -370,27 +405,27 @@ data class BSBurstSlider(
 @Serializable
 data class BSSlider(
     @SerialName("b")
-    override val _time: Float? = null,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("c")
-    val color: Int? = null,
-    val x: Int? = null,
-    val y: Int? = null,
+    val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
-    val direction: Int? = null,
+    val direction: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("tb")
-    val tailBeat: Float? = null,
+    val tailBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("tx")
-    val tailX: Int? = null,
+    val tailX: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("ty")
-    val tailY: Int? = null,
+    val tailY: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("mu")
-    val headControlPointLengthMultiplier: Float? = null,
+    val headControlPointLengthMultiplier: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("tmu")
-    val tailControlPointLengthMultiplier: Float? = null,
+    val tailControlPointLengthMultiplier: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("tc")
-    val tailCutDirection: Int? = null,
+    val tailCutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("m")
-    val sliderMidAnchorMode: Int? = null
+    val sliderMidAnchorMode: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSObject() {
     val tailTime by orNegativeInfinity { tailBeat }
 }
@@ -398,21 +433,42 @@ data class BSSlider(
 @Serializable
 data class BSEventV3(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("et")
-    val eventType: Int? = null,
+    val eventType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
-    val value: Int? = null,
+    val value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("f")
-    val floatValue: Float? = null
+    val floatValue: OptionalProperty<Float?> = OptionalProperty.NotPresent
 )
 
 @Serializable
 data class BSRotationEvent(
     @SerialName("b")
-    val beat: Float? = null,
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    val executionTime: Int? = null,
+    val executionTime: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
-    val rotation: Float? = null
+    val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent
 )
+
+@Serializable
+data class BSFxEventsCollection(
+    @SerialName("_il")
+    val intEventsList: OptionalProperty<List<BSIntFxEventBaseData>?> = OptionalProperty.NotPresent,
+    @SerialName("_fl")
+    val floatEventsList: OptionalProperty<List<BSFloatFxEventBaseData>?> = OptionalProperty.NotPresent
+)
+
+@Serializable
+data class BSFxEventBaseData<T>(
+    @SerialName("b")
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("p")
+    val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("v")
+    val value: OptionalProperty<T?> = OptionalProperty.NotPresent
+)
+
+typealias BSIntFxEventBaseData = BSFxEventBaseData<Int>
+typealias BSFloatFxEventBaseData = BSFxEventBaseData<Float>

@@ -66,9 +66,13 @@ interface IMapScorerProvider {
 }
 class RarException : ZipHelperException("")
 open class ZipHelperException(val msg: String) : RuntimeException()
+interface IZipPath {
+    fun inputStream(): InputStream
+    val fileName: String?
+}
 
-class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) {
-    fun inputStream(): InputStream = fs.getInputStream(header)
+class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) : IZipPath {
+    override fun inputStream(): InputStream = fs.getInputStream(header)
     private val outputStream = ByteArrayOutputStream()
     fun outputStream() = object : OutputStream() {
         override fun write(b: Int) {
@@ -85,7 +89,7 @@ class ZipPath(private val fs: ZipFile, private val originalPath: String, val hea
             )
         }
     }
-    val fileName = header?.fileName
+    override val fileName = header?.fileName
     val parent = File("/$fileName").parent.replace("\\", "/").removeSuffix("/")
     fun deleteIfExists() = header?.let { fs.removeFile(it) }
 }

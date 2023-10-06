@@ -1,0 +1,47 @@
+{
+  "_version": "2.2.0",
+  "_notes": [
+    {
+      "_time": 100.0,
+      "_lineIndex": 50,
+      "_lineLayer": 50,
+      "_type": 50,
+      "_cutDirection": 50
+    },
+    {
+      "_time": null,
+      "_lineIndex": null,
+      "_lineLayer": null,
+      "_type": null,
+      "_cutDirection": null
+    }
+  ],
+  "_events": [
+    {
+      "_time": 100.0,
+      "_value": 50,
+      "_type": 50
+    },
+    {
+      "_time": null,
+      "_value": null,
+      "_type": null
+    }
+  ],
+  "_obstacles": [
+    {
+      "_time": 100.0,
+      "_duration": 100.0,
+      "_lineIndex": 50,
+      "_width": 50,
+      "_type": 50
+    },
+    {
+      "_time": null,
+      "_duration": null,
+      "_lineIndex": null,
+      "_width": null,
+      "_type": null
+    }
+  ]
+}
