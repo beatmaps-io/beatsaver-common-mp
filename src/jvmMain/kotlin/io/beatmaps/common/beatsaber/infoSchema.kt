@@ -172,7 +172,6 @@ data class MapInfo(
 
 data class ImageInfo(val format: String, val width: Int, val height: Int)
 
-
 data class MapCustomData(
     val _contributors: List<Contributor>?,
     val _editors: MapEditors?,

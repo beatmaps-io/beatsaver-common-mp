@@ -61,4 +61,7 @@ object SchemaCommon {
             OptionalProperty.Present(v),
             constraint
         )
+
+    fun violationLiteral(prop: String, v: Any?, constraint: Constraint) =
+        DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop", v, constraint)
 }
