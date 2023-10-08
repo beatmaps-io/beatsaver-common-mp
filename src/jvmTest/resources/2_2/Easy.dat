@@ -7,6 +7,13 @@
       "_lineLayer": 2,
       "_type": 1,
       "_cutDirection": 2
+    },
+    {
+      "_time": 32.0,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 0,
+      "_cutDirection": 1180
     }
   ],
   "_events": [
