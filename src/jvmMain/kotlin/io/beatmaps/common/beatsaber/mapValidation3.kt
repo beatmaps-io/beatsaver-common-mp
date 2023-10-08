@@ -4,11 +4,10 @@ import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.zip.ExtractedInfo
 import org.valiktor.Validator
 import org.valiktor.functions.isNotNull
-import org.valiktor.functions.matches
 import kotlin.reflect.KProperty1
 
 fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
-    validate(BSDifficultyV3::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+    validate(BSDifficultyV3::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).exists().validateForEach {
         validate(BSBpmChange::bpm).existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSBpmChange::beat).existsBefore(ver, Schema3_3).optionalNotNull()

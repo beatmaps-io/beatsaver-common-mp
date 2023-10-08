@@ -15,7 +15,15 @@
       "_type": null,
       "_cutDirection": null
     },
-    {}
+    {
+      "_time": "",
+      "_lineIndex": "",
+      "_lineLayer": "",
+      "_type": "",
+      "_cutDirection": ""
+    },
+    {},
+    0
   ],
   "_events": [
     {
@@ -28,7 +36,13 @@
       "_value": null,
       "_type": null
     },
-    {}
+    {
+      "_time": "",
+      "_value": "",
+      "_type": ""
+    },
+    {},
+    0
   ],
   "_obstacles": [
     {
@@ -45,6 +59,14 @@
       "_width": null,
       "_type": null
     },
-    {}
+    {
+      "_time": "",
+      "_duration": "",
+      "_lineIndex": "",
+      "_width": "",
+      "_type": ""
+    },
+    {},
+    0
   ]
 }

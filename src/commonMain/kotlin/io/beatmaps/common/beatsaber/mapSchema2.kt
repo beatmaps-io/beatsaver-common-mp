@@ -14,17 +14,17 @@ import kotlinx.serialization.json.JsonObject
 data class BSDifficulty(
     @SerialName("_version")
     override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val _notes: OptionalProperty<List<BSNote>?> = OptionalProperty.NotPresent,
-    val _obstacles: OptionalProperty<List<BSObstacle>?> = OptionalProperty.NotPresent,
-    val _events: OptionalProperty<List<BSEvent>?> = OptionalProperty.NotPresent,
+    val _notes: OptionalProperty<List<OptionalProperty<BSNote?>>?> = OptionalProperty.NotPresent,
+    val _obstacles: OptionalProperty<List<OptionalProperty<BSObstacle?>>?> = OptionalProperty.NotPresent,
+    val _events: OptionalProperty<List<OptionalProperty<BSEvent?>>?> = OptionalProperty.NotPresent,
     val _waypoints: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent,
     val _specialEventsKeywordFilters: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val _BPMChanges: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent
 ) : BSDiff {
-    fun notes() = _notes.orNull() ?: listOf()
+    fun notes() = _notes.orNull()?.mapNotNull { it.orNull() } ?: listOf()
     fun events() = _events.orNull() ?: listOf()
-    fun obstacles() = _notes.orNull() ?: listOf()
+    fun obstacles() = _notes.orNull()?.mapNotNull { it.orNull() } ?: listOf()
 
     private val noteCountLazy by lazy {
         notes().withoutFake().partition { note -> note._type.orNull() != 3 }

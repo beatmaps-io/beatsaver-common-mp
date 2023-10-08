@@ -62,9 +62,9 @@ enum class NoteScoreDefinition(
 }
 
 fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
-    val notes = data.colorNotes.orNull() ?: listOf()
-    val sliders = data.sliders.orNull() ?: listOf()
-    val burstSliders = data.burstSliders.orNull() ?: listOf()
+    val notes = data.colorNotes.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
+    val sliders = data.sliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
+    val burstSliders = data.burstSliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
 
     val slidersByBeat = sliders.groupBy { it.time }
     val slidersByTailBeat = sliders.groupBy { it.tailTime }

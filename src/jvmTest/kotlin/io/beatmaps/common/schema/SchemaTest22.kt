@@ -31,7 +31,7 @@ class SchemaTest22 {
         val ex = validateFolder("2_2/error")
         assertNotNull(ex)
 
-        assertEquals(30, ex.constraintViolations.size)
+        assertEquals(46, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violation("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
@@ -43,27 +43,43 @@ class SchemaTest22 {
                 violation("_notes[1]._time", null, NotNull),
                 violation("_notes[1]._lineIndex", null, NotNull),
                 violation("_notes[1]._lineLayer", null, NotNull),
-                violation("_notes[2]._type"),
-                violation("_notes[2]._cutDirection"),
-                violation("_notes[2]._time"),
-                violation("_notes[2]._lineIndex"),
-                violation("_notes[2]._lineLayer"),
+                violationWrong("_notes[2]._type"),
+                violationWrong("_notes[2]._cutDirection"),
+                violationWrong("_notes[2]._time"),
+                violationWrong("_notes[2]._lineIndex"),
+                violationWrong("_notes[2]._lineLayer"),
+                violation("_notes[3]._type"),
+                violation("_notes[3]._cutDirection"),
+                violation("_notes[3]._time"),
+                violation("_notes[3]._lineIndex"),
+                violation("_notes[3]._lineLayer"),
+                violationWrong("_notes[4]"),
                 violation("_obstacles[1]._type", null, NotNull),
                 violation("_obstacles[1]._duration", null, NotNull),
                 violation("_obstacles[1]._time", null, NotNull),
                 violation("_obstacles[1]._lineIndex", null, NotNull),
                 violation("_obstacles[1]._width", null, NotNull),
-                violation("_obstacles[2]._type"),
-                violation("_obstacles[2]._duration"),
-                violation("_obstacles[2]._time"),
-                violation("_obstacles[2]._lineIndex"),
-                violation("_obstacles[2]._width"),
+                violationWrong("_obstacles[2]._type"),
+                violationWrong("_obstacles[2]._duration"),
+                violationWrong("_obstacles[2]._time"),
+                violationWrong("_obstacles[2]._lineIndex"),
+                violationWrong("_obstacles[2]._width"),
+                violation("_obstacles[3]._type"),
+                violation("_obstacles[3]._duration"),
+                violation("_obstacles[3]._time"),
+                violation("_obstacles[3]._lineIndex"),
+                violation("_obstacles[3]._width"),
+                violationWrong("_obstacles[4]"),
                 violation("_events[1]._time", null, NotNull),
                 violation("_events[1]._type", null, NotNull),
                 violation("_events[1]._value", null, NotNull),
-                violation("_events[2]._time"),
-                violation("_events[2]._type"),
-                violation("_events[2]._value")
+                violationWrong("_events[2]._time"),
+                violationWrong("_events[2]._type"),
+                violationWrong("_events[2]._value"),
+                violation("_events[3]._time"),
+                violation("_events[3]._type"),
+                violation("_events[3]._value"),
+                violationWrong("_events[4]")
             ),
             ex.constraintViolations
         )

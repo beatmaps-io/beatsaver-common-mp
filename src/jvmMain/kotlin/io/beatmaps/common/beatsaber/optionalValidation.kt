@@ -58,13 +58,28 @@ fun <E, T : OptionalProperty<Int?>> Validator<E>.Property<T?>.isIn(vararg values
         }
     }
 
-fun <E, Q, T : OptionalProperty<Iterable<Q>?>> Validator<E>.Property<T?>.validateForEach(
+fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateForEach(
+    wrongTypesAllowed: Boolean = false,
     block: Validator<Q>.(Q) -> Unit
 ): Validator<E>.Property<T?> {
     this.property.get(this.obj)?.validate { q ->
         q?.forEachIndexed { index, value ->
-            this.addConstraintViolations(
-                Validator(value).apply { block(value) }.constraintViolations.map {
+            if (!wrongTypesAllowed && value is OptionalProperty.WrongType) {
+                addConstraintViolations(
+                    listOf(
+                        DefaultConstraintViolation(
+                            property = "${this.property.name}[$index]",
+                            value = value,
+                            constraint = CorrectType
+                        )
+                    )
+                )
+            }
+
+            val r = value.orNull() ?: return@forEachIndexed
+
+            addConstraintViolations(
+                Validator(r).apply { block(r) }.constraintViolations.map {
                     DefaultConstraintViolation(
                         property = "${this.property.name}[$index].${it.property}",
                         value = it.value,
