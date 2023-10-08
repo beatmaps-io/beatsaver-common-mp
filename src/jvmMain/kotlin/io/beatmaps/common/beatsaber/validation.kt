@@ -2,6 +2,7 @@ package io.beatmaps.common.beatsaber
 
 import org.valiktor.Constraint
 
+object CorrectType : Constraint
 object NodePresent : Constraint
 object NodeNotPresent : Constraint
 

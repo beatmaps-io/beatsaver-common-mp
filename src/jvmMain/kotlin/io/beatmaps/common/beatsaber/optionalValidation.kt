@@ -5,6 +5,7 @@ import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
+import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotNull
 
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.existsBefore(ver: Version, requiredVersion: Version): Validator<E>.Property<T?> =
@@ -34,6 +35,9 @@ fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.exists(): Validato
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.notExists(): Validator<E>.Property<T?> =
     this.validate(NodeNotPresent) { it == null || it is OptionalProperty.NotPresent }
 
+fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.correctType(): Validator<E>.Property<T?> =
+    this.validate(CorrectType) { it == null || it !is OptionalProperty.WrongType }
+
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.optionalNotNull(): Validator<E>.Property<T?> =
     this.validate(NotNull) { it != null && it.validate { q -> q != null } }
 
@@ -43,6 +47,9 @@ inline fun <E, reified Q : Comparable<Q>, T : OptionalProperty<Q?>> Validator<E>
             q == null || q in start.rangeTo(end)
         }
     }
+
+fun <E, T: OptionalProperty<String?>> Validator<E>.Property<T?>.matches(regex: Regex): Validator<E>.Property<T?> =
+        this.validate(Matches(regex)) { it == null || it.validate { q -> q == null || q.matches(regex) } }
 
 fun <E, T : OptionalProperty<Int?>> Validator<E>.Property<T?>.isIn(vararg values: Int?): Validator<E>.Property<T?> =
     this.validate(In(values.toSet())) {

@@ -60,7 +60,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     val noteCount = bsdiff.noteCount()
     val mappedNps = bsdiff.mappedNps(sli)
 
-    it[schemaVersion] = bsdiff.version ?: "2.2.0"
+    it[schemaVersion] = bsdiff.version.orNull() ?: "2.2.0"
     it[notes] = noteCount
     it[bombs] = bsdiff.bombCount()
     it[arcs] = bsdiff.arcCount()

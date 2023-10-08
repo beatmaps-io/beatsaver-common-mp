@@ -26,7 +26,7 @@ fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, In
     ReadOnlyProperty { thisRef, _ -> block(thisRef).orNull() ?: Int.MIN_VALUE }
 
 sealed interface BSDiff : BSCustomData {
-    val version: String?
+    val version: OptionalProperty<String?>
     fun noteCount(): Int
     fun bombCount(): Int
     fun arcCount(): Int

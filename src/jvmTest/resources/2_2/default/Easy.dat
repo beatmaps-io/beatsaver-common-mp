@@ -1,0 +1,68 @@
+{
+  "_version": "2.2.0",
+  "_notes": [
+    {
+      "_time": 1.0,
+      "_lineIndex": 2,
+      "_lineLayer": 2,
+      "_type": 1,
+      "_cutDirection": 2
+    },
+    {
+      "_time": 32.0,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 0,
+      "_cutDirection": 1180
+    }
+  ],
+  "_events": [
+    {
+      "_time": 1.0,
+      "_value": 2,
+      "_type": 1
+    }
+  ],
+  "_obstacles": [
+    {
+      "_time": 1.0,
+      "_duration": 2.0,
+      "_lineIndex": 2,
+      "_width": 2,
+      "_type": 1
+    }
+  ],
+  "_waypoints": [
+    {
+      "_time": 0,
+      "_lineIndex":3,
+      "_lineLayer":0,
+      "_offsetDirection":3
+    },
+    {
+      "_time": 10,
+      "_lineIndex":0,
+      "_lineLayer":0,
+      "_offsetDirection":2
+    }
+  ],
+  "_specialEventsKeywordFilters": {
+    "_keywords": [
+      {
+        "_keyword": "BTS",
+        "_specialEvents": [40, 41]
+      }
+    ]
+  },
+  "_customData": {
+    "_bookmarks": []
+  },
+  "_BPMChanges": [
+    {
+      "_BPM":123,
+      "_time":29.1,
+      "_beatsPerBar":4,
+      "_metronomeOffset":4
+    }
+  ]
+}

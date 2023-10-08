@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class BSDifficultyV3(
-    override val version: String? = null,
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val bpmEvents: OptionalProperty<List<BSBpmChange>?> = OptionalProperty.NotPresent,
     val rotationEvents: OptionalProperty<List<BSRotationEvent>?> = OptionalProperty.NotPresent,
     val colorNotes: OptionalProperty<List<BSNoteV3>> = OptionalProperty.NotPresent,

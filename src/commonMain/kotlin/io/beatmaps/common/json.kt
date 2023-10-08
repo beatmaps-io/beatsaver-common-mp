@@ -22,6 +22,10 @@ val jsonIgnoreUnknown = Json {
 }
 
 sealed class OptionalProperty<out T> {
+    object WrongType : OptionalProperty<Nothing>() {
+        override fun validate(notPresent: Boolean, block: (Nothing) -> Boolean) = notPresent
+        override fun orNull() = null
+    }
     object NotPresent : OptionalProperty<Nothing>() {
         override fun validate(notPresent: Boolean, block: (Nothing) -> Boolean) = notPresent
         override fun orNull() = null
@@ -41,11 +45,15 @@ open class OptionalPropertySerializer<T>(
     final override val descriptor: SerialDescriptor = valueSerializer.descriptor
 
     final override fun deserialize(decoder: Decoder): OptionalProperty<T> =
-        OptionalProperty.Present(valueSerializer.deserialize(decoder))
+        try {
+            OptionalProperty.Present(valueSerializer.deserialize(decoder))
+        } catch (e: SerializationException) {
+            OptionalProperty.WrongType
+        }
 
     final override fun serialize(encoder: Encoder, value: OptionalProperty<T>) {
         when (value) {
-            OptionalProperty.NotPresent -> throw SerializationException(
+            OptionalProperty.WrongType, OptionalProperty.NotPresent -> throw SerializationException(
                 "Tried to serialize an optional property that had no value present. Is encodeDefaults false?"
             )
             is OptionalProperty.Present ->

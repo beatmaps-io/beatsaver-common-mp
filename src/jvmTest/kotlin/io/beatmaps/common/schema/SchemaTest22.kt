@@ -3,7 +3,7 @@ package io.beatmaps.common.schema
 import io.beatmaps.common.beatsaber.CutDirection
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
-import io.beatmaps.common.schema.SchemaCommon.violationLiteral
+import io.beatmaps.common.schema.SchemaCommon.violationWrong
 import org.junit.Test
 import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
@@ -16,25 +16,25 @@ import kotlin.test.assertNull
 class SchemaTest22 {
     @Test
     fun basic2_2() {
-        val ex = validateFolder("basic2_2")
+        val ex = validateFolder("2_2/basic")
         assertNull(ex)
     }
 
     @Test
     fun schema2_2() {
-        val ex = validateFolder("2_2")
+        val ex = validateFolder("2_2/default")
         assertNull(ex)
     }
 
     @Test
     fun error2_2() {
-        val ex = validateFolder("error2_2")
+        val ex = validateFolder("2_2/error")
         assertNotNull(ex)
 
         assertEquals(30, ex.constraintViolations.size)
         assertEquals(
             setOf(
-                violationLiteral("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
+                violation("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
                 violation("_notes[0]._type", 50, In(setOf(0, 1, 3))),
                 violation("_notes[0]._cutDirection", 50, CutDirection),
                 violation("_notes[0]._time", 100f, Between(0.0f, 64f)),
@@ -70,14 +70,35 @@ class SchemaTest22 {
     }
 
     @Test
+    fun badtypes2_2() {
+        val ex = validateFolder("2_2/badtypes")
+        assertNotNull(ex)
+
+        assertEquals(8, ex.constraintViolations.size)
+        assertEquals(
+            setOf(
+                violationWrong("version"),
+                violationWrong("_notes"),
+                violationWrong("_obstacles"),
+                violationWrong("_events"),
+                violationWrong("_waypoints"),
+                violationWrong("_specialEventsKeywordFilters"),
+                violationWrong("_customData"),
+                violationWrong("_BPMChanges")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
     fun missing2_2() {
-        val ex = validateFolder("missing2_2")
+        val ex = validateFolder("2_2/missing")
         assertNotNull(ex)
 
         assertEquals(4, ex.constraintViolations.size)
         assertEquals(
             setOf(
-                violationLiteral("version", null, NotNull),
+                violation("version"),
                 violation("_notes"),
                 violation("_obstacles"),
                 violation("_events")
@@ -88,16 +109,20 @@ class SchemaTest22 {
 
     @Test
     fun null2_2() {
-        val ex = validateFolder("null2_2")
+        val ex = validateFolder("2_2/null")
         assertNotNull(ex)
 
-        assertEquals(4, ex.constraintViolations.size)
+        assertEquals(8, ex.constraintViolations.size)
         assertEquals(
             setOf(
-                violationLiteral("version", null, NotNull),
+                violation("version", null, NotNull),
                 violation("_notes", null, NotNull),
                 violation("_obstacles", null, NotNull),
-                violation("_events", null, NotNull)
+                violation("_events", null, NotNull),
+                violation("_waypoints", null, NotNull),
+                violation("_specialEventsKeywordFilters", null, NotNull),
+                violation("_customData", null, NotNull),
+                violation("_BPMChanges", null, NotNull)
             ),
             ex.constraintViolations
         )

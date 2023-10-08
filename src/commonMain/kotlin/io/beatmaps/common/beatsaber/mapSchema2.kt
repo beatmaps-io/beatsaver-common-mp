@@ -13,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class BSDifficulty(
     @SerialName("_version")
-    override val version: String? = null,
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _notes: OptionalProperty<List<BSNote>?> = OptionalProperty.NotPresent,
     val _obstacles: OptionalProperty<List<BSObstacle>?> = OptionalProperty.NotPresent,
     val _events: OptionalProperty<List<BSEvent>?> = OptionalProperty.NotPresent,
