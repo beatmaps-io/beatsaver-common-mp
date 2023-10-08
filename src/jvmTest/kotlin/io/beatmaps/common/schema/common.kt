@@ -1,11 +1,16 @@
 package io.beatmaps.common.schema
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.NodeNotPresent
+import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.jackson
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
+import org.valiktor.Constraint
 import org.valiktor.ConstraintViolationException
+import org.valiktor.DefaultConstraintViolation
 import java.io.File
 import java.io.OutputStream
 import java.security.DigestOutputStream
@@ -42,4 +47,18 @@ object SchemaCommon {
 
         return null
     }
+
+    fun violation(prop: String) =
+        DefaultConstraintViolation(
+            "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop",
+            OptionalProperty.NotPresent,
+            NodePresent
+        )
+
+    fun violation(prop: String, v: Any?, constraint: Constraint = NodeNotPresent) =
+        DefaultConstraintViolation(
+            "_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop",
+            OptionalProperty.Present(v),
+            constraint
+        )
 }
