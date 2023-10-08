@@ -89,19 +89,36 @@ data class BSBoostEvent(
     val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent
 )
 
-typealias BSVfxEventBoxGroup = BSEventBoxGroup<BSVfxEventBox>
-typealias BSLightColorEventBoxGroup = BSEventBoxGroup<BSLightColorEventBox>
-typealias BSLightRotationEventBoxGroup = BSEventBoxGroup<BSLightRotationEventBox>
+interface IBSEventBoxGroup<T : GroupableEventBox> {
+    val beat: OptionalProperty<Float?>
+    val groupId: OptionalProperty<Int?>
+    val eventBoxes: OptionalProperty<List<T>?>
+}
 
 @Serializable
 data class BSEventBoxGroup<T : GroupableEventBox>(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("g")
-    val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    val eventBoxes: OptionalProperty<List<T>?> = OptionalProperty.NotPresent
-)
+    override val eventBoxes: OptionalProperty<List<T>?> = OptionalProperty.NotPresent
+) : IBSEventBoxGroup<T>
+
+typealias BSLightColorEventBoxGroup = BSEventBoxGroup<BSLightColorEventBox>
+typealias BSLightRotationEventBoxGroup = BSEventBoxGroup<BSLightRotationEventBox>
+
+@Serializable
+data class BSVfxEventBoxGroup(
+    @SerialName("b")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("g")
+    override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("t")
+    val type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("e")
+    override val eventBoxes: OptionalProperty<List<BSVfxEventBox>?> = OptionalProperty.NotPresent
+) : IBSEventBoxGroup<BSVfxEventBox>
 
 interface GroupableEventBox {
     val indexFilter: OptionalProperty<BSIndexFilter?>
