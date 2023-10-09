@@ -249,12 +249,24 @@ data class BSLightTranslationEventBox(
     @SerialName("l")
     val lightTranslationBaseDataList: OptionalProperty<List<OptionalProperty<LightTranslationBaseData?>>?> = OptionalProperty.NotPresent
 ) : GroupableEventBox {
-    constructor(indexFilter: BSIndexFilter, beatDistributionParam: Float, beatDistributionParamType: Int, gapDistributionParam: Float, gapDistributionParamType: Int, axis: Int,
-                flipTranslation: Int, gapDistributionShouldAffectFirstBaseEvent: Int, gapDistributionEaseType: Int, lightTranslationBaseDataList: List<LightTranslationBaseData>) :
-        this(OptionalProperty.Present(indexFilter), OptionalProperty.Present(beatDistributionParam), OptionalProperty.Present(beatDistributionParamType),
+    constructor(
+        indexFilter: BSIndexFilter,
+        beatDistributionParam: Float,
+        beatDistributionParamType: Int,
+        gapDistributionParam: Float,
+        gapDistributionParamType: Int,
+        axis: Int,
+        flipTranslation: Int,
+        gapDistributionShouldAffectFirstBaseEvent: Int,
+        gapDistributionEaseType: Int,
+        lightTranslationBaseDataList: List<LightTranslationBaseData>
+    ) :
+        this(
+            OptionalProperty.Present(indexFilter), OptionalProperty.Present(beatDistributionParam), OptionalProperty.Present(beatDistributionParamType),
             OptionalProperty.Present(gapDistributionParam), OptionalProperty.Present(gapDistributionParamType), OptionalProperty.Present(axis),
             OptionalProperty.Present(flipTranslation), OptionalProperty.Present(gapDistributionShouldAffectFirstBaseEvent), OptionalProperty.Present(gapDistributionEaseType),
-            OptionalProperty.Present(lightTranslationBaseDataList.map { OptionalProperty.Present(it) }))
+            OptionalProperty.Present(lightTranslationBaseDataList.map { OptionalProperty.Present(it) })
+        )
 }
 
 @Serializable
@@ -291,9 +303,11 @@ data class BSIndexFilter(
     val alsoAffectsType: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) {
     constructor(type: Int, param0: Int, param1: Int, reversed: Int, chunks: Int, randomType: Int, seed: Int, limit: Float, alsoAffectsType: Int) :
-        this(OptionalProperty.Present(type), OptionalProperty.Present(param0), OptionalProperty.Present(param1), OptionalProperty.Present(reversed),
+        this(
+            OptionalProperty.Present(type), OptionalProperty.Present(param0), OptionalProperty.Present(param1), OptionalProperty.Present(reversed),
             OptionalProperty.Present(chunks), OptionalProperty.Present(randomType), OptionalProperty.Present(seed), OptionalProperty.Present(limit),
-            OptionalProperty.Present(alsoAffectsType))
+            OptionalProperty.Present(alsoAffectsType)
+        )
 }
 
 @Serializable

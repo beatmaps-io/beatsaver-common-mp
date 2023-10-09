@@ -20,7 +20,7 @@ class SchemaTest33 {
         assertContentEquals(
             listOf(
                 violation("vfxEventBoxGroups"),
-                violation("_fxEventsCollection"),
+                violation("_fxEventsCollection")
             ),
             ex.constraintViolations
         )
@@ -56,7 +56,7 @@ class SchemaTest33 {
                 violationWrong("vfxEventBoxGroups"),
                 violationWrong("_fxEventsCollection"),
                 violationWrong("basicEventTypesWithKeywords"),
-                violationWrong("useNormalEventsAsCompatibleEvents"),
+                violationWrong("useNormalEventsAsCompatibleEvents")
             ),
             ex.constraintViolations
         )

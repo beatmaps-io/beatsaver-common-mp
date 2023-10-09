@@ -46,7 +46,6 @@ sealed class OptionalProperty<out T> {
 
 fun <T : Any> OptionalProperty<T?>.or(v: T) = orNull() ?: v
 
-
 open class OptionalPropertySerializer<T>(
     private val valueSerializer: KSerializer<T>
 ) : KSerializer<OptionalProperty<T>> {

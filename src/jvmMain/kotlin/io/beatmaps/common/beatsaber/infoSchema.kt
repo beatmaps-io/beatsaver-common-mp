@@ -289,7 +289,8 @@ data class Contributor(
     val _iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
 ) {
     fun validate(
-        validator: Validator<Contributor>, files: Set<String>
+        validator: Validator<Contributor>,
+        files: Set<String>
     ) = validator.apply {
         validate(Contributor::_role).correctType().optionalNotNull()
         validate(Contributor::_name).correctType().optionalNotNull()
@@ -492,7 +493,8 @@ data class DifficultyBeatmapSetCustomData(
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
     fun validate(
-        validator: Validator<DifficultyBeatmapSetCustomData>, files: Set<String>
+        validator: Validator<DifficultyBeatmapSetCustomData>,
+        files: Set<String>
     ) = validator.apply {
         validate(DifficultyBeatmapSetCustomData::_characteristicLabel).correctType().optionalNotNull()
         validate(DifficultyBeatmapSetCustomData::_characteristicIconImageFilename).correctType().optionalNotNull()
