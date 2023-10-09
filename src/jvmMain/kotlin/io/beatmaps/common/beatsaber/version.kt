@@ -2,7 +2,7 @@ package io.beatmaps.common.beatsaber
 
 class Version(val version: String?) : Comparable<Version?> {
     private val numbers: IntArray by lazy {
-        version!!
+        (version ?: "")
             .substringBefore('-')
             .split('.')
             .dropLastWhile { it.isEmpty() }

@@ -1,0 +1,20 @@
+{
+  "version": 3.2,
+  "bpmEvents": 0,
+  "rotationEvents": 0,
+  "colorNotes": 0,
+  "bombNotes": 0,
+  "obstacles": 0,
+  "sliders": 0,
+  "burstSliders": 0,
+  "waypoints": 0,
+  "basicBeatmapEvents": 0,
+  "colorBoostBeatmapEvents": 0,
+  "lightColorEventBoxGroups": 0,
+  "lightRotationEventBoxGroups": 0,
+  "lightTranslationEventBoxGroups": 0,
+  "vfxEventBoxGroups": 0,
+  "_fxEventsCollection": 0,
+  "basicEventTypesWithKeywords": 0,
+  "useNormalEventsAsCompatibleEvents": 0
+}

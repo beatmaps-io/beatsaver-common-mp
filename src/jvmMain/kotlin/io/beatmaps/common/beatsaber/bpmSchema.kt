@@ -1,6 +1,8 @@
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
+import kotlinx.serialization.Serializable
 import org.valiktor.Validator
 import org.valiktor.functions.isLessThanOrEqualTo
 import org.valiktor.functions.isNotNull
@@ -10,6 +12,7 @@ import org.valiktor.functions.validateForEach
 import org.valiktor.validate
 import kotlin.math.roundToInt
 
+@Serializable
 data class BPMInfo(
     val _version: String,
     val _songSampleCount: Int,
@@ -58,10 +61,11 @@ data class BPMInfo(
 
 class LegacySongLengthInfo(private val info: ExtractedInfo) : SongLengthInfo {
     override fun maximumBeat(bpm: Float) = secondsToTime(info.duration)
-    override fun timeToSeconds(time: Float) = (time / info.mapInfo._beatsPerMinute) * 60
-    override fun secondsToTime(sec: Float) = (sec / 60) * info.mapInfo._beatsPerMinute
+    override fun timeToSeconds(time: Float) = (time / info.mapInfo._beatsPerMinute.or(1f)) * 60
+    override fun secondsToTime(sec: Float) = (sec / 60) * info.mapInfo._beatsPerMinute.or(1f)
 }
 
+@Serializable
 data class BPMRegion(
     val _startSampleIndex: Int,
     val _endSampleIndex: Int,

@@ -1,0 +1,74 @@
+{
+  "_version": null,
+  "_songName": null,
+  "_songSubName": null,
+  "_songAuthorName": null,
+  "_levelAuthorName": null,
+  "_beatsPerMinute": null,
+  "_songTimeOffset": null,
+  "_shuffle": null,
+  "_shufflePeriod": null,
+  "_previewStartTime": null,
+  "_previewDuration": null,
+  "_songFilename": null,
+  "_coverImageFilename": null,
+  "_environmentName": null,
+  "_allDirectionsEnvironmentName": null,
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": null,
+        "_name": null,
+        "_iconPath": null
+      },
+      null
+    ],
+    "_editors": {
+      "_lastEditedBy": null,
+      "MMA2": {
+        "version": null
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": null,
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": null,
+          "_difficultyRank": null,
+          "_beatmapFilename": null,
+          "_noteJumpMovementSpeed": null,
+          "_noteJumpStartBeatOffset": null,
+          "_customData": {
+            "_difficultyLabel": null,
+            "_editorOffset": null,
+            "_editorOldOffset": null,
+            "_warnings": [
+              null
+            ],
+            "_information": [
+              null
+            ],
+            "_suggestions": [
+              null
+            ],
+            "_requirements": [
+              null
+            ]
+          }
+        },
+        null
+      ],
+      "_customData": {
+        "_characteristicLabel": null,
+        "_characteristicIconImageFilename": null
+      }
+    },
+    {
+      "_beatmapCharacteristicName": "OneSaber",
+      "_difficultyBeatmaps": null
+    },
+    null
+  ]
+}

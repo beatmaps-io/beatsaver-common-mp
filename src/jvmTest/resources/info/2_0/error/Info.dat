@@ -1,0 +1,75 @@
+{
+  "_version": "2.0.0",
+  "_songName": "",
+  "_songSubName": "",
+  "_songAuthorName": "",
+  "_levelAuthorName": "MORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERS",
+  "_beatsPerMinute": 1200.0,
+  "_songTimeOffset": 1.0,
+  "_shuffle": 0.0,
+  "_shufflePeriod": 0.0,
+  "_previewStartTime": -10.0,
+  "_previewDuration": -10.0,
+  "_songFilename": "missing.ogg",
+  "_coverImageFilename": "missing.png",
+  "_environmentName": "LinkinPark2Environment",
+  "_allDirectionsEnvironmentName": "MuliplayerEnvironment",
+  "_environmentNames": [],
+  "_colorSchemes": [],
+  "_customData": {
+    "_difficultyLabel": "Diff Label",
+    "_envColorLeft": {},
+    "_envColorRight": {},
+    "_colorLeft": {},
+    "_colorRight": {},
+    "_warnings": [
+      "Example warning"
+    ],
+    "_information": [
+      "Example information"
+    ],
+    "_suggestions": [
+      "Example suggestion"
+    ],
+    "_requirements": [
+      "Example requirement"
+    ]
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Legacy",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Mid",
+          "_difficultyRank": 2,
+          "_beatmapFilename": "missing.dat",
+          "_noteJumpMovementSpeed": 0.0,
+          "_noteJumpStartBeatOffset": 0.0,
+          "_beatmapColorSchemeIdx": 1,
+          "_environmentNameIdx": 1,
+          "_difficultyLabel": "Diff Label",
+          "_envColorLeft": {},
+          "_envColorRight": {},
+          "_colorLeft": {},
+          "_colorRight": {},
+          "_warnings": [
+            "Example warning"
+          ],
+          "_information": [
+            "Example information"
+          ],
+          "_suggestions": [
+            "Example suggestion"
+          ],
+          "_requirements": [
+            "Example requirement"
+          ]
+        }
+      ]
+    },
+    {
+      "_beatmapCharacteristicName": "Easy",
+      "_difficultyBeatmaps": []
+    }
+  ]
+}

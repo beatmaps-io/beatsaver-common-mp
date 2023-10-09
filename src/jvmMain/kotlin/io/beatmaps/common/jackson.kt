@@ -3,8 +3,6 @@ package io.beatmaps.common
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.util.DefaultIndenter
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -45,30 +43,6 @@ class KotlinTimeModule : SimpleModule() {
         addSerializer(MapTag::class.java, MapTagsSerializer.INSTANCE)
         addDeserializer(MapTag::class.java, MapTagsDeserializer.INSTANCE)
         addDeserializer(LocalDate::class.java, LocalDateDeserializer.INSTANCE)
-    }
-}
-
-class BSPrettyPrinter : DefaultPrettyPrinter() {
-    init {
-        _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE
-    }
-
-    override fun createInstance(): BSPrettyPrinter {
-        return BSPrettyPrinter()
-    }
-
-    override fun writeEndArray(gen: JsonGenerator, nrOfValues: Int) {
-        if (!_arrayIndenter.isInline) {
-            --_nesting
-        }
-        if (nrOfValues > 0) {
-            _arrayIndenter.writeIndentation(gen, _nesting)
-        }
-        gen.writeRaw(']')
-    }
-
-    override fun writeObjectFieldValueSeparator(jg: JsonGenerator) {
-        jg.writeRaw(": ")
     }
 }
 

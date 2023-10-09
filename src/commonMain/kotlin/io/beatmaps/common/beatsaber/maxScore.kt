@@ -1,5 +1,7 @@
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.or
+
 data class ScoreMultiplierCounter(
     val multiplier: Int = 1,
     val multiplierIncreaseProgress: Int = 0,
@@ -62,9 +64,9 @@ enum class NoteScoreDefinition(
 }
 
 fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
-    val notes = data.colorNotes.orNull() ?: listOf()
-    val sliders = data.sliders.orNull() ?: listOf()
-    val burstSliders = data.burstSliders.orNull() ?: listOf()
+    val notes = data.colorNotes.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
+    val sliders = data.sliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
+    val burstSliders = data.burstSliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
 
     val slidersByBeat = sliders.groupBy { it.time }
     val slidersByTailBeat = sliders.groupBy { it.tailTime }
@@ -90,7 +92,7 @@ fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
         }
 
     val burstItems = burstSliders.flatMap {
-        val sliceCount = it.sliceCount.orNull() ?: 0
+        val sliceCount = it.sliceCount.or(0)
         (1 until sliceCount).map { i ->
             val t = i / (sliceCount - 1).toFloat()
             val beat = (it.time + (it.tailTime - it.time) * t)
