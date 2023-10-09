@@ -1,7 +1,7 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.OptionalProperty
-import io.beatmaps.common.beatsaber.BSLightTranslationEventBoxGroup
+import io.beatmaps.common.beatsaber.NodeNotPresent
+import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
 import org.junit.Test
@@ -22,22 +22,22 @@ class SchemaTest32 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violation("bpmEvents"),
-                violation("rotationEvents"),
-                violation("colorNotes"),
-                violation("bombNotes"),
-                violation("obstacles"),
-                violation("sliders"),
-                violation("burstSliders"),
-                violation("waypoints"),
-                violation("basicBeatmapEvents"),
-                violation("colorBoostBeatmapEvents"),
-                violation("lightColorEventBoxGroups"),
-                violation("lightRotationEventBoxGroups"),
-                violation("lightTranslationEventBoxGroups"),
-                violation("basicEventTypesWithKeywords"),
-                violation("useNormalEventsAsCompatibleEvents")
+            listOf<Any>(
+                violation<NodePresent>("bpmEvents"),
+                violation<NodePresent>("rotationEvents"),
+                violation<NodePresent>("colorNotes"),
+                violation<NodePresent>("bombNotes"),
+                violation<NodePresent>("obstacles"),
+                violation<NodePresent>("sliders"),
+                violation<NodePresent>("burstSliders"),
+                violation<NodePresent>("waypoints"),
+                violation<NodePresent>("basicBeatmapEvents"),
+                violation<NodePresent>("colorBoostBeatmapEvents"),
+                violation<NodePresent>("lightColorEventBoxGroups"),
+                violation<NodePresent>("lightRotationEventBoxGroups"),
+                violation<NodePresent>("lightTranslationEventBoxGroups"),
+                violation<NodePresent>("basicEventTypesWithKeywords"),
+                violation<NodePresent>("useNormalEventsAsCompatibleEvents")
             ),
             ex.constraintViolations
         )
@@ -55,18 +55,18 @@ class SchemaTest32 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.chunks", 0),
-                violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.randomType", 0),
-                violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.seed", 0),
-                violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.limit", 0.0f),
-                violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType", 0),
-                violation("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.chunks", 0),
-                violation("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.randomType", 0),
-                violation("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.seed", 0),
-                violation("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.limit", 0.0f),
-                violation("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType", 0),
-                violation("lightTranslationEventBoxGroups", listOf<OptionalProperty<BSLightTranslationEventBoxGroup>>())
+            listOf<Any>(
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.chunks"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.randomType"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.seed"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.limit"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.chunks"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.randomType"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.seed"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.limit"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType"),
+                violation<NodeNotPresent>("lightTranslationEventBoxGroups")
             ),
             ex.constraintViolations
         )

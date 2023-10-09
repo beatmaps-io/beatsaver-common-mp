@@ -1,10 +1,6 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.OptionalProperty
-import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.MapInfo
-import io.beatmaps.common.beatsaber.NodeNotPresent
-import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
@@ -58,29 +54,11 @@ object SchemaCommon {
         return null
     }
 
-    fun violation(prop: String) =
-        infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop")
+    inline fun <reified T : Constraint> violation(prop: String) =
+        infoViolation<T>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop")
 
-    fun violationWrong(prop: String) =
-        infoViolationWrong("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop")
-
-    fun infoViolationWrong(prop: String) =
-        DefaultConstraintViolation(prop, OptionalProperty.WrongType, CorrectType)
-
-    fun violation(prop: String, v: Any?, constraint: Constraint = NodeNotPresent) =
-        infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop", v, constraint)
-
-    fun <T : Constraint> partialViolation(prop: String, constraint: KClass<T>) =
-        infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop", constraint)
-
-    fun infoViolation(prop: String, constraint: Constraint = NodePresent) =
-        DefaultConstraintViolation(prop, OptionalProperty.NotPresent, constraint)
-
-    fun <T : Constraint> infoPartialViolation(prop: String, constraint: KClass<T>) =
-        Violation(prop, constraint)
-
-    fun infoViolation(prop: String, v: Any?, constraint: Constraint = NodeNotPresent) =
-        DefaultConstraintViolation(prop, OptionalProperty.Present(v), constraint)
+    inline fun <reified T : Constraint> infoViolation(prop: String) =
+        Violation(prop, T::class)
 }
 
 data class Violation<T : Constraint>(val prop: String, val constraintType: KClass<T>) {

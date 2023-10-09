@@ -38,6 +38,12 @@ import java.lang.Integer.max
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
 
+abstract class JAdditionalProperties : AdditionalProperties {
+    override val properties = javaClass.declaredFields.filter { it.type == OptionalProperty::class.java }.map { it.name }.toSet()
+}
+
+data class ImageInfo(val format: String, val width: Int, val height: Int)
+
 @Serializable
 data class MapInfo(
     val _version: OptionalProperty<String?> = OptionalProperty.NotPresent,
@@ -179,8 +185,6 @@ data class MapInfo(
         .replace("\n", "\r\n")
 }
 
-data class ImageInfo(val format: String, val width: Int, val height: Int)
-
 @Serializable
 data class MapCustomData(
     val _contributors: OptionalProperty<List<OptionalProperty<Contributor?>>?> = OptionalProperty.NotPresent,
@@ -321,10 +325,6 @@ data class DifficultyBeatmapSet(
     private fun self() = this
 
     fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName.or(""))
-}
-
-abstract class JAdditionalProperties : AdditionalProperties {
-    override val properties = javaClass.declaredFields.filter { it.type == OptionalProperty::class.java }.map { it.name }.toSet()
 }
 
 @Serializable
