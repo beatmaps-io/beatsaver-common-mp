@@ -15,7 +15,6 @@ val json = Json {
     serializersModule = SerializersModule {
         modlog()
         userlog()
-        playlist()
     }
     prettyPrint = true
 }
