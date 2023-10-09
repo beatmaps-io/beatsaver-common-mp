@@ -1,19 +1,25 @@
+@file:UseSerializers(OptionalPropertySerializer::class)
+//AdditionalPropertiesTransformer::class
+
 package io.beatmaps.common.beatsaber
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter
-import com.fasterxml.jackson.annotation.JsonAnySetter
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.readValue
+import io.beatmaps.common.AdditionalProperties
+import io.beatmaps.common.OptionalProperty
+import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.copyTo
-import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
+import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import net.coobird.thumbnailator.Thumbnails
@@ -24,19 +30,7 @@ import org.valiktor.ConstraintViolationException
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.In
-import org.valiktor.functions.isBetween
-import org.valiktor.functions.isGreaterThanOrEqualTo
-import org.valiktor.functions.isIn
-import org.valiktor.functions.isLessThan
-import org.valiktor.functions.isNotBlank
-import org.valiktor.functions.isNotEmpty
-import org.valiktor.functions.isNotNull
-import org.valiktor.functions.isNull
-import org.valiktor.functions.isPositiveOrZero
-import org.valiktor.functions.isZero
-import org.valiktor.functions.matches
 import org.valiktor.functions.validate
-import org.valiktor.functions.validateForEach
 import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -45,26 +39,27 @@ import java.lang.Integer.max
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioSystem
 
+@Serializable
 data class MapInfo(
-    val _version: String,
-    val _songName: String,
-    val _songSubName: String,
-    val _songAuthorName: String,
-    val _levelAuthorName: String,
-    val _beatsPerMinute: Float,
-    val _shuffle: Float,
-    val _shufflePeriod: Float,
-    val _previewStartTime: Float,
-    val _previewDuration: Float,
-    val _songFilename: String,
-    val _coverImageFilename: String,
-    val _environmentName: String,
-    val _allDirectionsEnvironmentName: String?,
-    val _environmentNames: List<String>?,
-    val _colorSchemes: List<MapColorScheme>?,
-    val _songTimeOffset: Float,
-    val _customData: MapCustomData?,
-    val _difficultyBeatmapSets: List<DifficultyBeatmapSet>
+    val _version: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _songName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _songSubName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _songAuthorName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _levelAuthorName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _beatsPerMinute: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _songTimeOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _shuffle: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _shufflePeriod: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _previewStartTime: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _previewDuration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _songFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _coverImageFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _environmentName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _allDirectionsEnvironmentName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _environmentNames: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
+    val _colorSchemes: OptionalProperty<List<OptionalProperty<MapColorScheme?>>?> = OptionalProperty.NotPresent,
+    val _customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
+    val _difficultyBeatmapSets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?> = OptionalProperty.NotPresent
 ) {
     fun imageInfo(path: IZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
         try {
@@ -121,7 +116,7 @@ data class MapInfo(
             val byteArrayOutputStream = ByteArrayOutputStream()
             stream.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
 
-            jackson.readValue<BPMInfo>(byteArrayOutputStream.toByteArray()).also {
+            jsonIgnoreUnknown.decodeFromString<BPMInfo>(readFromBytes(byteArrayOutputStream.toByteArray())).also {
                 try {
                     it.validate()
                 } catch (e: ConstraintViolationException) {
@@ -138,61 +133,69 @@ data class MapInfo(
 
     fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
-        val ver = Version(_version)
+        val ver = Version(_version.orNull())
 
-        validate(MapInfo::_version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-        validate(MapInfo::_songName).isNotNull().isNotBlank().validate(MetadataLength) {
-            _songName.length + _levelAuthorName.length <= 100
+        validate(MapInfo::_version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+        validate(MapInfo::_songName).correctType().exists().optionalNotNull().isNotBlank().validate(MetadataLength) { op ->
+            op == null || op.validate { (it?.length ?: 0) + (_levelAuthorName.orNull()?.length ?: 0) <= 100 }
         }
-        validate(MapInfo::_beatsPerMinute).isNotNull().isBetween(10f, 1000f)
-        validate(MapInfo::_previewStartTime).isPositiveOrZero()
-        validate(MapInfo::_previewDuration).isPositiveOrZero()
-        validate(MapInfo::_songFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
+        validate(MapInfo::_songSubName).correctType().exists().optionalNotNull()
+        validate(MapInfo::_songAuthorName).correctType().exists().optionalNotNull()
+        validate(MapInfo::_levelAuthorName).correctType().exists().optionalNotNull()
+        validate(MapInfo::_beatsPerMinute).correctType().exists().optionalNotNull().isBetween(10f, 1000f)
+        validate(MapInfo::_songTimeOffset).correctType().exists().isZero()
+        validate(MapInfo::_shuffle).correctType().exists().optionalNotNull()
+        validate(MapInfo::_shufflePeriod).correctType().exists().optionalNotNull()
+        validate(MapInfo::_previewStartTime).correctType().exists().isPositiveOrZero()
+        validate(MapInfo::_previewDuration).correctType().exists().isPositiveOrZero()
+        validate(MapInfo::_songFilename).correctType().exists().optionalNotNull().validate(InFiles) { it == null || it.validate { q -> files.contains(q?.lowercase()) } }
             .validate(AudioFormat) { it == null || audioValid(audio, info) }
-        val imageInfo = imageInfo(getFile(_coverImageFilename), info)
-        validate(MapInfo::_coverImageFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
-            .validate(ImageFormat) { imageInfo != null && arrayOf("jpeg", "jpg", "png").contains(imageInfo.format) }
+        val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
+        validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull().validate(InFiles) { it == null || it.validate { q -> files.contains(q?.lowercase()) } }
+            .validate(ImageFormat) { imageInfo == null || arrayOf("jpeg", "jpg", "png").contains(imageInfo.format) }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
-        validate(MapInfo::_customData).validate {
+        validate(MapInfo::_customData).correctType().validate {
             extraFieldsViolation(
                 constraintViolations,
-                it.additionalInformation.keys
+                it.orNull()?.additionalInformation?.keys ?: setOf()
             )
         }
-        validate(MapInfo::_allDirectionsEnvironmentName).isIn("GlassDesertEnvironment")
-        validate(MapInfo::_songTimeOffset).isZero()
-        validate(MapInfo::_difficultyBeatmapSets).isNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
+        validate(MapInfo::_environmentName).correctType().exists().optionalNotNull()
+        validate(MapInfo::_allDirectionsEnvironmentName).correctType().exists().optionalNotNull().isIn("GlassDesertEnvironment")
+        validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1
-        validate(MapInfo::_environmentNames).let { if (ver.minor == 0) it.isNull() }
-        validate(MapInfo::_colorSchemes).let { cs -> if (ver.minor == 0) cs.isNull() else cs.validateForEach { it.validate(this) } }
+        validate(MapInfo::_environmentNames).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1)
+        validate(MapInfo::_colorSchemes).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1).validateForEach { it.validate(this) }
     }
+
+    fun toJson() = (jsonIgnoreUnknown.encodeToString(this) + "\n")
+        .replace(Regex("\\[\n +]"), "[]")
+        .replace("\n", "\r\n")
 }
 
 data class ImageInfo(val format: String, val width: Int, val height: Int)
 
+@Serializable
 data class MapCustomData(
     val _contributors: List<Contributor>?,
     val _editors: MapEditors?,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-}
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties
 
+@Serializable
 data class MapColorScheme(
-    val useOverride: Boolean?,
-    val colorScheme: ColorScheme?
+    val useOverride: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
+    val colorScheme: OptionalProperty<ColorScheme?> = OptionalProperty.NotPresent
 ) {
     fun validate(validator: Validator<MapColorScheme>) = validator.apply {
-        validate(MapColorScheme::useOverride).isNotNull()
-        validate(MapColorScheme::colorScheme).isNotNull()
+        validate(MapColorScheme::useOverride).exists().optionalNotNull()
+        validate(MapColorScheme::colorScheme).exists().optionalNotNull()
     }
 }
 
+@Serializable
 data class ColorScheme(
     val colorSchemeId: String?,
     val saberAColor: BSColor?,
@@ -206,6 +209,7 @@ data class ColorScheme(
     val environmentColorWBoost: BSColor?
 )
 
+@Serializable
 data class BSColor(
     val r: Float?,
     val g: Float?,
@@ -213,73 +217,62 @@ data class BSColor(
     val a: Float?
 )
 
+@Serializable
 data class MapEditors(
     val _lastEditedBy: String?,
     val beatSage: MapEditorVersion?,
-    @get:JsonProperty("MMA2")
     val MMA2: MapEditorVersion?,
-    @get:JsonProperty("ChroMapper")
     val ChroMapper: MapEditorVersion?,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-}
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties
 
+@Serializable
 data class MapEditorVersion(
     val version: String,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-}
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties
 
+@Serializable
 data class Contributor(
     val _role: String? = null,
     val _name: String? = null,
     val _iconPath: String? = null
 )
 
+@Serializable
 data class DifficultyBeatmapSet(
-    val _beatmapCharacteristicName: String,
-    val _difficultyBeatmaps: List<DifficultyBeatmap>,
-    val _customData: DifficultyBeatmapSetCustomData?
+    val _beatmapCharacteristicName: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmap?>>?>,
+    val _customData: OptionalProperty<DifficultyBeatmapSetCustomData?> = OptionalProperty.NotPresent
 ) {
     fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
         val allowedCharacteristics = mutableSetOf("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         if (ver.minor > 0) allowedCharacteristics.add("Legacy")
 
-        validate(DifficultyBeatmapSet::_beatmapCharacteristicName).isNotNull().isIn(allowedCharacteristics)
-        validate(DifficultyBeatmapSet::_difficultyBeatmaps).isNotNull().isNotEmpty().validateForEach {
+        validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().optionalNotNull().isIn(allowedCharacteristics)
+        validate(DifficultyBeatmapSet::_difficultyBeatmaps).exists().optionalNotNull().isNotEmpty().validateForEach {
             it.validate(this, self(), files, getFile, info, ver)
         }
+        validate(DifficultyBeatmapSet::_customData).optionalNotNull()
     }
 
     private fun self() = this
 
-    fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName)
+    fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName.or(""))
 }
 
+@Serializable
 data class DifficultyBeatmap(
-    val _difficulty: String,
-    val _difficultyRank: Int,
-    val _beatmapFilename: String,
-    val _noteJumpMovementSpeed: Float,
-    val _noteJumpStartBeatOffset: Float,
-    val _beatmapColorSchemeIdx: Int?,
-    val _environmentNameIdx: Int?,
-    val _customData: DifficultyBeatmapCustomData?,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-
+    val _difficulty: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _difficultyRank: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _beatmapFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _noteJumpMovementSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _noteJumpStartBeatOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _environmentNameIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _customData: OptionalProperty<DifficultyBeatmapCustomData?> = OptionalProperty.NotPresent,
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties {
     private fun diffValid(
         parent: Validator<*>.Property<*>,
         path: IZipPath?,
@@ -303,7 +296,7 @@ data class DifficultyBeatmap(
             mutableMapOf()
         }[difficulty] = diff
 
-        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo._beatsPerMinute) ?: 0f
+        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo._beatsPerMinute.or(0f)) ?: 0f
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
@@ -335,36 +328,35 @@ data class DifficultyBeatmap(
         )
 
         val allowedDiffNames = EDifficulty.values().map { it.name }.toSet()
-        validate(DifficultyBeatmap::_difficulty).isNotNull()
-            .validate(In(allowedDiffNames)) { it == null || allowedDiffNames.any { dn -> dn.equals(it, true) } }
-            .validate(UniqueDiff(_difficulty)) {
-                !characteristic._difficultyBeatmaps.any {
+        validate(DifficultyBeatmap::_difficulty).exists().optionalNotNull()
+            .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
+            .validate(UniqueDiff(_difficulty.orNull())) {
+                characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
                     it != self() && it._difficulty == self()._difficulty
-                }
+                } == false
             }
-        validate(DifficultyBeatmap::_difficultyRank).isNotNull().isIn(EDifficulty.values().map { it.idx })
-            .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank)?.name ?: "Unknown")) {
-                !characteristic._difficultyBeatmaps.any {
+        validate(DifficultyBeatmap::_difficultyRank).exists().optionalNotNull().isIn(EDifficulty.values().map { it.idx })
+            .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank.or(0))?.name ?: "Unknown")) {
+                characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
                     it != self() && it._difficultyRank == self()._difficultyRank
-                }
+                } == false
             }
-        validate(DifficultyBeatmap::_beatmapFilename).isNotNull().validate(InFiles) { it == null || files.contains(it.lowercase()) }
+        validate(DifficultyBeatmap::_beatmapFilename).exists().optionalNotNull().validate(InFiles) { it == null || files.contains(it.orNull()?.lowercase()) }
             .also {
-                if (files.contains(_beatmapFilename.lowercase())) {
-                    diffValid(it, getFile(_beatmapFilename), characteristic, self(), info)
+                val filename = _beatmapFilename.orNull()
+                if (filename != null && files.contains(filename.lowercase())) {
+                    diffValid(it, getFile(filename), characteristic, self(), info)
                 }
             }
 
         // V2.1
-        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).let {
-            if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1, info.mapInfo._colorSchemes?.size ?: 0)) else it.isNull()
-        }
-        validate(DifficultyBeatmap::_environmentNameIdx).let {
-            if (ver.minor > 0) it.isGreaterThanOrEqualTo(0).isLessThan(max(1, info.mapInfo._environmentNames?.size ?: 0)) else it.isNull()
-        }
+        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
+            .isLessThan(max(1, info.mapInfo._colorSchemes.orNull()?.size ?: 0)).notExistsBefore(ver, Schema2_1)
+        validate(DifficultyBeatmap::_environmentNameIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
+            .isLessThan(max(1, info.mapInfo._environmentNames.orNull()?.size ?: 0)).notExistsBefore(ver, Schema2_1)
     }
 
-    fun enumValue() = EDifficulty.fromInt(_difficultyRank) ?: searchEnum(_difficulty)
+    fun enumValue() = EDifficulty.fromInt(_difficultyRank.or(0)) ?: searchEnum(_difficulty.or(""))
 }
 
 fun extraFieldsViolation(
@@ -392,6 +384,7 @@ fun extraFieldsViolation(
         }
 }
 
+@Serializable
 data class DifficultyBeatmapCustomData(
     val _difficultyLabel: String?,
     val _editorOffset: Int?,
@@ -400,21 +393,12 @@ data class DifficultyBeatmapCustomData(
     val _information: List<String>?,
     val _suggestions: List<String>?,
     val _requirements: List<String>?,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-}
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties
 
+@Serializable
 data class DifficultyBeatmapSetCustomData(
     val _characteristicLabel: String?,
     val _characteristicIconImageFilename: String?,
-    @JsonIgnore @get:JsonAnyGetter val additionalInformation: LinkedHashMap<String, Any> = linkedMapOf()
-) {
-    @JsonAnySetter
-    fun ignored(name: String, value: Any) {
-        additionalInformation[name] = value
-    }
-}
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : AdditionalProperties

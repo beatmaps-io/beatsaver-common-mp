@@ -11,6 +11,7 @@ import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
+import io.beatmaps.common.or
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import net.lingala.zip4j.ZipFile
@@ -100,7 +101,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
     }
 
     val audioFile: File by lazy {
-        val path = fromInfo(info._songFilename)
+        val path = fromInfo(info._songFilename.or(""))
         File.createTempFile("audio", ".ogg").also { file ->
             file.deleteOnExit()
 
@@ -164,7 +165,7 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
     fun generatePreview() = AudioSystem.getAudioInputStream(audioFile).use { oggStream ->
         convertToPCM(
             oggStream,
-            info._previewStartTime,
+            info._previewStartTime.or(0f),
             10.2f
         ).use(::encodeToMp3)
     }

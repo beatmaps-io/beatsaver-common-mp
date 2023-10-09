@@ -319,35 +319,7 @@
       "b": 0.5
     }
   ],
-  "lightTranslationEventBoxGroups": [
-    {
-      "e": [
-        {
-          "t": 1,
-          "a": 2,
-          "l": [
-            {
-              "e": 3
-            }
-          ],
-          "f": {
-            "t": 0,
-            "r": 0,
-            "c": 0,
-            "n": 0,
-            "s": 0,
-            "l": 0,
-            "d": 0,
-            "f": 1,
-            "p": 1
-          },
-          "d": 1
-        }
-      ],
-      "g": 4,
-      "b": 0.5
-    }
-  ],
+  "lightTranslationEventBoxGroups": [],
   "basicEventTypesWithKeywords": {
     "d": []
   },

@@ -4,6 +4,7 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -24,6 +25,7 @@ data class BSDifficultyV3(
     val colorBoostBeatmapEvents: OptionalProperty<List<OptionalProperty<BSBoostEvent?>>?> = OptionalProperty.NotPresent,
     val lightColorEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightColorEventBoxGroup?>>?> = OptionalProperty.NotPresent,
     val lightRotationEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightRotationEventBoxGroup?>>?> = OptionalProperty.NotPresent,
+    val lightTranslationEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightTranslationEventBoxGroup?>>?> = OptionalProperty.NotPresent,
     val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val vfxEventBoxGroups: OptionalProperty<List<OptionalProperty<BSVfxEventBoxGroup?>>?> = OptionalProperty.NotPresent,
     val _fxEventsCollection: OptionalProperty<BSFxEventsCollection> = OptionalProperty.NotPresent,
@@ -39,7 +41,7 @@ data class BSDifficultyV3(
     override fun eventCount() = basicBeatmapEvents.orNull()?.size ?: 0
     override fun obstacleCount() = obstacles.orNull()?.size ?: 0
     private val firstAndLastLazy by lazy {
-        (colorNotes.orNull() ?: listOf()).sortedBy { note -> note.orNull()?.time }.let { sorted ->
+        (colorNotes.or(listOf())).sortedBy { note -> note.orNull()?.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
                 (sorted.first().orNull()?.time ?: 0f) to (sorted.last().orNull()?.time ?: 0f)
             } else {
@@ -103,10 +105,14 @@ data class BSEventBoxGroup<T : GroupableEventBox>(
     override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
     override val eventBoxes: OptionalProperty<List<OptionalProperty<T>>?> = OptionalProperty.NotPresent
-) : IBSEventBoxGroup<T>
+) : IBSEventBoxGroup<T> {
+    constructor(beat: Float, groupId: Int, eventBoxes: List<T>) :
+        this(OptionalProperty.Present(beat), OptionalProperty.Present(groupId), OptionalProperty.Present(eventBoxes.map { OptionalProperty.Present(it) }))
+}
 
 typealias BSLightColorEventBoxGroup = BSEventBoxGroup<BSLightColorEventBox>
 typealias BSLightRotationEventBoxGroup = BSEventBoxGroup<BSLightRotationEventBox>
+typealias BSLightTranslationEventBoxGroup = BSEventBoxGroup<BSLightTranslationEventBox>
 
 @Serializable
 data class BSVfxEventBoxGroup(
@@ -220,6 +226,50 @@ data class LightRotationBaseData(
 )
 
 @Serializable
+data class BSLightTranslationEventBox(
+    @SerialName("f")
+    override val indexFilter: OptionalProperty<BSIndexFilter?> = OptionalProperty.NotPresent,
+    @SerialName("w")
+    override val beatDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("d")
+    override val beatDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+
+    @SerialName("s")
+    val gapDistributionParam: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("t")
+    val gapDistributionParamType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("a")
+    val axis: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("r")
+    val flipTranslation: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("b")
+    val gapDistributionShouldAffectFirstBaseEvent: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("i")
+    val gapDistributionEaseType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("l")
+    val lightTranslationBaseDataList: OptionalProperty<List<OptionalProperty<LightTranslationBaseData?>>?> = OptionalProperty.NotPresent
+) : GroupableEventBox {
+    constructor(indexFilter: BSIndexFilter, beatDistributionParam: Float, beatDistributionParamType: Int, gapDistributionParam: Float, gapDistributionParamType: Int, axis: Int,
+                flipTranslation: Int, gapDistributionShouldAffectFirstBaseEvent: Int, gapDistributionEaseType: Int, lightTranslationBaseDataList: List<LightTranslationBaseData>) :
+        this(OptionalProperty.Present(indexFilter), OptionalProperty.Present(beatDistributionParam), OptionalProperty.Present(beatDistributionParamType),
+            OptionalProperty.Present(gapDistributionParam), OptionalProperty.Present(gapDistributionParamType), OptionalProperty.Present(axis),
+            OptionalProperty.Present(flipTranslation), OptionalProperty.Present(gapDistributionShouldAffectFirstBaseEvent), OptionalProperty.Present(gapDistributionEaseType),
+            OptionalProperty.Present(lightTranslationBaseDataList.map { OptionalProperty.Present(it) }))
+}
+
+@Serializable
+data class LightTranslationBaseData(
+    @SerialName("b")
+    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("p")
+    val usePreviousEventTranslationValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("e")
+    val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("t")
+    val translation: OptionalProperty<Float?> = OptionalProperty.NotPresent
+)
+
+@Serializable
 data class BSIndexFilter(
     @SerialName("f")
     val type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
@@ -239,7 +289,12 @@ data class BSIndexFilter(
     val limit: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("d")
     val alsoAffectsType: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) {
+    constructor(type: Int, param0: Int, param1: Int, reversed: Int, chunks: Int, randomType: Int, seed: Int, limit: Float, alsoAffectsType: Int) :
+        this(OptionalProperty.Present(type), OptionalProperty.Present(param0), OptionalProperty.Present(param1), OptionalProperty.Present(reversed),
+            OptionalProperty.Present(chunks), OptionalProperty.Present(randomType), OptionalProperty.Present(seed), OptionalProperty.Present(limit),
+            OptionalProperty.Present(alsoAffectsType))
+}
 
 @Serializable
 data class BSWaypoint(

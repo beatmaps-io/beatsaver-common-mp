@@ -48,30 +48,6 @@ class KotlinTimeModule : SimpleModule() {
     }
 }
 
-class BSPrettyPrinter : DefaultPrettyPrinter() {
-    init {
-        _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE
-    }
-
-    override fun createInstance(): BSPrettyPrinter {
-        return BSPrettyPrinter()
-    }
-
-    override fun writeEndArray(gen: JsonGenerator, nrOfValues: Int) {
-        if (!_arrayIndenter.isInline) {
-            --_nesting
-        }
-        if (nrOfValues > 0) {
-            _arrayIndenter.writeIndentation(gen, _nesting)
-        }
-        gen.writeRaw(']')
-    }
-
-    override fun writeObjectFieldValueSeparator(jg: JsonGenerator) {
-        jg.writeRaw(": ")
-    }
-}
-
 class InstantSerializer : StdSerializer<Instant>(Instant::class.java) {
     companion object {
         val INSTANCE: InstantSerializer = InstantSerializer()

@@ -5,6 +5,7 @@ import io.beatmaps.common.beatsaber.BSFxEventsCollection
 import io.beatmaps.common.beatsaber.BSVfxEventBoxGroup
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
+import io.beatmaps.common.schema.SchemaCommon.violationWrong
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -12,11 +13,10 @@ import kotlin.test.assertNull
 
 class SchemaTest33 {
     @Test
-    fun schema3_2as3_3() {
-        val ex = validateFolder("3_2as3_3")
+    fun schemaAs3_3() {
+        val ex = validateFolder("3_2/as3_3")
         assertNotNull(ex)
 
-        assertEquals(2, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violation("vfxEventBoxGroups"),
@@ -27,17 +27,86 @@ class SchemaTest33 {
     }
 
     @Test
-    fun schema3_3() {
-        val ex = validateFolder("3_3")
+    fun bullet() {
+        val ex = validateFolder("3_3/bullet")
         assertNull(ex)
     }
 
     @Test
-    fun schema3_3as3_2() {
-        val ex = validateFolder("3_3as3_2")
+    fun badtypes() {
+        val ex = validateFolder("3_3/badtypes")
         assertNotNull(ex)
 
-        assertEquals(125, ex.constraintViolations.size)
+        assertEquals(
+            setOf(
+                violationWrong("version"),
+                violationWrong("bpmEvents"),
+                violationWrong("rotationEvents"),
+                violationWrong("colorNotes"),
+                violationWrong("bombNotes"),
+                violationWrong("obstacles"),
+                violationWrong("sliders"),
+                violationWrong("burstSliders"),
+                violationWrong("waypoints"),
+                violationWrong("basicBeatmapEvents"),
+                violationWrong("colorBoostBeatmapEvents"),
+                violationWrong("lightColorEventBoxGroups"),
+                violationWrong("lightRotationEventBoxGroups"),
+                violationWrong("lightTranslationEventBoxGroups"),
+                violationWrong("vfxEventBoxGroups"),
+                violationWrong("_fxEventsCollection"),
+                violationWrong("basicEventTypesWithKeywords"),
+                violationWrong("useNormalEventsAsCompatibleEvents"),
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun basic() {
+        val ex = validateFolder("3_3/basic")
+        assertNull(ex)
+    }
+
+    @Test
+    fun schema() {
+        val ex = validateFolder("3_3/default")
+        assertNull(ex)
+    }
+
+    @Test
+    fun missing() {
+        val ex = validateFolder("3_3/missing")
+        assertNotNull(ex)
+
+        assertEquals(
+            setOf(
+                violation("bpmEvents"),
+                violation("rotationEvents"),
+                violation("colorNotes"),
+                violation("bombNotes"),
+                violation("obstacles"),
+                violation("sliders"),
+                violation("burstSliders"),
+                violation("waypoints"),
+                violation("basicBeatmapEvents"),
+                violation("colorBoostBeatmapEvents"),
+                violation("lightColorEventBoxGroups"),
+                violation("lightRotationEventBoxGroups"),
+                violation("lightTranslationEventBoxGroups"),
+                violation("vfxEventBoxGroups"),
+                violation("_fxEventsCollection"),
+                violation("basicEventTypesWithKeywords")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun schemaAs3_2() {
+        val ex = validateFolder("3_3/as3_2")
+        assertNotNull(ex)
+
         assertEquals(
             setOf(
                 violation("bpmEvents[0].beat"),
@@ -171,6 +240,14 @@ class SchemaTest33 {
                 violation("lightRotationEventBoxGroups[0].eventBoxes[0].lightRotationBaseDataList[0].usePreviousEventRotationValue"),
                 violation("lightRotationEventBoxGroups[0].eventBoxes[0].lightRotationBaseDataList[0].loopsCount"),
                 violation("lightRotationEventBoxGroups[0].eventBoxes[0].lightRotationBaseDataList[0].rotationDirection"),
+
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.param1"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.reversed"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.chunks"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.randomType"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.seed"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.limit"),
+                violation("lightTranslationEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType"),
 
                 violation("vfxEventBoxGroups", listOf<BSVfxEventBoxGroup>()),
                 violation("_fxEventsCollection", BSFxEventsCollection(OptionalProperty.Present(listOf()), OptionalProperty.Present(listOf()))),

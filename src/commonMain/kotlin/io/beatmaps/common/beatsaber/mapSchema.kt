@@ -4,6 +4,7 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.or
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -21,9 +22,9 @@ interface BSCustomData {
 fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> (obj.getCustomData()["_fake"] as? JsonPrimitive)?.booleanOrNull != true }
 
 fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProperty<T, Float> =
-    ReadOnlyProperty { thisRef, _ -> block(thisRef).orNull() ?: Float.NEGATIVE_INFINITY }
+    ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Float.NEGATIVE_INFINITY) }
 fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, Int> =
-    ReadOnlyProperty { thisRef, _ -> block(thisRef).orNull() ?: Int.MIN_VALUE }
+    ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Int.MIN_VALUE) }
 
 sealed interface BSDiff : BSCustomData {
     val version: OptionalProperty<String?>

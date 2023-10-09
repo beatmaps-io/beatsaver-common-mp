@@ -2,10 +2,16 @@ package io.beatmaps.common
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.modules.SerializersModule
 
 val json = Json {
@@ -19,6 +25,8 @@ val json = Json {
 
 val jsonIgnoreUnknown = Json {
     ignoreUnknownKeys = true
+    prettyPrint = true
+    prettyPrintIndent = "  "
 }
 
 sealed class OptionalProperty<out T> {
@@ -39,6 +47,9 @@ sealed class OptionalProperty<out T> {
     abstract fun orNull(): T?
 }
 
+fun <T : Any> OptionalProperty<T?>.or(v: T) = orNull() ?: v
+
+
 open class OptionalPropertySerializer<T>(
     private val valueSerializer: KSerializer<T>
 ) : KSerializer<OptionalProperty<T>> {
@@ -56,8 +67,22 @@ open class OptionalPropertySerializer<T>(
             OptionalProperty.WrongType, OptionalProperty.NotPresent -> throw SerializationException(
                 "Tried to serialize an optional property that had no value present. Is encodeDefaults false?"
             )
-            is OptionalProperty.Present ->
+            is OptionalProperty.Present -> {
                 valueSerializer.serialize(encoder, value.value)
+            }
         }
+    }
+}
+
+interface AdditionalProperties {
+    val additionalInformation: Map<String, JsonElement>
+}
+
+open class AdditionalPropertiesTransformer<T : AdditionalProperties>(
+    private val valueSerializer: KSerializer<T>
+) : JsonTransformingSerializer<T>(valueSerializer) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        println(valueSerializer.descriptor)
+        return element
     }
 }

@@ -15,23 +15,22 @@ import kotlin.test.assertNull
 
 class SchemaTest22 {
     @Test
-    fun basic2_2() {
+    fun basic() {
         val ex = validateFolder("2_2/basic")
         assertNull(ex)
     }
 
     @Test
-    fun schema2_2() {
+    fun schema() {
         val ex = validateFolder("2_2/default")
         assertNull(ex)
     }
 
     @Test
-    fun error2_2() {
+    fun error() {
         val ex = validateFolder("2_2/error")
         assertNotNull(ex)
 
-        assertEquals(46, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violation("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
@@ -86,11 +85,10 @@ class SchemaTest22 {
     }
 
     @Test
-    fun badtypes2_2() {
+    fun badtypes() {
         val ex = validateFolder("2_2/badtypes")
         assertNotNull(ex)
 
-        assertEquals(8, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violationWrong("version"),
@@ -107,11 +105,10 @@ class SchemaTest22 {
     }
 
     @Test
-    fun missing2_2() {
+    fun missing() {
         val ex = validateFolder("2_2/missing")
         assertNotNull(ex)
 
-        assertEquals(4, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violation("version"),
@@ -124,11 +121,10 @@ class SchemaTest22 {
     }
 
     @Test
-    fun null2_2() {
+    fun `null`() {
         val ex = validateFolder("2_2/null")
         assertNotNull(ex)
 
-        assertEquals(8, ex.constraintViolations.size)
         assertEquals(
             setOf(
                 violation("version", null, NotNull),

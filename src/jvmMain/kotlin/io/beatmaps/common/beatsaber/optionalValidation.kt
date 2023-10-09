@@ -3,10 +3,7 @@ package io.beatmaps.common.beatsaber
 import io.beatmaps.common.OptionalProperty
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
-import org.valiktor.constraints.Between
-import org.valiktor.constraints.In
-import org.valiktor.constraints.Matches
-import org.valiktor.constraints.NotNull
+import org.valiktor.constraints.*
 
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.existsBefore(ver: Version, requiredVersion: Version): Validator<E>.Property<T?> =
     this.validate(NodePresent) { it == null || ver >= requiredVersion || it !is OptionalProperty.NotPresent }
@@ -41,6 +38,24 @@ fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.correctType(): Val
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.optionalNotNull(): Validator<E>.Property<T?> =
     this.validate(NotNull) { it != null && it.validate { q -> q != null } }
 
+fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.isNotEmpty(): Validator<E>.Property<T?> =
+    this.validate(NotEmpty) { it != null && it.validate { q -> q == null || q.count() > 0 } }
+
+fun <E, T : OptionalProperty<Float?>> Validator<E>.Property<T?>.isZero(): Validator<E>.Property<T?> =
+    this.validate(Equals(0f)) { it != null && it.validate { q -> q == null || q == 0f } }
+
+fun <E, T : OptionalProperty<Float?>> Validator<E>.Property<T?>.isPositiveOrZero(): Validator<E>.Property<T?> =
+    isGreaterThanOrEqualTo(0f)
+
+fun <E, Q: Comparable<Q>, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isGreaterThanOrEqualTo(value: Q): Validator<E>.Property<T?> =
+    this.validate(GreaterOrEqual(value)) { it != null && it.validate { q -> q == null || q >= value } }
+
+fun <E, Q: Comparable<Q>, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isLessThan(value: Q): Validator<E>.Property<T?> =
+    this.validate(Less(value)) { it != null && it.validate { q -> q == null || q < value } }
+
+fun <E, T : OptionalProperty<String?>> Validator<E>.Property<T?>.isNotBlank(): Validator<E>.Property<T?> =
+    this.validate(NotBlank) { it != null && it.validate { q -> q == null || q.isNotBlank() } }
+
 inline fun <E, reified Q : Comparable<Q>, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isBetween(start: Q, end: Q): Validator<E>.Property<T?> =
     this.validate(Between(start, end)) {
         it == null || it.validate { q ->
@@ -51,7 +66,14 @@ inline fun <E, reified Q : Comparable<Q>, T : OptionalProperty<Q?>> Validator<E>
 fun <E, T: OptionalProperty<String?>> Validator<E>.Property<T?>.matches(regex: Regex): Validator<E>.Property<T?> =
         this.validate(Matches(regex)) { it == null || it.validate { q -> q == null || q.matches(regex) } }
 
-fun <E, T : OptionalProperty<Int?>> Validator<E>.Property<T?>.isIn(vararg values: Int?): Validator<E>.Property<T?> =
+fun <E, P, Q : Iterable<P>, T : OptionalProperty<P?>> Validator<E>.Property<T?>.isIn(values: Q): Validator<E>.Property<T?> =
+    this.validate(In(values)) {
+        it == null || it.validate { q ->
+            values.contains(q)
+        }
+    }
+
+fun <E, Q : Any, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isIn(vararg values: Q?): Validator<E>.Property<T?> =
     this.validate(In(values.toSet())) {
         it == null || it.validate { q ->
             values.contains(q)
