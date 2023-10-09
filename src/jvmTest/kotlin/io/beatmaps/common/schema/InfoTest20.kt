@@ -1,17 +1,14 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.OptionalProperty
-import io.beatmaps.common.beatsaber.DifficultyBeatmap
+import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.InFiles
-import io.beatmaps.common.beatsaber.MapColorScheme
 import io.beatmaps.common.beatsaber.MetadataLength
 import io.beatmaps.common.beatsaber.MisplacedCustomData
-import io.beatmaps.common.schema.SchemaCommon.infoPartialViolation
+import io.beatmaps.common.beatsaber.NodeNotPresent
+import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
-import io.beatmaps.common.schema.SchemaCommon.infoViolationWrong
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
-import org.valiktor.DefaultConstraintViolation
 import org.valiktor.constraints.Between
 import org.valiktor.constraints.Equals
 import org.valiktor.constraints.GreaterOrEqual
@@ -49,40 +46,40 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_version", null, NotNull),
-                infoViolation("_songName", null, NotNull),
-                infoViolation("_songSubName", null, NotNull),
-                infoViolation("_songAuthorName", null, NotNull),
-                infoViolation("_levelAuthorName", null, NotNull),
-                infoViolation("_beatsPerMinute", null, NotNull),
-                infoViolation("_shuffle", null, NotNull),
-                infoViolation("_shufflePeriod", null, NotNull),
-                infoViolation("_songFilename", null, NotNull),
-                infoViolation("_coverImageFilename", null, NotNull),
-                infoViolation("_environmentName", null, NotNull),
-                infoPartialViolation("_allDirectionsEnvironmentName", In::class),
-                infoViolation("_customData._contributors[0]._role", null, NotNull),
-                infoViolation("_customData._contributors[0]._name", null, NotNull),
-                infoViolation("_customData._contributors[0]._iconPath", null, NotNull),
-                infoViolation("_customData._contributors[1]", null, NotNull),
-                infoViolation("_customData._editors._lastEditedBy", null, NotNull),
-                infoPartialViolation("_difficultyBeatmapSets[0]._beatmapCharacteristicName", In::class),
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty", In::class),
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank", In::class),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._difficultyLabel", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOffset", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOldOffset", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._warnings[0]", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._information[0]", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._suggestions[0]", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._requirements[0]", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[1]", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._customData._characteristicLabel", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._customData._characteristicIconImageFilename", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[1]._difficultyBeatmaps", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[2]", null, NotNull)
+            listOf<Any>(
+                infoViolation<NotNull>("_version"),
+                infoViolation<NotNull>("_songName"),
+                infoViolation<NotNull>("_songSubName"),
+                infoViolation<NotNull>("_songAuthorName"),
+                infoViolation<NotNull>("_levelAuthorName"),
+                infoViolation<NotNull>("_beatsPerMinute"),
+                infoViolation<NotNull>("_shuffle"),
+                infoViolation<NotNull>("_shufflePeriod"),
+                infoViolation<NotNull>("_songFilename"),
+                infoViolation<NotNull>("_coverImageFilename"),
+                infoViolation<NotNull>("_environmentName"),
+                infoViolation<In<String>>("_allDirectionsEnvironmentName"),
+                infoViolation<NotNull>("_customData._contributors[0]._role"),
+                infoViolation<NotNull>("_customData._contributors[0]._name"),
+                infoViolation<NotNull>("_customData._contributors[0]._iconPath"),
+                infoViolation<NotNull>("_customData._contributors[1]"),
+                infoViolation<NotNull>("_customData._editors._lastEditedBy"),
+                infoViolation<In<String>>("_difficultyBeatmapSets[0]._beatmapCharacteristicName"),
+                infoViolation<In<String>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty"),
+                infoViolation<In<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._difficultyLabel"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOffset"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOldOffset"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._warnings[0]"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._information[0]"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._suggestions[0]"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._requirements[0]"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[1]"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._customData._characteristicLabel"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._customData._characteristicIconImageFilename"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[1]._difficultyBeatmaps"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[2]")
             ),
             ex.constraintViolations
         )
@@ -94,14 +91,14 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_customData._contributors", null, NotNull),
-                infoViolation("_customData._editors.MMA2", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._warnings", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._information", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._suggestions", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._requirements", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._customData", null, NotNull)
+            listOf<Any>(
+                infoViolation<NotNull>("_customData._contributors"),
+                infoViolation<NotNull>("_customData._editors.MMA2"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._warnings"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._information"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._suggestions"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._requirements"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._customData")
             ),
             ex.constraintViolations
         )
@@ -113,9 +110,9 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_customData._editors", null, NotNull),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData", null, NotNull)
+            listOf<Any>(
+                infoViolation<NotNull>("_customData._editors"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData")
             ),
             ex.constraintViolations
         )
@@ -127,9 +124,9 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_customData", null, NotNull),
-                infoViolation("_difficultyBeatmapSets", null, NotNull)
+            listOf<Any>(
+                infoViolation<NotNull>("_customData"),
+                infoViolation<NotNull>("_difficultyBeatmapSets")
             ),
             ex.constraintViolations
         )
@@ -141,53 +138,53 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_songName", "", NotBlank),
-                infoViolation("_songName", "", MetadataLength),
-                infoPartialViolation("_beatsPerMinute", Between::class),
-                infoPartialViolation("_songTimeOffset", Equals::class),
-                infoPartialViolation("_previewStartTime", GreaterOrEqual::class),
-                infoPartialViolation("_previewDuration", GreaterOrEqual::class),
-                infoViolation("_songFilename", "missing.ogg", InFiles),
-                infoViolation("_coverImageFilename", "missing.png", InFiles),
+            listOf<Any>(
+                infoViolation<NotBlank>("_songName"),
+                infoViolation<MetadataLength>("_songName"),
+                infoViolation<Between<Float>>("_beatsPerMinute"),
+                infoViolation<Equals<Float>>("_songTimeOffset"),
+                infoViolation<GreaterOrEqual<Float>>("_previewStartTime"),
+                infoViolation<GreaterOrEqual<Float>>("_previewDuration"),
+                infoViolation<InFiles>("_songFilename"),
+                infoViolation<InFiles>("_coverImageFilename"),
 
-                DefaultConstraintViolation("_customData._warnings", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._information", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._suggestions", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._requirements", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._difficultyLabel", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._envColorLeft", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._envColorRight", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._colorLeft", null, MisplacedCustomData),
-                DefaultConstraintViolation("_customData._colorRight", null, MisplacedCustomData),
+                infoViolation<MisplacedCustomData>("_customData._warnings"),
+                infoViolation<MisplacedCustomData>("_customData._information"),
+                infoViolation<MisplacedCustomData>("_customData._suggestions"),
+                infoViolation<MisplacedCustomData>("_customData._requirements"),
+                infoViolation<MisplacedCustomData>("_customData._difficultyLabel"),
+                infoViolation<MisplacedCustomData>("_customData._envColorLeft"),
+                infoViolation<MisplacedCustomData>("_customData._envColorRight"),
+                infoViolation<MisplacedCustomData>("_customData._colorLeft"),
+                infoViolation<MisplacedCustomData>("_customData._colorRight"),
 
-                infoPartialViolation("_allDirectionsEnvironmentName", In::class),
+                infoViolation<In<String>>("_allDirectionsEnvironmentName"),
 
-                infoPartialViolation("_difficultyBeatmapSets[0]._beatmapCharacteristicName", In::class),
+                infoViolation<In<String>>("_difficultyBeatmapSets[0]._beatmapCharacteristicName"),
 
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._warnings", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._information", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._suggestions", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._requirements", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyLabel", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._envColorLeft", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._envColorRight", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._colorLeft", null, MisplacedCustomData),
-                DefaultConstraintViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._colorRight", null, MisplacedCustomData),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._warnings"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._information"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._suggestions"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._requirements"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyLabel"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._envColorLeft"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._envColorRight"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._colorLeft"),
+                infoViolation<MisplacedCustomData>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._colorRight"),
 
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty", In::class),
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank", In::class),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename", "missing.dat", InFiles),
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx", Less::class),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx", 1),
-                infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx", Less::class),
-                infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx", 1),
+                infoViolation<In<String>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty"),
+                infoViolation<In<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank"),
+                infoViolation<InFiles>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename"),
+                infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
+                infoViolation<NodeNotPresent>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
+                infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
+                infoViolation<NodeNotPresent>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
 
-                infoPartialViolation("_difficultyBeatmapSets[1]._beatmapCharacteristicName", In::class),
-                infoViolation("_difficultyBeatmapSets[1]._difficultyBeatmaps", listOf<OptionalProperty.Present<DifficultyBeatmap>>(), NotEmpty),
+                infoViolation<In<String>>("_difficultyBeatmapSets[1]._beatmapCharacteristicName"),
+                infoViolation<NotEmpty>("_difficultyBeatmapSets[1]._difficultyBeatmaps"),
 
-                infoViolation("_environmentNames", listOf<String>()),
-                infoViolation("_colorSchemes", listOf<MapColorScheme>())
+                infoViolation<NodeNotPresent>("_environmentNames"),
+                infoViolation<NodeNotPresent>("_colorSchemes")
             ),
             ex.constraintViolations
         )
@@ -199,23 +196,23 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolation("_version"),
-                infoViolation("_songName"),
-                infoViolation("_songSubName"),
-                infoViolation("_songAuthorName"),
-                infoViolation("_levelAuthorName"),
-                infoViolation("_beatsPerMinute"),
-                infoViolation("_songTimeOffset"),
-                infoViolation("_shuffle"),
-                infoViolation("_shufflePeriod"),
-                infoViolation("_previewStartTime"),
-                infoViolation("_previewDuration"),
-                infoViolation("_songFilename"),
-                infoViolation("_coverImageFilename"),
-                infoViolation("_environmentName"),
-                infoViolation("_allDirectionsEnvironmentName"),
-                infoViolation("_difficultyBeatmapSets")
+            listOf<Any>(
+                infoViolation<NodePresent>("_version"),
+                infoViolation<NodePresent>("_songName"),
+                infoViolation<NodePresent>("_songSubName"),
+                infoViolation<NodePresent>("_songAuthorName"),
+                infoViolation<NodePresent>("_levelAuthorName"),
+                infoViolation<NodePresent>("_beatsPerMinute"),
+                infoViolation<NodePresent>("_songTimeOffset"),
+                infoViolation<NodePresent>("_shuffle"),
+                infoViolation<NodePresent>("_shufflePeriod"),
+                infoViolation<NodePresent>("_previewStartTime"),
+                infoViolation<NodePresent>("_previewDuration"),
+                infoViolation<NodePresent>("_songFilename"),
+                infoViolation<NodePresent>("_coverImageFilename"),
+                infoViolation<NodePresent>("_environmentName"),
+                infoViolation<NodePresent>("_allDirectionsEnvironmentName"),
+                infoViolation<NodePresent>("_difficultyBeatmapSets")
             ),
             ex.constraintViolations
         )
@@ -227,23 +224,23 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                infoViolationWrong("_version"),
-                infoViolationWrong("_songName"),
-                infoViolationWrong("_songSubName"),
-                infoViolationWrong("_songAuthorName"),
-                infoViolationWrong("_levelAuthorName"),
-                infoViolationWrong("_beatsPerMinute"),
-                infoViolationWrong("_songTimeOffset"),
-                infoViolationWrong("_shuffle"),
-                infoViolationWrong("_shufflePeriod"),
-                infoViolationWrong("_previewStartTime"),
-                infoViolationWrong("_previewDuration"),
-                infoViolationWrong("_songFilename"),
-                infoViolationWrong("_coverImageFilename"),
-                infoViolationWrong("_environmentName"),
-                infoViolationWrong("_allDirectionsEnvironmentName"),
-                infoViolationWrong("_difficultyBeatmapSets")
+            listOf<Any>(
+                infoViolation<CorrectType>("_version"),
+                infoViolation<CorrectType>("_songName"),
+                infoViolation<CorrectType>("_songSubName"),
+                infoViolation<CorrectType>("_songAuthorName"),
+                infoViolation<CorrectType>("_levelAuthorName"),
+                infoViolation<CorrectType>("_beatsPerMinute"),
+                infoViolation<CorrectType>("_songTimeOffset"),
+                infoViolation<CorrectType>("_shuffle"),
+                infoViolation<CorrectType>("_shufflePeriod"),
+                infoViolation<CorrectType>("_previewStartTime"),
+                infoViolation<CorrectType>("_previewDuration"),
+                infoViolation<CorrectType>("_songFilename"),
+                infoViolation<CorrectType>("_coverImageFilename"),
+                infoViolation<CorrectType>("_environmentName"),
+                infoViolation<CorrectType>("_allDirectionsEnvironmentName"),
+                infoViolation<CorrectType>("_difficultyBeatmapSets")
             ),
             ex.constraintViolations
         )

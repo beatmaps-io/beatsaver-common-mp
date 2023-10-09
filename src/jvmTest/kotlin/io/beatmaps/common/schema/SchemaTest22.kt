@@ -1,10 +1,10 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.CutDirection
-import io.beatmaps.common.schema.SchemaCommon.partialViolation
+import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
-import io.beatmaps.common.schema.SchemaCommon.violationWrong
 import org.junit.Test
 import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
@@ -33,53 +33,53 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violation("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
-                partialViolation("_notes[0]._type", In::class),
-                violation("_notes[0]._cutDirection", 50, CutDirection),
-                partialViolation("_notes[0]._time", Between::class),
-                partialViolation("_notes[1]._type", In::class),
-                violation("_notes[1]._cutDirection", null, NotNull),
-                violation("_notes[1]._time", null, NotNull),
-                violation("_notes[1]._lineIndex", null, NotNull),
-                violation("_notes[1]._lineLayer", null, NotNull),
-                violationWrong("_notes[2]._type"),
-                violationWrong("_notes[2]._cutDirection"),
-                violationWrong("_notes[2]._time"),
-                violationWrong("_notes[2]._lineIndex"),
-                violationWrong("_notes[2]._lineLayer"),
-                violation("_notes[3]._type"),
-                violation("_notes[3]._cutDirection"),
-                violation("_notes[3]._time"),
-                violation("_notes[3]._lineIndex"),
-                violation("_notes[3]._lineLayer"),
-                violationWrong("_notes[4]"),
-                violation("_obstacles[1]._type", null, NotNull),
-                violation("_obstacles[1]._duration", null, NotNull),
-                violation("_obstacles[1]._time", null, NotNull),
-                violation("_obstacles[1]._lineIndex", null, NotNull),
-                violation("_obstacles[1]._width", null, NotNull),
-                violationWrong("_obstacles[2]._type"),
-                violationWrong("_obstacles[2]._duration"),
-                violationWrong("_obstacles[2]._time"),
-                violationWrong("_obstacles[2]._lineIndex"),
-                violationWrong("_obstacles[2]._width"),
-                violation("_obstacles[3]._type"),
-                violation("_obstacles[3]._duration"),
-                violation("_obstacles[3]._time"),
-                violation("_obstacles[3]._lineIndex"),
-                violation("_obstacles[3]._width"),
-                violationWrong("_obstacles[4]"),
-                violation("_events[1]._time", null, NotNull),
-                violation("_events[1]._type", null, NotNull),
-                violation("_events[1]._value", null, NotNull),
-                violationWrong("_events[2]._time"),
-                violationWrong("_events[2]._type"),
-                violationWrong("_events[2]._value"),
-                violation("_events[3]._time"),
-                violation("_events[3]._type"),
-                violation("_events[3]._value"),
-                violationWrong("_events[4]")
+            listOf<Any>(
+                violation<Matches>("version"),
+                violation<In<Int>>("_notes[0]._type"),
+                violation<CutDirection>("_notes[0]._cutDirection"),
+                violation<Between<Float>>("_notes[0]._time"),
+                violation<In<Int>>("_notes[1]._type"),
+                violation<NotNull>("_notes[1]._cutDirection"),
+                violation<NotNull>("_notes[1]._time"),
+                violation<NotNull>("_notes[1]._lineIndex"),
+                violation<NotNull>("_notes[1]._lineLayer"),
+                violation<CorrectType>("_notes[2]._type"),
+                violation<CorrectType>("_notes[2]._cutDirection"),
+                violation<CorrectType>("_notes[2]._time"),
+                violation<CorrectType>("_notes[2]._lineIndex"),
+                violation<CorrectType>("_notes[2]._lineLayer"),
+                violation<NodePresent>("_notes[3]._type"),
+                violation<NodePresent>("_notes[3]._cutDirection"),
+                violation<NodePresent>("_notes[3]._time"),
+                violation<NodePresent>("_notes[3]._lineIndex"),
+                violation<NodePresent>("_notes[3]._lineLayer"),
+                violation<CorrectType>("_notes[4]"),
+                violation<NotNull>("_obstacles[1]._type"),
+                violation<NotNull>("_obstacles[1]._duration"),
+                violation<NotNull>("_obstacles[1]._time"),
+                violation<NotNull>("_obstacles[1]._lineIndex"),
+                violation<NotNull>("_obstacles[1]._width"),
+                violation<CorrectType>("_obstacles[2]._type"),
+                violation<CorrectType>("_obstacles[2]._duration"),
+                violation<CorrectType>("_obstacles[2]._time"),
+                violation<CorrectType>("_obstacles[2]._lineIndex"),
+                violation<CorrectType>("_obstacles[2]._width"),
+                violation<NodePresent>("_obstacles[3]._type"),
+                violation<NodePresent>("_obstacles[3]._duration"),
+                violation<NodePresent>("_obstacles[3]._time"),
+                violation<NodePresent>("_obstacles[3]._lineIndex"),
+                violation<NodePresent>("_obstacles[3]._width"),
+                violation<CorrectType>("_obstacles[4]"),
+                violation<NotNull>("_events[1]._time"),
+                violation<NotNull>("_events[1]._type"),
+                violation<NotNull>("_events[1]._value"),
+                violation<CorrectType>("_events[2]._time"),
+                violation<CorrectType>("_events[2]._type"),
+                violation<CorrectType>("_events[2]._value"),
+                violation<NodePresent>("_events[3]._time"),
+                violation<NodePresent>("_events[3]._type"),
+                violation<NodePresent>("_events[3]._value"),
+                violation<CorrectType>("_events[4]")
             ),
             ex.constraintViolations
         )
@@ -91,15 +91,15 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violationWrong("version"),
-                violationWrong("_notes"),
-                violationWrong("_obstacles"),
-                violationWrong("_events"),
-                violationWrong("_waypoints"),
-                violationWrong("_specialEventsKeywordFilters"),
-                violationWrong("_customData"),
-                violationWrong("_BPMChanges")
+            listOf<Any>(
+                violation<CorrectType>("version"),
+                violation<CorrectType>("_notes"),
+                violation<CorrectType>("_obstacles"),
+                violation<CorrectType>("_events"),
+                violation<CorrectType>("_waypoints"),
+                violation<CorrectType>("_specialEventsKeywordFilters"),
+                violation<CorrectType>("_customData"),
+                violation<CorrectType>("_BPMChanges")
             ),
             ex.constraintViolations
         )
@@ -111,11 +111,11 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violation("version"),
-                violation("_notes"),
-                violation("_obstacles"),
-                violation("_events")
+            listOf<Any>(
+                violation<NodePresent>("version"),
+                violation<NodePresent>("_notes"),
+                violation<NodePresent>("_obstacles"),
+                violation<NodePresent>("_events")
             ),
             ex.constraintViolations
         )
@@ -127,15 +127,15 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf(
-                violation("version", null, NotNull),
-                violation("_notes", null, NotNull),
-                violation("_obstacles", null, NotNull),
-                violation("_events", null, NotNull),
-                violation("_waypoints", null, NotNull),
-                violation("_specialEventsKeywordFilters", null, NotNull),
-                violation("_customData", null, NotNull),
-                violation("_BPMChanges", null, NotNull)
+            listOf<Any>(
+                violation<NotNull>("version"),
+                violation<NotNull>("_notes"),
+                violation<NotNull>("_obstacles"),
+                violation<NotNull>("_events"),
+                violation<NotNull>("_waypoints"),
+                violation<NotNull>("_specialEventsKeywordFilters"),
+                violation<NotNull>("_customData"),
+                violation<NotNull>("_BPMChanges")
             ),
             ex.constraintViolations
         )

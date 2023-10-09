@@ -35,6 +35,9 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            with(languageSettings) {
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+            }
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
@@ -43,6 +46,11 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+            }
+        }
+        val jsMain by getting {
+            with(languageSettings) {
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
             }
         }
         val jsTest by getting {
@@ -56,7 +64,10 @@ kotlin {
                 maven { url = uri("https://jitpack.io") }
                 maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
             }
-            languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
+            with(languageSettings) {
+                optIn("kotlinx.coroutines.DelicateCoroutinesApi")
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+            }
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

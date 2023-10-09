@@ -323,10 +323,10 @@ data class BSWaypoint(
 @Serializable
 data class BSBomb(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSNoteV3(
@@ -397,24 +397,24 @@ data class BSSlider(
 @Serializable
 data class BSEventV3(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("et")
     val eventType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
     val value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("f")
     val floatValue: OptionalProperty<Float?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSRotationEvent(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("e")
     val executionTime: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
     val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSFxEventsCollection(
@@ -424,15 +424,29 @@ data class BSFxEventsCollection(
     val floatEventsList: OptionalProperty<List<OptionalProperty<BSFloatFxEventBaseData?>>?> = OptionalProperty.NotPresent
 )
 
-@Serializable
-data class BSFxEventBaseData<T>(
-    @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
-    @SerialName("p")
-    val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    @SerialName("v")
-    val value: OptionalProperty<T?> = OptionalProperty.NotPresent
-)
+abstract class BSFxEventBaseData<T> : BSObject() {
+    abstract val usePreviousEventValue: OptionalProperty<Int?>
+    abstract val value: OptionalProperty<T?>
+}
 
-typealias BSIntFxEventBaseData = BSFxEventBaseData<Int>
-typealias BSFloatFxEventBaseData = BSFxEventBaseData<Float>
+@Serializable
+data class BSIntFxEventBaseData(
+    @SerialName("b")
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("p")
+    override val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("v")
+    override val value: OptionalProperty<Int?> = OptionalProperty.NotPresent
+) : BSFxEventBaseData<Int>()
+
+@Serializable
+data class BSFloatFxEventBaseData(
+    @SerialName("b")
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("p")
+    override val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("v")
+    override val value: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("i")
+    val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent
+) : BSFxEventBaseData<Float>()

@@ -59,8 +59,8 @@
           "_beatmapFilename": "Easy.dat",
           "_noteJumpMovementSpeed": 0.0,
           "_noteJumpStartBeatOffset": 0.0,
-          "_beatmapColorSchemeIdx": 1,
-          "_environmentNameIdx": 2
+          "_beatmapColorSchemeIdx": 2,
+          "_environmentNameIdx": 3
         }
       ]
     }
