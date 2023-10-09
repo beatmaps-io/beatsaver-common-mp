@@ -1,5 +1,4 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
-//AdditionalPropertiesTransformer::class
 
 package io.beatmaps.common.beatsaber
 
@@ -148,10 +147,12 @@ data class MapInfo(
         validate(MapInfo::_shufflePeriod).correctType().exists().optionalNotNull()
         validate(MapInfo::_previewStartTime).correctType().exists().isPositiveOrZero()
         validate(MapInfo::_previewDuration).correctType().exists().isPositiveOrZero()
-        validate(MapInfo::_songFilename).correctType().exists().optionalNotNull().validate(InFiles) { it == null || it.validate { q -> files.contains(q?.lowercase()) } }
+        validate(MapInfo::_songFilename).correctType().exists().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .validate(AudioFormat) { it == null || audioValid(audio, info) }
         val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
-        validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull().validate(InFiles) { it == null || it.validate { q -> files.contains(q?.lowercase()) } }
+        validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .validate(ImageFormat) { imageInfo == null || arrayOf("jpeg", "jpg", "png").contains(imageInfo.format) }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
@@ -162,7 +163,10 @@ data class MapInfo(
             )
         }
         validate(MapInfo::_environmentName).correctType().exists().optionalNotNull()
-        validate(MapInfo::_allDirectionsEnvironmentName).correctType().exists().optionalNotNull().isIn("GlassDesertEnvironment")
+        validate(MapInfo::_allDirectionsEnvironmentName).correctType().exists().isIn("GlassDesertEnvironment")
+        validate(MapInfo::_customData).correctType().optionalNotNull().validateOptional {
+            it.validate(this, files)
+        }
         validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1
@@ -179,10 +183,19 @@ data class ImageInfo(val format: String, val width: Int, val height: Int)
 
 @Serializable
 data class MapCustomData(
-    val _contributors: List<Contributor>?,
-    val _editors: MapEditors?,
+    val _contributors: OptionalProperty<List<OptionalProperty<Contributor?>>?> = OptionalProperty.NotPresent,
+    val _editors: OptionalProperty<MapEditors?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties
+) : JAdditionalProperties() {
+    fun validate(validator: Validator<MapCustomData>, files: Set<String>) = validator.apply {
+        validate(MapCustomData::_contributors).correctType().optionalNotNull().validateForEach {
+            it.validate(this, files)
+        }
+        validate(MapCustomData::_editors).correctType().optionalNotNull().validateOptional {
+            it.validate(this)
+        }
+    }
+}
 
 @Serializable
 data class MapColorScheme(
@@ -190,54 +203,100 @@ data class MapColorScheme(
     val colorScheme: OptionalProperty<ColorScheme?> = OptionalProperty.NotPresent
 ) {
     fun validate(validator: Validator<MapColorScheme>) = validator.apply {
-        validate(MapColorScheme::useOverride).exists().optionalNotNull()
-        validate(MapColorScheme::colorScheme).exists().optionalNotNull()
+        validate(MapColorScheme::useOverride).correctType().optionalNotNull()
+        validate(MapColorScheme::colorScheme).correctType().optionalNotNull().validateOptional {
+            it.validate(this)
+        }
     }
 }
 
 @Serializable
 data class ColorScheme(
-    val colorSchemeId: String?,
-    val saberAColor: BSColor?,
-    val saberBColor: BSColor?,
-    val environmentColor0: BSColor?,
-    val environmentColor1: BSColor?,
-    val obstaclesColor: BSColor?,
-    val environmentColor0Boost: BSColor?,
-    val environmentColor1Boost: BSColor?,
-    val environmentColorW: BSColor?,
-    val environmentColorWBoost: BSColor?
-)
+    val colorSchemeId: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val saberAColor: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val saberBColor: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColor0: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColor1: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val obstaclesColor: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColor0Boost: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColor1Boost: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColorW: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
+    val environmentColorWBoost: OptionalProperty<BSColor?> = OptionalProperty.NotPresent
+) {
+    fun validate(validator: Validator<ColorScheme>) = validator.apply {
+        validate(ColorScheme::colorSchemeId).correctType().optionalNotNull()
+
+        listOf(
+            ColorScheme::saberAColor, ColorScheme::saberBColor, ColorScheme::environmentColor0, ColorScheme::environmentColor1, ColorScheme::obstaclesColor,
+            ColorScheme::environmentColor0Boost, ColorScheme::environmentColor1Boost, ColorScheme::environmentColorW, ColorScheme::environmentColorWBoost
+        ).forEach { prop ->
+            validate(prop).correctType().optionalNotNull().validateOptional {
+                it.validate(this)
+            }
+        }
+    }
+}
 
 @Serializable
 data class BSColor(
-    val r: Float?,
-    val g: Float?,
-    val b: Float?,
-    val a: Float?
-)
+    val r: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val g: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val b: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val a: OptionalProperty<Float?> = OptionalProperty.NotPresent
+) {
+    fun validate(validator: Validator<BSColor>) = validator.apply {
+        validate(BSColor::r).correctType().optionalNotNull()
+        validate(BSColor::g).correctType().optionalNotNull()
+        validate(BSColor::b).correctType().optionalNotNull()
+        validate(BSColor::a).correctType().optionalNotNull()
+    }
+}
 
 @Serializable
 data class MapEditors(
-    val _lastEditedBy: String?,
-    val beatSage: MapEditorVersion?,
-    val MMA2: MapEditorVersion?,
-    val ChroMapper: MapEditorVersion?,
+    val _lastEditedBy: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val beatSage: OptionalProperty<MapEditorVersion?> = OptionalProperty.NotPresent,
+    val MMA2: OptionalProperty<MapEditorVersion?> = OptionalProperty.NotPresent,
+    val ChroMapper: OptionalProperty<MapEditorVersion?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties
+) : JAdditionalProperties() {
+    fun validate(
+        validator: Validator<MapEditors>
+    ) = validator.apply {
+        validate(MapEditors::_lastEditedBy).correctType().optionalNotNull()
+        validate(MapEditors::beatSage).correctType().optionalNotNull()
+        validate(MapEditors::MMA2).correctType().optionalNotNull()
+        validate(MapEditors::ChroMapper).correctType().optionalNotNull()
+    }
+}
 
 @Serializable
 data class MapEditorVersion(
-    val version: String,
+    val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties
+) : JAdditionalProperties() {
+    fun validate(
+        validator: Validator<MapEditorVersion>
+    ) = validator.apply {
+        validate(MapEditorVersion::version).correctType().optionalNotNull()
+    }
+}
 
 @Serializable
 data class Contributor(
-    val _role: String? = null,
-    val _name: String? = null,
-    val _iconPath: String? = null
-)
+    val _role: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _name: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
+) {
+    fun validate(
+        validator: Validator<Contributor>, files: Set<String>
+    ) = validator.apply {
+        validate(Contributor::_role).correctType().optionalNotNull()
+        validate(Contributor::_name).correctType().optionalNotNull()
+        validate(Contributor::_iconPath).correctType().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
+    }
+}
 
 @Serializable
 data class DifficultyBeatmapSet(
@@ -249,16 +308,22 @@ data class DifficultyBeatmapSet(
         val allowedCharacteristics = mutableSetOf("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
         if (ver.minor > 0) allowedCharacteristics.add("Legacy")
 
-        validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().optionalNotNull().isIn(allowedCharacteristics)
+        validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().isIn(allowedCharacteristics)
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).exists().optionalNotNull().isNotEmpty().validateForEach {
             it.validate(this, self(), files, getFile, info, ver)
         }
-        validate(DifficultyBeatmapSet::_customData).optionalNotNull()
+        validate(DifficultyBeatmapSet::_customData).correctType().optionalNotNull().validateOptional {
+            it.validate(this, files)
+        }
     }
 
     private fun self() = this
 
     fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName.or(""))
+}
+
+abstract class JAdditionalProperties : AdditionalProperties {
+    override val properties = javaClass.declaredFields.filter { it.type == OptionalProperty::class.java }.map { it.name }.toSet()
 }
 
 @Serializable
@@ -272,7 +337,7 @@ data class DifficultyBeatmap(
     val _environmentNameIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _customData: OptionalProperty<DifficultyBeatmapCustomData?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties {
+) : JAdditionalProperties() {
     private fun diffValid(
         parent: Validator<*>.Property<*>,
         path: IZipPath?,
@@ -323,31 +388,35 @@ data class DifficultyBeatmap(
     ) = validator.apply {
         extraFieldsViolation(
             constraintViolations,
-            additionalInformation.keys,
-            arrayOf("_warnings", "_information", "_suggestions", "_requirements", "_difficultyLabel", "_envColorLeft", "_envColorRight", "_colorLeft", "_colorRight")
+            additionalInformation.keys
         )
 
         val allowedDiffNames = EDifficulty.values().map { it.name }.toSet()
-        validate(DifficultyBeatmap::_difficulty).exists().optionalNotNull()
+        validate(DifficultyBeatmap::_difficulty).exists()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(_difficulty.orNull())) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
                     it != self() && it._difficulty == self()._difficulty
                 } == false
             }
-        validate(DifficultyBeatmap::_difficultyRank).exists().optionalNotNull().isIn(EDifficulty.values().map { it.idx })
+        validate(DifficultyBeatmap::_difficultyRank).exists().isIn(EDifficulty.values().map { it.idx })
             .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank.or(0))?.name ?: "Unknown")) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
                     it != self() && it._difficultyRank == self()._difficultyRank
                 } == false
             }
-        validate(DifficultyBeatmap::_beatmapFilename).exists().optionalNotNull().validate(InFiles) { it == null || files.contains(it.orNull()?.lowercase()) }
+        validate(DifficultyBeatmap::_beatmapFilename).exists().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .also {
                 val filename = _beatmapFilename.orNull()
                 if (filename != null && files.contains(filename.lowercase())) {
                     diffValid(it, getFile(filename), characteristic, self(), info)
                 }
             }
+
+        validate(DifficultyBeatmap::_customData).optionalNotNull().correctType().validateOptional {
+            it.validate(this)
+        }
 
         // V2.1
         validate(DifficultyBeatmap::_beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
@@ -386,19 +455,47 @@ fun extraFieldsViolation(
 
 @Serializable
 data class DifficultyBeatmapCustomData(
-    val _difficultyLabel: String?,
-    val _editorOffset: Int?,
-    val _editorOldOffset: Int?,
-    val _warnings: List<String>?,
-    val _information: List<String>?,
-    val _suggestions: List<String>?,
-    val _requirements: List<String>?,
+    val _difficultyLabel: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _editorOffset: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _editorOldOffset: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _warnings: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
+    val _information: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
+    val _suggestions: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
+    val _requirements: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties
+) : JAdditionalProperties() {
+    fun validate(
+        validator: Validator<DifficultyBeatmapCustomData>
+    ) = validator.apply {
+        validate(DifficultyBeatmapCustomData::_difficultyLabel).correctType().optionalNotNull()
+        validate(DifficultyBeatmapCustomData::_editorOffset).correctType().optionalNotNull()
+        validate(DifficultyBeatmapCustomData::_editorOldOffset).correctType().optionalNotNull()
+        validate(DifficultyBeatmapCustomData::_warnings).correctType().optionalNotNull().validateForEach {
+            // Required
+        }
+        validate(DifficultyBeatmapCustomData::_information).correctType().optionalNotNull().validateForEach {
+            // Required
+        }
+        validate(DifficultyBeatmapCustomData::_suggestions).correctType().optionalNotNull().validateForEach {
+            // Required
+        }
+        validate(DifficultyBeatmapCustomData::_requirements).correctType().optionalNotNull().validateForEach {
+            // Required
+        }
+    }
+}
 
 @Serializable
 data class DifficultyBeatmapSetCustomData(
-    val _characteristicLabel: String?,
-    val _characteristicIconImageFilename: String?,
+    val _characteristicLabel: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _characteristicIconImageFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : AdditionalProperties
+) : JAdditionalProperties() {
+    fun validate(
+        validator: Validator<DifficultyBeatmapSetCustomData>, files: Set<String>
+    ) = validator.apply {
+        validate(DifficultyBeatmapSetCustomData::_characteristicLabel).correctType().optionalNotNull()
+        validate(DifficultyBeatmapSetCustomData::_characteristicIconImageFilename).correctType().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
+    }
+}

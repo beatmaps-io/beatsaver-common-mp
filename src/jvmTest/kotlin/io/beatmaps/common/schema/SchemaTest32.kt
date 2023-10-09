@@ -1,14 +1,11 @@
 package io.beatmaps.common.schema
 
 import io.beatmaps.common.OptionalProperty
-import io.beatmaps.common.beatsaber.BSIndexFilter
-import io.beatmaps.common.beatsaber.BSLightTranslationEventBox
 import io.beatmaps.common.beatsaber.BSLightTranslationEventBoxGroup
-import io.beatmaps.common.beatsaber.LightTranslationBaseData
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
 import org.junit.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertContentEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -24,8 +21,8 @@ class SchemaTest32 {
         val ex = validateFolder("3_2/missing")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("bpmEvents"),
                 violation("rotationEvents"),
                 violation("colorNotes"),
@@ -57,8 +54,8 @@ class SchemaTest32 {
         val ex = validateFolder("3_2/as3_0")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.chunks", 0),
                 violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.randomType", 0),
                 violation("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.seed", 0),

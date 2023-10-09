@@ -72,10 +72,10 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     it[length] = min(len, maxLen).toBigDecimal()
     it[seconds] = min(if (bpm == 0f) 0f else (60 / bpm) * len, maxLen).toBigDecimal()
     it[maxScore] = bsdiff.maxScore()
-    it[label] = diff._customData.orNull()?._difficultyLabel?.take(255)
+    it[label] = diff._customData.orNull()?._difficultyLabel?.orNull()?.take(255)
 
-    val requirementsLocal = diff._customData.orNull()?._requirements?.toTypedArray()
-    val suggestionsLocal = diff._customData.orNull()?._suggestions?.toTypedArray()
+    val requirementsLocal = diff._customData.orNull()?._requirements?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
+    val suggestionsLocal = diff._customData.orNull()?._suggestions?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
 
     return DiffStats(
         requirementsLocal.containsIgnoreCase("Chroma") || suggestionsLocal.containsIgnoreCase("Chroma"),
@@ -92,7 +92,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
 
         it[requirements] = requirementsLocal
         it[suggestions] = suggestionsLocal
-        it[information] = diff._customData.orNull()?._information?.toTypedArray()
-        it[warnings] = diff._customData.orNull()?._warnings?.toTypedArray()
+        it[information] = diff._customData.orNull()?._information?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
+        it[warnings] = diff._customData.orNull()?._warnings?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
     }
 }

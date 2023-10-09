@@ -4,6 +4,7 @@ import io.beatmaps.common.OptionalProperty
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.*
+import java.util.OptionalDouble
 
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.existsBefore(ver: Version, requiredVersion: Version): Validator<E>.Property<T?> =
     this.validate(NodePresent) { it == null || ver >= requiredVersion || it !is OptionalProperty.NotPresent }
@@ -82,6 +83,7 @@ fun <E, Q : Any, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isIn(vararg
 
 fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateForEach(
     wrongTypesAllowed: Boolean = false,
+    nullsAllowed: Boolean = false,
     block: Validator<Q>.(Q) -> Unit
 ): Validator<E>.Property<T?> {
     this.property.get(this.obj)?.validate { q ->
@@ -93,6 +95,18 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validato
                             property = "${this.property.name}[$index]",
                             value = value,
                             constraint = CorrectType
+                        )
+                    )
+                )
+            }
+
+            if (!nullsAllowed && value is OptionalProperty.Present<*> && value.value == null) {
+                addConstraintViolations(
+                    listOf(
+                        DefaultConstraintViolation(
+                            property = "${this.property.name}[$index]",
+                            value = value,
+                            constraint = NotNull
                         )
                     )
                 )

@@ -9,7 +9,6 @@ import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolationException
@@ -18,6 +17,7 @@ import java.io.File
 import java.io.OutputStream
 import java.security.DigestOutputStream
 import java.security.MessageDigest
+import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 
 object SchemaCommon {
@@ -70,9 +70,31 @@ object SchemaCommon {
     fun violation(prop: String, v: Any?, constraint: Constraint = NodeNotPresent) =
         infoViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop", v, constraint)
 
+    fun <T : Constraint> partialViolation(prop: String, constraint: KClass<T>) =
+        infoPartialViolation("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop", constraint)
+
     fun infoViolation(prop: String, constraint: Constraint = NodePresent) =
         DefaultConstraintViolation(prop, OptionalProperty.NotPresent, constraint)
 
+    fun <T : Constraint> infoPartialViolation(prop: String, constraint: KClass<T>) =
+        Violation(prop, constraint)
+
     fun infoViolation(prop: String, v: Any?, constraint: Constraint = NodeNotPresent) =
         DefaultConstraintViolation(prop, OptionalProperty.Present(v), constraint)
+}
+
+data class Violation<T : Constraint>(val prop: String, val constraintType: KClass<T>) {
+    override fun equals(other: Any?): Boolean {
+        if (other is DefaultConstraintViolation) {
+            return other.property == prop && constraintType.isInstance(other.constraint)
+        }
+
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = prop.hashCode()
+        result = 31 * result + constraintType.hashCode()
+        return result
+    }
 }

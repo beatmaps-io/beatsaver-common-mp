@@ -2,15 +2,12 @@ package io.beatmaps.common
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.modules.SerializersModule
 
@@ -57,7 +54,15 @@ open class OptionalPropertySerializer<T>(
 
     final override fun deserialize(decoder: Decoder): OptionalProperty<T> =
         try {
-            OptionalProperty.Present(valueSerializer.deserialize(decoder))
+            val original = valueSerializer.deserialize(decoder)
+            val final = if (original is AdditionalProperties) {
+                AdditionalPropertiesTransformer(original.properties, valueSerializer as KSerializer<AdditionalProperties>)
+                    .deserialize(decoder) as T
+            } else {
+                original
+            }
+
+            OptionalProperty.Present(final)
         } catch (e: SerializationException) {
             OptionalProperty.WrongType
         }
@@ -67,22 +72,40 @@ open class OptionalPropertySerializer<T>(
             OptionalProperty.WrongType, OptionalProperty.NotPresent -> throw SerializationException(
                 "Tried to serialize an optional property that had no value present. Is encodeDefaults false?"
             )
-            is OptionalProperty.Present -> {
-                valueSerializer.serialize(encoder, value.value)
-            }
+            is OptionalProperty.Present ->
+                if (value.value is AdditionalProperties) {
+                    AdditionalPropertiesTransformer(value.value.properties, valueSerializer as KSerializer<AdditionalProperties>)
+                        .serialize(encoder, value.value)
+                } else {
+                    valueSerializer.serialize(encoder, value.value)
+                }
         }
     }
 }
 
 interface AdditionalProperties {
     val additionalInformation: Map<String, JsonElement>
+    val properties: Set<String>
 }
 
 open class AdditionalPropertiesTransformer<T : AdditionalProperties>(
-    private val valueSerializer: KSerializer<T>
+    private val properties: Set<String>,
+    valueSerializer: KSerializer<T>
 ) : JsonTransformingSerializer<T>(valueSerializer) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        println(valueSerializer.descriptor)
-        return element
+    override fun transformDeserialize(element: JsonElement) =
+        if (element is JsonObject) {
+            val additionalInformation = JsonObject(element.minus(properties))
+            JsonObject(element.plus(key to additionalInformation))
+        } else {
+            element
+        }
+
+    override fun transformSerialize(element: JsonElement) =
+        ((element as? JsonObject)?.get(key) as? JsonObject)?.let { additionalInformation ->
+            JsonObject(element.minus(key).plus(additionalInformation.toList().toTypedArray()))
+        } ?: element
+
+    companion object {
+        const val key = "additionalInformation"
     }
 }

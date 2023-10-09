@@ -7,7 +7,7 @@ import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
 import io.beatmaps.common.schema.SchemaCommon.violationWrong
 import org.junit.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertContentEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -17,8 +17,8 @@ class SchemaTest33 {
         val ex = validateFolder("3_2/as3_3")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("vfxEventBoxGroups"),
                 violation("_fxEventsCollection"),
             ),
@@ -37,8 +37,8 @@ class SchemaTest33 {
         val ex = validateFolder("3_3/badtypes")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violationWrong("version"),
                 violationWrong("bpmEvents"),
                 violationWrong("rotationEvents"),
@@ -79,8 +79,8 @@ class SchemaTest33 {
         val ex = validateFolder("3_3/missing")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("bpmEvents"),
                 violation("rotationEvents"),
                 violation("colorNotes"),
@@ -107,8 +107,8 @@ class SchemaTest33 {
         val ex = validateFolder("3_3/as3_2")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("bpmEvents[0].beat"),
 
                 violation("colorNotes[0]._time"),

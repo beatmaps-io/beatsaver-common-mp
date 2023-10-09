@@ -16,6 +16,25 @@
   "_allDirectionsEnvironmentName": "MuliplayerEnvironment",
   "_environmentNames": [],
   "_colorSchemes": [],
+  "_customData": {
+    "_difficultyLabel": "Diff Label",
+    "_envColorLeft": {},
+    "_envColorRight": {},
+    "_colorLeft": {},
+    "_colorRight": {},
+    "_warnings": [
+      "Example warning"
+    ],
+    "_information": [
+      "Example information"
+    ],
+    "_suggestions": [
+      "Example suggestion"
+    ],
+    "_requirements": [
+      "Example requirement"
+    ]
+  },
   "_difficultyBeatmapSets": [
     {
       "_beatmapCharacteristicName": "Legacy",
@@ -27,7 +46,24 @@
           "_noteJumpMovementSpeed": 0.0,
           "_noteJumpStartBeatOffset": 0.0,
           "_beatmapColorSchemeIdx": 1,
-          "_environmentNameIdx": 1
+          "_environmentNameIdx": 1,
+          "_difficultyLabel": "Diff Label",
+          "_envColorLeft": {},
+          "_envColorRight": {},
+          "_colorLeft": {},
+          "_colorRight": {},
+          "_warnings": [
+            "Example warning"
+          ],
+          "_information": [
+            "Example information"
+          ],
+          "_suggestions": [
+            "Example suggestion"
+          ],
+          "_requirements": [
+            "Example requirement"
+          ]
         }
       ]
     },

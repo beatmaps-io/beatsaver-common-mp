@@ -1,0 +1,67 @@
+{
+  "_version": "2.0.0",
+  "_songName": "A",
+  "_songSubName": "",
+  "_songAuthorName": "",
+  "_levelAuthorName": "",
+  "_beatsPerMinute": 120.0,
+  "_songTimeOffset": 0.0,
+  "_shuffle": 0.0,
+  "_shufflePeriod": 0.0,
+  "_previewStartTime": 0.0,
+  "_previewDuration": 0.0,
+  "_songFilename": "click.ogg",
+  "_coverImageFilename": "click.png",
+  "_environmentName": "LinkinPark2Environment",
+  "_allDirectionsEnvironmentName": "GlassDesertEnvironment",
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": "Lighting",
+        "_name": "TestUser",
+        "_iconPath": "click.png"
+      }
+    ],
+    "_editors": {
+      "_lastEditedBy": "MMA2",
+      "MMA2": {
+        "version": "4.8.2"
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Easy",
+          "_difficultyRank": 1,
+          "_beatmapFilename": "Easy.dat",
+          "_noteJumpMovementSpeed": 0.0,
+          "_noteJumpStartBeatOffset": 0.0,
+          "_customData": {
+            "_difficultyLabel": "Diff Label",
+            "_editorOffset": 10,
+            "_editorOldOffset": 20,
+            "_warnings": [
+              "Example warning"
+            ],
+            "_information": [
+              "Example information"
+            ],
+            "_suggestions": [
+              "Example suggestion"
+            ],
+            "_requirements": [
+              "Example requirement"
+            ]
+          }
+        }
+      ],
+      "_customData": {
+        "_characteristicLabel": "Char Label",
+        "_characteristicIconImageFilename": "click.png"
+      }
+    }
+  ]
+}

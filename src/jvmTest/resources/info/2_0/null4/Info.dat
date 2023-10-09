@@ -1,0 +1,19 @@
+{
+  "_version": "2.0.0",
+  "_songName": "A",
+  "_songSubName": "",
+  "_songAuthorName": "",
+  "_levelAuthorName": "",
+  "_beatsPerMinute": 120.0,
+  "_songTimeOffset": 0.0,
+  "_shuffle": 0.0,
+  "_shufflePeriod": 0.0,
+  "_previewStartTime": 0.0,
+  "_previewDuration": 0.0,
+  "_songFilename": "click.ogg",
+  "_coverImageFilename": "click.png",
+  "_environmentName": "LinkinPark2Environment",
+  "_allDirectionsEnvironmentName": "GlassDesertEnvironment",
+  "_customData": null,
+  "_difficultyBeatmapSets": null
+}

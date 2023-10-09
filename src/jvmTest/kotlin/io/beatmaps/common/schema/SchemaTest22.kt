@@ -1,6 +1,7 @@
 package io.beatmaps.common.schema
 
 import io.beatmaps.common.beatsaber.CutDirection
+import io.beatmaps.common.schema.SchemaCommon.partialViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
 import io.beatmaps.common.schema.SchemaCommon.violationWrong
@@ -9,7 +10,7 @@ import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
 import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotNull
-import kotlin.test.assertEquals
+import kotlin.test.assertContentEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -31,13 +32,13 @@ class SchemaTest22 {
         val ex = validateFolder("2_2/error")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("version", "3", Matches(Regex("\\d+\\.\\d+\\.\\d+"))),
-                violation("_notes[0]._type", 50, In(setOf(0, 1, 3))),
+                partialViolation("_notes[0]._type", In::class),
                 violation("_notes[0]._cutDirection", 50, CutDirection),
-                violation("_notes[0]._time", 100f, Between(0.0f, 64f)),
-                violation("_notes[1]._type", null, In(setOf(0, 1, 3))),
+                partialViolation("_notes[0]._time", Between::class),
+                partialViolation("_notes[1]._type", In::class),
                 violation("_notes[1]._cutDirection", null, NotNull),
                 violation("_notes[1]._time", null, NotNull),
                 violation("_notes[1]._lineIndex", null, NotNull),
@@ -89,8 +90,8 @@ class SchemaTest22 {
         val ex = validateFolder("2_2/badtypes")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violationWrong("version"),
                 violationWrong("_notes"),
                 violationWrong("_obstacles"),
@@ -109,8 +110,8 @@ class SchemaTest22 {
         val ex = validateFolder("2_2/missing")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("version"),
                 violation("_notes"),
                 violation("_obstacles"),
@@ -125,8 +126,8 @@ class SchemaTest22 {
         val ex = validateFolder("2_2/null")
         assertNotNull(ex)
 
-        assertEquals(
-            setOf(
+        assertContentEquals(
+            listOf(
                 violation("version", null, NotNull),
                 violation("_notes", null, NotNull),
                 violation("_obstacles", null, NotNull),
