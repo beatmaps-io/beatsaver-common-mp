@@ -169,7 +169,16 @@ data class MapInfo(
             )
         }
         validate(MapInfo::_environmentName).correctType().exists().optionalNotNull()
-        validate(MapInfo::_allDirectionsEnvironmentName).correctType().exists().isIn("GlassDesertEnvironment")
+        validate(MapInfo::_allDirectionsEnvironmentName).correctType().let { v ->
+            val anyRotationDiffs = it._difficultyBeatmapSets.or(listOf()).any { set ->
+                setOf("360Degree", "90Degree").contains(set.orNull()?._beatmapCharacteristicName?.orNull())
+            }
+            if (anyRotationDiffs) {
+                v.isIn("GlassDesertEnvironment")
+            } else {
+                v.optionalNotNull()
+            }
+        }
         validate(MapInfo::_customData).correctType().optionalNotNull().validateOptional {
             it.validate(this, files)
         }
@@ -299,7 +308,7 @@ data class Contributor(
         validate(Contributor::_role).correctType().optionalNotNull()
         validate(Contributor::_name).correctType().optionalNotNull()
         validate(Contributor::_iconPath).correctType().optionalNotNull()
-            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
+            .validate(InFiles) { it == null || it.validate { q -> q.isNullOrEmpty() || files.contains(q.lowercase()) } }
     }
 }
 
@@ -310,8 +319,9 @@ data class DifficultyBeatmapSet(
     val _customData: OptionalProperty<DifficultyBeatmapSetCustomData?> = OptionalProperty.NotPresent
 ) {
     fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
-        val allowedCharacteristics = mutableSetOf("Standard", "NoArrows", "OneSaber", "360Degree", "90Degree", "Lightshow", "Lawless")
-        if (ver.minor > 0) allowedCharacteristics.add("Legacy")
+        val allowedCharacteristics = ECharacteristic.values().toList().let {
+            if (ver < Schema2_1) it.minus(ECharacteristic.Legacy) else it
+        }.map { it.name.removePrefix("_") }.toSet()
 
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().isIn(allowedCharacteristics)
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).exists().optionalNotNull().isNotEmpty().validateForEach {

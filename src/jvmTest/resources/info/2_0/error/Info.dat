@@ -68,6 +68,10 @@
       ]
     },
     {
+      "_beatmapCharacteristicName": "360Degree",
+      "_difficultyBeatmaps": []
+    },
+    {
       "_beatmapCharacteristicName": "Easy",
       "_difficultyBeatmaps": []
     }

@@ -1,6 +1,5 @@
 package io.beatmaps.common.zip
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSDifficulty
 import io.beatmaps.common.beatsaber.BSDifficultyV3
@@ -9,7 +8,6 @@ import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
-import io.beatmaps.common.jackson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -120,7 +118,11 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
             val byteArrayOutputStream = ByteArrayOutputStream()
             it.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
 
-            jackson.readValue<MapInfo>(byteArrayOutputStream.toByteArray())
+            readFromBytes(byteArrayOutputStream.toByteArray()).let { str ->
+                jsonIgnoreUnknown.parseToJsonElement(str).let { jsonElement ->
+                    jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(jsonElement)
+                }
+            }
         }
     }
 

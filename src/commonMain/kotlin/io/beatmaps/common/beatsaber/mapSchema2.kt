@@ -20,7 +20,7 @@ data class BSDifficulty(
     val _events: OptionalProperty<List<OptionalProperty<BSEvent?>>?> = OptionalProperty.NotPresent,
     val _waypoints: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent,
     val _specialEventsKeywordFilters: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
-    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
+    override val _customData: OptionalProperty<BSCustomDataV2?> = OptionalProperty.NotPresent,
     val _BPMChanges: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent
 ) : BSDiff {
     fun notes() = _notes.or(listOf()).mapNotNull { it.orNull() }
@@ -99,3 +99,17 @@ data class BSEvent(
     val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject()
+
+@Serializable
+data class BSCustomDataV2(
+    val _BPMChanges: OptionalProperty<List<OptionalProperty<BPMChange?>>?> = OptionalProperty.NotPresent,
+    val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent
+)
+
+@Serializable
+data class BPMChange(
+    val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _BPM: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _beatsPerBar: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _metronomeOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent
+)

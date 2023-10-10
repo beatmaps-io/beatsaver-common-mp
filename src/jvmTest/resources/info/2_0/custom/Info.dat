@@ -20,6 +20,11 @@
         "_role": "Lighting",
         "_name": "TestUser",
         "_iconPath": "click.png"
+      },
+      {
+        "_role": "",
+        "_name": "Use Chroma!",
+        "_iconPath": ""
       }
     ],
     "_editors": {
