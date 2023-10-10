@@ -103,7 +103,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
             validate(BSLightColorEventBox::lightColorBaseDataList).correctType().optionalNotNull().validateForEach {
                 validate(BSLightColorBaseData::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
                 validate(BSLightColorBaseData::transitionType).correctType().existsBefore(ver, Schema3_3).optionalNotNull().isIn(0, 1, 2)
-                validate(BSLightColorBaseData::colorType).correctType().existsBefore(ver, Schema3_3).optionalNotNull().isIn(0, 1, 2)
+                validate(BSLightColorBaseData::colorType).correctType().existsBefore(ver, Schema3_3).optionalNotNull().isIn(-1, 0, 1, 2)
                 validate(BSLightColorBaseData::brightness).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
                 validate(BSLightColorBaseData::strobeFrequency).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
             }
