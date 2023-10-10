@@ -58,7 +58,7 @@ class InfoTest20 {
                 infoViolation<NotNull>("_songFilename"),
                 infoViolation<NotNull>("_coverImageFilename"),
                 infoViolation<NotNull>("_environmentName"),
-                infoViolation<In<String>>("_allDirectionsEnvironmentName"),
+                infoViolation<NotNull>("_allDirectionsEnvironmentName"),
                 infoViolation<NotNull>("_customData._contributors[0]._role"),
                 infoViolation<NotNull>("_customData._contributors[0]._name"),
                 infoViolation<NotNull>("_customData._contributors[0]._iconPath"),
@@ -180,8 +180,10 @@ class InfoTest20 {
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
                 infoViolation<NodeNotPresent>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
 
-                infoViolation<In<String>>("_difficultyBeatmapSets[1]._beatmapCharacteristicName"),
                 infoViolation<NotEmpty>("_difficultyBeatmapSets[1]._difficultyBeatmaps"),
+
+                infoViolation<In<String>>("_difficultyBeatmapSets[2]._beatmapCharacteristicName"),
+                infoViolation<NotEmpty>("_difficultyBeatmapSets[2]._difficultyBeatmaps"),
 
                 infoViolation<NodeNotPresent>("_environmentNames"),
                 infoViolation<NodeNotPresent>("_colorSchemes")
@@ -211,7 +213,6 @@ class InfoTest20 {
                 infoViolation<NodePresent>("_songFilename"),
                 infoViolation<NodePresent>("_coverImageFilename"),
                 infoViolation<NodePresent>("_environmentName"),
-                infoViolation<NodePresent>("_allDirectionsEnvironmentName"),
                 infoViolation<NodePresent>("_difficultyBeatmapSets")
             ),
             ex.constraintViolations
