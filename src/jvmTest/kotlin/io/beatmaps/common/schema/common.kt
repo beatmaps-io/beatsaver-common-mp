@@ -23,7 +23,7 @@ object SchemaCommon {
         val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
         val md = MessageDigest.getInstance("SHA1")
 
-        val str = readFromBytes(info.readAllBytes())
+        val str = readFromBytes(info.readAllBytes()).replace("\r\n", "\n")
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(str)
         val mapInfo = jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(jsonElement)
 

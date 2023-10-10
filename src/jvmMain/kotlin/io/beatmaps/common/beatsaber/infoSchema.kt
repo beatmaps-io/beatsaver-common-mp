@@ -191,7 +191,6 @@ data class MapInfo(
 
     fun toJson() = (jsonIgnoreUnknown.encodeToString(this) + "\n")
         .replace(Regex("\\[\n +]"), "[]")
-        .replace("\n", "\r\n")
 }
 
 @Serializable
