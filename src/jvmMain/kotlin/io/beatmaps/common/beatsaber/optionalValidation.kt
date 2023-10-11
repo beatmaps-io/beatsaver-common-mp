@@ -88,6 +88,21 @@ fun <E, Q : Any, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.isIn(vararg
         }
     }
 
+fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateWith(
+    block: (Validator<Q>) -> Unit,
+    wrongTypesAllowed: Boolean = false,
+    nullsAllowed: Boolean = false
+) = this.validateForEach(wrongTypesAllowed, nullsAllowed) {
+   block(this)
+}
+
+fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateEach(
+    wrongTypesAllowed: Boolean = false,
+    nullsAllowed: Boolean = false
+) = validateForEach(wrongTypesAllowed, nullsAllowed) {
+    // Required
+}
+
 fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateForEach(
     wrongTypesAllowed: Boolean = false,
     nullsAllowed: Boolean = false,

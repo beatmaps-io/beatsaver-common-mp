@@ -1,0 +1,20 @@
+{
+  "version": null,
+  "bpmEvents": null,
+  "rotationEvents": null,
+  "colorNotes": null,
+  "bombNotes": null,
+  "obstacles": null,
+  "sliders": null,
+  "burstSliders": null,
+  "waypoints": null,
+  "basicBeatmapEvents": null,
+  "colorBoostBeatmapEvents": null,
+  "lightColorEventBoxGroups": null,
+  "lightRotationEventBoxGroups": null,
+  "lightTranslationEventBoxGroups": null,
+  "vfxEventBoxGroups": null,
+  "_fxEventsCollection": null,
+  "basicEventTypesWithKeywords": null,
+  "useNormalEventsAsCompatibleEvents": null
+}

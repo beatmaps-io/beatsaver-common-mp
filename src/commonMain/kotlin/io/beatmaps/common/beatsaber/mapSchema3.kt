@@ -21,14 +21,14 @@ data class BSDifficultyV3(
     val sliders: OptionalProperty<List<OptionalProperty<BSSlider?>>?> = OptionalProperty.NotPresent,
     val burstSliders: OptionalProperty<List<OptionalProperty<BSBurstSlider?>>?> = OptionalProperty.NotPresent,
     val waypoints: OptionalProperty<List<OptionalProperty<BSWaypoint?>>?> = OptionalProperty.NotPresent,
-    val basicBeatmapEvents: OptionalProperty<List<OptionalProperty<BSEventV3>>?> = OptionalProperty.NotPresent,
+    val basicBeatmapEvents: OptionalProperty<List<OptionalProperty<BSEventV3?>>?> = OptionalProperty.NotPresent,
     val colorBoostBeatmapEvents: OptionalProperty<List<OptionalProperty<BSBoostEvent?>>?> = OptionalProperty.NotPresent,
     val lightColorEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightColorEventBoxGroup?>>?> = OptionalProperty.NotPresent,
     val lightRotationEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightRotationEventBoxGroup?>>?> = OptionalProperty.NotPresent,
     val lightTranslationEventBoxGroups: OptionalProperty<List<OptionalProperty<BSLightTranslationEventBoxGroup?>>?> = OptionalProperty.NotPresent,
-    val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val vfxEventBoxGroups: OptionalProperty<List<OptionalProperty<BSVfxEventBoxGroup?>>?> = OptionalProperty.NotPresent,
-    val _fxEventsCollection: OptionalProperty<BSFxEventsCollection> = OptionalProperty.NotPresent,
+    val _fxEventsCollection: OptionalProperty<BSFxEventsCollection?> = OptionalProperty.NotPresent,
+    val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
 
     override val _customData: JsonObject? = null
@@ -104,7 +104,7 @@ data class BSEventBoxGroup<T : GroupableEventBox>(
     @SerialName("g")
     override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
-    override val eventBoxes: OptionalProperty<List<OptionalProperty<T>>?> = OptionalProperty.NotPresent
+    override val eventBoxes: OptionalProperty<List<OptionalProperty<T?>>?> = OptionalProperty.NotPresent
 ) : IBSEventBoxGroup<T> {
     constructor(beat: Float, groupId: Int, eventBoxes: List<T>) :
         this(OptionalProperty.Present(beat), OptionalProperty.Present(groupId), OptionalProperty.Present(eventBoxes.map { OptionalProperty.Present(it) }))
@@ -150,7 +150,7 @@ data class BSVfxEventBox(
     @SerialName("b")
     val vfxDistributionShouldAffectFirstBaseEvent: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("l")
-    val vfxBaseDataList: OptionalProperty<List<Int>?> = OptionalProperty.NotPresent
+    val vfxBaseDataList: OptionalProperty<List<OptionalProperty<Int?>>?> = OptionalProperty.NotPresent
 ) : GroupableEventBox
 
 @Serializable
