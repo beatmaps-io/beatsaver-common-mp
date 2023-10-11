@@ -93,7 +93,7 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validato
     wrongTypesAllowed: Boolean = false,
     nullsAllowed: Boolean = false
 ) = this.validateForEach(wrongTypesAllowed, nullsAllowed) {
-   block(this)
+    block(this)
 }
 
 fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> Validator<E>.Property<T?>.validateEach(
