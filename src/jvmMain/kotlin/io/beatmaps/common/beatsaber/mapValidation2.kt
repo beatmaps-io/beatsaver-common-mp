@@ -30,8 +30,34 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
         validate(BSEvent::_type).correctType().exists().optionalNotNull()
         validate(BSEvent::_value).correctType().exists().optionalNotNull()
     }
-    validate(BSDifficulty::_waypoints).correctType().optionalNotNull()
-    validate(BSDifficulty::_specialEventsKeywordFilters).correctType().optionalNotNull()
-    validate(BSDifficulty::_customData).correctType().optionalNotNull()
-    validate(BSDifficulty::_BPMChanges).correctType().optionalNotNull()
+    validate(BSDifficulty::_waypoints).correctType().optionalNotNull().validateForEach {
+        validate(BSWaypointV2::_time).correctType().exists().optionalNotNull()
+        validate(BSWaypointV2::_lineIndex).correctType().exists().optionalNotNull()
+        validate(BSWaypointV2::_lineLayer).correctType().exists().optionalNotNull()
+        validate(BSWaypointV2::_offsetDirection).correctType().exists().optionalNotNull()
+    }
+    validate(BSDifficulty::_specialEventsKeywordFilters).correctType().optionalNotNull().validateOptional {
+        validate(BSSpecialEventKeywordFilters::_keywords).correctType().optionalNotNull().validateForEach {
+            validate(BSSpecialEventsForKeyword::_keyword).correctType().exists().optionalNotNull()
+            validate(BSSpecialEventsForKeyword::_specialEvents).correctType().exists().optionalNotNull().validateForEach {
+                // Required
+            }
+        }
+    }
+    validate(BSDifficulty::_customData).correctType().optionalNotNull().validateOptional {
+        validate(BSCustomDataV2::_time).correctType().optionalNotNull()
+        validate(BSCustomDataV2::_BPMChanges).correctType().optionalNotNull().validateForEach {
+            validateBpmChanges(this)
+        }
+    }
+    validate(BSDifficulty::_BPMChanges).correctType().optionalNotNull().validateForEach {
+        validateBpmChanges(this)
+    }
+}
+
+fun validateBpmChanges(validator: Validator<BPMChange>) = validator.apply {
+    validate(BPMChange::_time).exists().correctType().optionalNotNull()
+    validate(BPMChange::_BPM).exists().correctType().optionalNotNull()
+    validate(BPMChange::_beatsPerBar).correctType().optionalNotNull()
+    validate(BPMChange::_metronomeOffset).correctType().optionalNotNull()
 }

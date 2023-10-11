@@ -35,6 +35,7 @@ class SchemaTest22 {
         assertContentEquals(
             listOf<Any>(
                 violation<Matches>("version"),
+
                 violation<In<Int>>("_notes[0]._type"),
                 violation<CutDirection>("_notes[0]._cutDirection"),
                 violation<Between<Float>>("_notes[0]._time"),
@@ -54,6 +55,8 @@ class SchemaTest22 {
                 violation<NodePresent>("_notes[3]._lineIndex"),
                 violation<NodePresent>("_notes[3]._lineLayer"),
                 violation<CorrectType>("_notes[4]"),
+                violation<NotNull>("_notes[5]"),
+
                 violation<NotNull>("_obstacles[1]._type"),
                 violation<NotNull>("_obstacles[1]._duration"),
                 violation<NotNull>("_obstacles[1]._time"),
@@ -70,6 +73,8 @@ class SchemaTest22 {
                 violation<NodePresent>("_obstacles[3]._lineIndex"),
                 violation<NodePresent>("_obstacles[3]._width"),
                 violation<CorrectType>("_obstacles[4]"),
+                violation<NotNull>("_obstacles[5]"),
+
                 violation<NotNull>("_events[1]._time"),
                 violation<NotNull>("_events[1]._type"),
                 violation<NotNull>("_events[1]._value"),
@@ -79,7 +84,89 @@ class SchemaTest22 {
                 violation<NodePresent>("_events[3]._time"),
                 violation<NodePresent>("_events[3]._type"),
                 violation<NodePresent>("_events[3]._value"),
-                violation<CorrectType>("_events[4]")
+                violation<CorrectType>("_events[4]"),
+                violation<NotNull>("_events[5]"),
+
+                violation<NotNull>("_waypoints[0]._time"),
+                violation<NotNull>("_waypoints[0]._lineIndex"),
+                violation<NotNull>("_waypoints[0]._lineLayer"),
+                violation<NotNull>("_waypoints[0]._offsetDirection"),
+                violation<CorrectType>("_waypoints[1]._time"),
+                violation<CorrectType>("_waypoints[1]._lineIndex"),
+                violation<CorrectType>("_waypoints[1]._lineLayer"),
+                violation<CorrectType>("_waypoints[1]._offsetDirection"),
+                violation<NodePresent>("_waypoints[2]._time"),
+                violation<NodePresent>("_waypoints[2]._lineIndex"),
+                violation<NodePresent>("_waypoints[2]._lineLayer"),
+                violation<NodePresent>("_waypoints[2]._offsetDirection"),
+                violation<CorrectType>("_waypoints[3]"),
+                violation<NotNull>("_waypoints[4]"),
+
+                violation<CorrectType>("_specialEventsKeywordFilters._keywords"),
+
+                violation<NotNull>("_customData._time"),
+                violation<NotNull>("_customData._BPMChanges[0]._time"),
+                violation<NotNull>("_customData._BPMChanges[0]._BPM"),
+                violation<NotNull>("_customData._BPMChanges[0]._beatsPerBar"),
+                violation<NotNull>("_customData._BPMChanges[0]._metronomeOffset"),
+                violation<CorrectType>("_customData._BPMChanges[1]._time"),
+                violation<CorrectType>("_customData._BPMChanges[1]._BPM"),
+                violation<CorrectType>("_customData._BPMChanges[1]._beatsPerBar"),
+                violation<CorrectType>("_customData._BPMChanges[1]._metronomeOffset"),
+                violation<NodePresent>("_customData._BPMChanges[2]._time"),
+                violation<NodePresent>("_customData._BPMChanges[2]._BPM"),
+                violation<CorrectType>("_customData._BPMChanges[3]"),
+                violation<NotNull>("_customData._BPMChanges[4]")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun error2() {
+        val ex = validateFolder("2_2/error2")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf<Any>(
+                violation<CorrectType>("_specialEventsKeywordFilters._keywords[0]._keyword"),
+                violation<CorrectType>("_specialEventsKeywordFilters._keywords[0]._specialEvents"),
+                violation<NotNull>("_specialEventsKeywordFilters._keywords[1]._keyword"),
+                violation<NotNull>("_specialEventsKeywordFilters._keywords[1]._specialEvents"),
+                violation<CorrectType>("_specialEventsKeywordFilters._keywords[2]._specialEvents[0]"),
+                violation<NotNull>("_specialEventsKeywordFilters._keywords[2]._specialEvents[1]"),
+                violation<NodePresent>("_specialEventsKeywordFilters._keywords[3]._keyword"),
+                violation<NodePresent>("_specialEventsKeywordFilters._keywords[3]._specialEvents"),
+                violation<CorrectType>("_specialEventsKeywordFilters._keywords[4]"),
+                violation<NotNull>("_specialEventsKeywordFilters._keywords[5]"),
+
+                violation<CorrectType>("_customData._time"),
+
+                violation<NotNull>("_BPMChanges[0]._time"),
+                violation<NotNull>("_BPMChanges[0]._BPM"),
+                violation<NotNull>("_BPMChanges[0]._beatsPerBar"),
+                violation<NotNull>("_BPMChanges[0]._metronomeOffset"),
+                violation<CorrectType>("_BPMChanges[1]._time"),
+                violation<CorrectType>("_BPMChanges[1]._BPM"),
+                violation<CorrectType>("_BPMChanges[1]._beatsPerBar"),
+                violation<CorrectType>("_BPMChanges[1]._metronomeOffset"),
+                violation<NodePresent>("_BPMChanges[2]._time"),
+                violation<NodePresent>("_BPMChanges[2]._BPM"),
+                violation<CorrectType>("_BPMChanges[3]"),
+                violation<NotNull>("_BPMChanges[4]")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun error3() {
+        val ex = validateFolder("2_2/error3")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf<Any>(
+                violation<NotNull>("_specialEventsKeywordFilters._keywords")
             ),
             ex.constraintViolations
         )

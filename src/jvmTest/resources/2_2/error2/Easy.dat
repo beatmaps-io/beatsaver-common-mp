@@ -1,0 +1,45 @@
+{
+  "_version": "2.2.0",
+  "_notes": [],
+  "_events": [],
+  "_obstacles": [],
+  "_specialEventsKeywordFilters": {
+    "_keywords": [
+      {
+        "_keyword": 0,
+        "_specialEvents": 0
+      },
+      {
+        "_keyword": null,
+        "_specialEvents": null
+      },
+      {
+        "_keyword": "",
+        "_specialEvents": ["", null]
+      },
+      {},
+      0,
+      null
+    ]
+  },
+  "_customData": {
+    "_time": ""
+  },
+  "_BPMChanges": [
+    {
+      "_BPM": null,
+      "_time": null,
+      "_beatsPerBar": null,
+      "_metronomeOffset": null
+    },
+    {
+      "_BPM": "",
+      "_time": "",
+      "_beatsPerBar": "",
+      "_metronomeOffset": ""
+    },
+    {},
+    0,
+    null
+  ]
+}
