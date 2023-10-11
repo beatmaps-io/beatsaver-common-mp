@@ -55,7 +55,16 @@
     ]
   },
   "_customData": {
-    "_bookmarks": []
+    "_bookmarks": [],
+    "_time": 102.5,
+    "_BPMChanges": [
+      {
+        "_BPM":123,
+        "_time":29.1,
+        "_beatsPerBar":4,
+        "_metronomeOffset":4
+      }
+    ]
   },
   "_BPMChanges": [
     {

@@ -1,0 +1,617 @@
+{
+  "version": "3",
+  "bpmEvents": [
+    {
+      "m": "",
+      "b": ""
+    },
+    {
+      "m": null,
+      "b" : null
+    },
+    0,
+    null
+  ],
+  "rotationEvents": [
+    {
+      "e": 2
+    },
+    {
+      "b": "",
+      "e": "",
+      "r": ""
+    },
+    {
+      "b": null,
+      "e": null,
+      "r": null
+    },
+    0,
+    null
+  ],
+  "colorNotes": [
+    {
+      "c": 2,
+      "d": 50,
+      "b": 128.0
+    },
+    {
+      "x": "",
+      "y": "",
+      "a": "",
+      "c": "",
+      "d": "",
+      "b": ""
+    },
+    {
+      "x": null,
+      "y": null,
+      "a": null,
+      "c": null,
+      "d": null,
+      "b": null
+    },
+    0,
+    null
+  ],
+  "bombNotes": [
+    {
+      "b": "",
+      "x": "",
+      "y": ""
+    },
+    {
+      "b": null,
+      "x": null,
+      "y": null
+    },
+    0,
+    null
+  ],
+  "obstacles": [
+    {
+      "x": "",
+      "y": "",
+      "d": "",
+      "w": "",
+      "h": "",
+      "b": ""
+    },
+    {
+      "x": null,
+      "y": null,
+      "d": null,
+      "w": null,
+      "h": null,
+      "b": null
+    },
+    0,
+    null
+  ],
+  "sliders": [
+    {
+      "c": 2
+    },
+    {
+      "c": "",
+      "x": "",
+      "y": "",
+      "tx": "",
+      "ty": "",
+      "tc": "",
+      "mu": "",
+      "tmu": "",
+      "d": "",
+      "tb": "",
+      "b": "",
+      "m": ""
+    },
+    {
+      "c": null,
+      "x": null,
+      "y": null,
+      "tx": null,
+      "ty": null,
+      "tc": null,
+      "mu": null,
+      "tmu": null,
+      "d": null,
+      "tb": null,
+      "b": null,
+      "m": null
+    },
+    0,
+    null
+  ],
+  "burstSliders": [
+    {
+      "b": 128.0,
+      "c": 2,
+      "tb": 132.0
+    },
+    {
+      "b": "",
+      "c": "",
+      "x": "",
+      "y": "",
+      "d": "",
+      "tb": "",
+      "tx": "",
+      "ty": "",
+      "sc": "",
+      "s": ""
+    },
+    {
+      "b": null,
+      "c": null,
+      "x": null,
+      "y": null,
+      "d": null,
+      "tb": null,
+      "tx": null,
+      "ty": null,
+      "sc": null,
+      "s": null
+    },
+    0,
+    null
+  ],
+  "waypoints": [
+    {
+      "b": "",
+      "x": "",
+      "y": "",
+      "d": ""
+    },
+    {
+      "b": null,
+      "x": null,
+      "y": null,
+      "d": null
+    },
+    0,
+    null
+  ],
+  "basicBeatmapEvents": [
+    {
+      "et": "",
+      "i": "",
+      "f": "",
+      "b": ""
+    },
+    {
+      "et": null,
+      "i": null,
+      "f": null,
+      "b": null
+    },
+    0,
+    null
+  ],
+  "colorBoostBeatmapEvents": [
+    {
+      "o": "",
+      "b": ""
+    },
+    {
+      "o": null,
+      "b": null
+    },
+    0,
+    null
+  ],
+  "lightColorEventBoxGroups": [
+    {
+      "b": "",
+      "e": [
+        {
+          "f": {
+            "f": "",
+            "p": "",
+            "t": "",
+            "r": "",
+            "c": "",
+            "n": "",
+            "s": "",
+            "l": "",
+            "d": ""
+          },
+          "w": "",
+          "d": "",
+          "r": "",
+          "t": "",
+          "b": "",
+          "e": [
+            {
+              "b": "",
+              "i": "",
+              "c": "",
+              "s": "",
+              "f": ""
+            },
+            {},
+            0,
+            null
+          ]
+        },
+        {
+          "f": "",
+          "e": ""
+        },
+        {},
+        0,
+        null
+      ],
+      "g": ""
+    },
+    {
+      "e": ""
+    },
+    {
+      "b": null,
+      "e": [
+        {
+          "f": {
+            "f": null,
+            "p": null,
+            "t": null,
+            "r": null,
+            "c": null,
+            "n": null,
+            "s": null,
+            "l": null,
+            "d": null
+          },
+          "w": null,
+          "d": null,
+          "r": null,
+          "t": null,
+          "b": null,
+          "e": [
+            {
+              "b": null,
+              "i": null,
+              "c": null,
+              "s": null,
+              "f": null
+            }
+          ]
+        },
+        {
+          "f": null,
+          "e": null
+        }
+      ],
+      "g": null
+    },
+    {
+      "e": null
+    },
+    0,
+    null
+  ],
+  "lightRotationEventBoxGroups": [
+    {
+      "b": "",
+      "e": [
+        {
+          "f": {
+            "f": "",
+            "p": "",
+            "t": "",
+            "r": "",
+            "c": "",
+            "n": "",
+            "s": "",
+            "l": "",
+            "d": ""
+          },
+          "w": "",
+          "d": "",
+          "s": "",
+          "t": "",
+          "a": "",
+          "r": "",
+          "b": "",
+          "l": [
+            {
+              "b": "",
+              "p": "",
+              "e": "",
+              "l": "",
+              "r": "",
+              "o": ""
+            },
+            {},
+            0,
+            null
+          ]
+        },
+        {
+          "f": "",
+          "l": ""
+        },
+        {},
+        0,
+        null
+      ],
+      "g": ""
+    },
+    {
+      "e": ""
+    },
+    {
+      "b": null,
+      "e": [
+        {
+          "f": {
+            "f": null,
+            "p": null,
+            "t": null,
+            "r": null,
+            "c": null,
+            "n": null,
+            "s": null,
+            "l": null,
+            "d": null
+          },
+          "w": null,
+          "d": null,
+          "s": null,
+          "t": null,
+          "a": null,
+          "r": null,
+          "b": null,
+          "l": [
+            {
+              "b": null,
+              "p": null,
+              "e": null,
+              "l": null,
+              "r": null,
+              "o": null
+            }
+          ]
+        },
+        {
+          "f": null,
+          "l": null
+        }
+      ],
+      "g": null
+    },
+    {
+      "e": null
+    },
+    0,
+    null
+  ],
+  "lightTranslationEventBoxGroups": [
+    {
+      "b": "",
+      "e": [
+        {
+          "f": {
+            "f": "",
+            "p": "",
+            "t": "",
+            "r": "",
+            "c": "",
+            "n": "",
+            "s": "",
+            "l": "",
+            "d": ""
+          },
+          "w": "",
+          "d": "",
+          "s": "",
+          "t": "",
+          "a": "",
+          "r": "",
+          "b": "",
+          "i": "",
+          "l": [
+            {
+              "b": "",
+              "p": "",
+              "e": "",
+              "t": ""
+            },
+            {},
+            0,
+            null
+          ]
+        },
+        {
+          "f": "",
+          "l": ""
+        },
+        {},
+        0,
+        null
+      ],
+      "g": ""
+    },
+    {
+      "e": ""
+    },
+    {
+      "b": null,
+      "e": [
+        {
+          "f": {
+            "f": null,
+            "p": null,
+            "t": null,
+            "r": null,
+            "c": null,
+            "n": null,
+            "s": null,
+            "l": null,
+            "d": null
+          },
+          "w": null,
+          "d": null,
+          "s": null,
+          "t": null,
+          "a": null,
+          "r": null,
+          "b": null,
+          "i": null,
+          "l": [
+            {
+              "b": null,
+              "p": null,
+              "e": null,
+              "t": null
+            }
+          ]
+        },
+        {
+          "f": null,
+          "l": null
+        }
+      ],
+      "g": null
+    },
+    {
+      "e": null
+    },
+    0,
+    null
+  ],
+  "vfxEventBoxGroups": [
+    {
+      "b": "",
+      "t": "",
+      "e": [
+        {
+          "f": {
+            "f": "",
+            "p": "",
+            "t": "",
+            "r": "",
+            "c": "",
+            "n": "",
+            "s": "",
+            "l": "",
+            "d": ""
+          },
+          "w": "",
+          "d": "",
+          "s": "",
+          "t": "",
+          "i": "",
+          "b": "",
+          "l": [
+            "",
+            null
+          ]
+        },
+        {
+          "f": "",
+          "l": ""
+        },
+        {},
+        0,
+        null
+      ],
+      "g": ""
+    },
+    {
+      "e": ""
+    },
+    {
+      "b": null,
+      "t": null,
+      "e": [
+        {
+          "f": {
+            "f": null,
+            "p": null,
+            "t": null,
+            "r": null,
+            "c": null,
+            "n": null,
+            "s": null,
+            "l": null,
+            "d": null
+          },
+          "w": null,
+          "d": null,
+          "s": null,
+          "t": null,
+          "i": null,
+          "b": null,
+          "l": null
+        },
+        {
+          "f": null
+        }
+      ],
+      "g": null
+    },
+    {
+      "e": null
+    },
+    {},
+    0,
+    null
+  ],
+  "_fxEventsCollection": {
+    "_il": [
+      {
+        "b": "",
+        "p": "",
+        "v": ""
+      },
+      {
+        "b": null,
+        "p": null,
+        "v": null
+      },
+      {},
+      0,
+      null
+    ],
+    "_fl": [
+      {
+        "b": "",
+        "p": "",
+        "v": "",
+        "i": ""
+      },
+      {
+        "b": null,
+        "p": null,
+        "v": null,
+        "i": null
+      },
+      {},
+      0,
+      null
+    ]
+  },
+  "basicEventTypesWithKeywords": {
+    "d": [
+      {
+        "k": 0,
+        "e": ["", null]
+      },
+      {
+        "k": "keyword",
+        "e": 0
+      },
+      {
+        "k": null,
+        "e": null
+      },
+      {},
+      0,
+      null
+    ],
+    "e": 0,
+    "f": null
+  },
+  "useNormalEventsAsCompatibleEvents": ""
+}

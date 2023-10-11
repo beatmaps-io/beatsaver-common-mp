@@ -18,20 +18,46 @@ fun Validator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
         validate(BSNote::_lineIndex).correctType().exists().optionalNotNull()
         validate(BSNote::_lineLayer).correctType().exists().optionalNotNull()
     }
-    validate(BSDifficulty::_obstacles).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSObstacle::_type).correctType().exists().optionalNotNull()
-        validate(BSObstacle::_duration).correctType().exists().optionalNotNull()
-        validate(BSObstacle::_time).correctType().exists().optionalNotNull()
-        validate(BSObstacle::_lineIndex).correctType().exists().optionalNotNull()
-        validate(BSObstacle::_width).correctType().exists().optionalNotNull()
+    validate(BSDifficulty::_obstacles).correctType().exists().optionalNotNull().validateWith(::validateObstacle)
+    validate(BSDifficulty::_events).correctType().exists().optionalNotNull().validateWith(::validateEvent)
+    validate(BSDifficulty::_waypoints).correctType().optionalNotNull().validateWith(::validateWaypoint)
+    validate(BSDifficulty::_specialEventsKeywordFilters).correctType().optionalNotNull().validateOptional {
+        validate(BSSpecialEventKeywordFilters::_keywords).correctType().optionalNotNull().validateForEach {
+            validate(BSSpecialEventsForKeyword::_keyword).correctType().exists().optionalNotNull()
+            validate(BSSpecialEventsForKeyword::_specialEvents).correctType().exists().optionalNotNull().validateEach()
+        }
     }
-    validate(BSDifficulty::_events).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSEvent::_time).correctType().exists().optionalNotNull()
-        validate(BSEvent::_type).correctType().exists().optionalNotNull()
-        validate(BSEvent::_value).correctType().exists().optionalNotNull()
+    validate(BSDifficulty::_customData).correctType().optionalNotNull().validateOptional {
+        validate(BSCustomDataV2::_time).correctType().optionalNotNull()
+        validate(BSCustomDataV2::_BPMChanges).correctType().optionalNotNull().validateWith(::validateBPMChange)
     }
-    validate(BSDifficulty::_waypoints).correctType().optionalNotNull()
-    validate(BSDifficulty::_specialEventsKeywordFilters).correctType().optionalNotNull()
-    validate(BSDifficulty::_customData).correctType().optionalNotNull()
-    validate(BSDifficulty::_BPMChanges).correctType().optionalNotNull()
+    validate(BSDifficulty::_BPMChanges).correctType().optionalNotNull().validateWith(::validateBPMChange)
+}
+
+fun validateObstacle(validator: Validator<BSObstacle>) = validator.apply {
+    validate(BSObstacle::_type).correctType().exists().optionalNotNull()
+    validate(BSObstacle::_duration).correctType().exists().optionalNotNull()
+    validate(BSObstacle::_time).correctType().exists().optionalNotNull()
+    validate(BSObstacle::_lineIndex).correctType().exists().optionalNotNull()
+    validate(BSObstacle::_width).correctType().exists().optionalNotNull()
+}
+
+fun validateEvent(validator: Validator<BSEvent>) = validator.apply {
+    validate(BSEvent::_time).correctType().exists().optionalNotNull()
+    validate(BSEvent::_type).correctType().exists().optionalNotNull()
+    validate(BSEvent::_value).correctType().exists().optionalNotNull()
+}
+
+fun validateWaypoint(validator: Validator<BSWaypointV2>) = validator.apply {
+    validate(BSWaypointV2::_time).correctType().exists().optionalNotNull()
+    validate(BSWaypointV2::_lineIndex).correctType().exists().optionalNotNull()
+    validate(BSWaypointV2::_lineLayer).correctType().exists().optionalNotNull()
+    validate(BSWaypointV2::_offsetDirection).correctType().exists().optionalNotNull()
+}
+
+fun validateBPMChange(validator: Validator<BPMChange>) = validator.apply {
+    validate(BPMChange::_time).exists().correctType().optionalNotNull()
+    validate(BPMChange::_BPM).exists().correctType().optionalNotNull()
+    validate(BPMChange::_beatsPerBar).correctType().optionalNotNull()
+    validate(BPMChange::_metronomeOffset).correctType().optionalNotNull()
 }

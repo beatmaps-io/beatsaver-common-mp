@@ -8,7 +8,6 @@ import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
@@ -18,10 +17,10 @@ data class BSDifficulty(
     val _notes: OptionalProperty<List<OptionalProperty<BSNote?>>?> = OptionalProperty.NotPresent,
     val _obstacles: OptionalProperty<List<OptionalProperty<BSObstacle?>>?> = OptionalProperty.NotPresent,
     val _events: OptionalProperty<List<OptionalProperty<BSEvent?>>?> = OptionalProperty.NotPresent,
-    val _waypoints: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent,
-    val _specialEventsKeywordFilters: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
+    val _waypoints: OptionalProperty<List<OptionalProperty<BSWaypointV2?>>?> = OptionalProperty.NotPresent,
+    val _specialEventsKeywordFilters: OptionalProperty<BSSpecialEventKeywordFilters?> = OptionalProperty.NotPresent,
     override val _customData: OptionalProperty<BSCustomDataV2?> = OptionalProperty.NotPresent,
-    val _BPMChanges: OptionalProperty<JsonArray?> = OptionalProperty.NotPresent
+    val _BPMChanges: OptionalProperty<List<OptionalProperty<BPMChange?>>?> = OptionalProperty.NotPresent
 ) : BSDiff {
     fun notes() = _notes.or(listOf()).mapNotNull { it.orNull() }
     fun events() = _events.or(listOf())
@@ -108,8 +107,27 @@ data class BSCustomDataV2(
 
 @Serializable
 data class BPMChange(
-    val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _BPM: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _beatsPerBar: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _metronomeOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent
+) : BSObject()
+
+@Serializable
+data class BSWaypointV2(
+    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val _offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
+) : BSObject()
+
+@Serializable
+data class BSSpecialEventKeywordFilters(
+    val _keywords: OptionalProperty<List<OptionalProperty<BSSpecialEventsForKeyword?>>?> = OptionalProperty.NotPresent
+)
+
+@Serializable
+data class BSSpecialEventsForKeyword(
+    val _keyword: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val _specialEvents: OptionalProperty<List<OptionalProperty<Int?>>?> = OptionalProperty.NotPresent
 )

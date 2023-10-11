@@ -480,18 +480,10 @@ data class DifficultyBeatmapCustomData(
         validate(DifficultyBeatmapCustomData::_difficultyLabel).correctType().optionalNotNull()
         validate(DifficultyBeatmapCustomData::_editorOffset).correctType().optionalNotNull()
         validate(DifficultyBeatmapCustomData::_editorOldOffset).correctType().optionalNotNull()
-        validate(DifficultyBeatmapCustomData::_warnings).correctType().optionalNotNull().validateForEach {
-            // Required
-        }
-        validate(DifficultyBeatmapCustomData::_information).correctType().optionalNotNull().validateForEach {
-            // Required
-        }
-        validate(DifficultyBeatmapCustomData::_suggestions).correctType().optionalNotNull().validateForEach {
-            // Required
-        }
-        validate(DifficultyBeatmapCustomData::_requirements).correctType().optionalNotNull().validateForEach {
-            // Required
-        }
+        validate(DifficultyBeatmapCustomData::_warnings).correctType().optionalNotNull().validateEach()
+        validate(DifficultyBeatmapCustomData::_information).correctType().optionalNotNull().validateEach()
+        validate(DifficultyBeatmapCustomData::_suggestions).correctType().optionalNotNull().validateEach()
+        validate(DifficultyBeatmapCustomData::_requirements).correctType().optionalNotNull().validateEach()
     }
 }
 
