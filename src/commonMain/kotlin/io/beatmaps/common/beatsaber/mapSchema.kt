@@ -26,6 +26,8 @@ fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProp
 fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, Int> =
     ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Int.MIN_VALUE) }
 
+fun <T> OptionalProperty<List<OptionalProperty<T?>>?>.orEmpty() = or(listOf()).mapNotNull { it.orNull() }
+
 sealed interface BSDiff : BSCustomData {
     val version: OptionalProperty<String?>
     fun noteCount(): Int

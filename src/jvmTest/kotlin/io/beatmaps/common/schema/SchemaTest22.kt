@@ -11,6 +11,7 @@ import org.valiktor.constraints.In
 import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotNull
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -23,7 +24,9 @@ class SchemaTest22 {
 
     @Test
     fun schema() {
-        val ex = validateFolder("2_2/default")
+        val ex = validateFolder("2_2/default") {
+            assertEquals(1, it.obstacleCount())
+        }
         assertNull(ex)
     }
 

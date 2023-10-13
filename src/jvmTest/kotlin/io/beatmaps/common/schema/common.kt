@@ -1,5 +1,6 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
@@ -17,7 +18,7 @@ import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 
 object SchemaCommon {
-    fun validateFolder(name: String): ConstraintViolationException? {
+    fun validateFolder(name: String, diffValidator: ((BSDiff) -> Unit)? = null): ConstraintViolationException? {
         val info = javaClass.getResourceAsStream("/$name/Info.dat")!!
         val audio = File(javaClass.getResource("/shared/click.ogg")!!.toURI())
         val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
@@ -43,6 +44,7 @@ object SchemaCommon {
                         null
                     }
                 }
+                diffValidator?.invoke(extractedInfo.diffs.values.first().values.first())
             }
         } catch (e: ConstraintViolationException) {
             return e
