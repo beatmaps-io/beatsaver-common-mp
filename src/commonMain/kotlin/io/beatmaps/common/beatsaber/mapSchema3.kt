@@ -4,7 +4,6 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
-import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -33,17 +32,17 @@ data class BSDifficultyV3(
 
     override val _customData: JsonObject? = null
 ) : BSDiff {
-    override fun noteCount() = colorNotes.orNull()?.size ?: 0
-    override fun bombCount() = bombNotes.orNull()?.size ?: 0
-    override fun arcCount() = sliders.orNull()?.size ?: 0
-    override fun chainCount() = burstSliders.orNull()?.size ?: 0
+    override fun noteCount() = colorNotes.orEmpty().size
+    override fun bombCount() = bombNotes.orEmpty().size
+    override fun arcCount() = sliders.orEmpty().size
+    override fun chainCount() = burstSliders.orEmpty().size
 
-    override fun eventCount() = basicBeatmapEvents.orNull()?.size ?: 0
-    override fun obstacleCount() = obstacles.orNull()?.size ?: 0
+    override fun eventCount() = basicBeatmapEvents.orEmpty().size
+    override fun obstacleCount() = obstacles.orEmpty().size
     private val firstAndLastLazy by lazy {
-        (colorNotes.or(listOf())).sortedBy { note -> note.orNull()?.time }.let { sorted ->
+        colorNotes.orEmpty().sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
-                (sorted.first().orNull()?.time ?: 0f) to (sorted.last().orNull()?.time ?: 0f)
+                (sorted.first().time ?: 0f) to (sorted.last().time ?: 0f)
             } else {
                 0f to 0f
             }

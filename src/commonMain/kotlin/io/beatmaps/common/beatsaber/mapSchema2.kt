@@ -4,7 +4,6 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
-import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -22,9 +21,9 @@ data class BSDifficulty(
     override val _customData: OptionalProperty<BSCustomDataV2?> = OptionalProperty.NotPresent,
     val _BPMChanges: OptionalProperty<List<OptionalProperty<BPMChange?>>?> = OptionalProperty.NotPresent
 ) : BSDiff {
-    fun notes() = _notes.or(listOf()).mapNotNull { it.orNull() }
-    fun events() = _events.or(listOf())
-    fun obstacles() = _notes.or(listOf()).mapNotNull { it.orNull() }
+    fun notes() = _notes.orEmpty()
+    fun events() = _events.orEmpty()
+    fun obstacles() = _obstacles.orEmpty()
 
     private val noteCountLazy by lazy {
         notes().withoutFake().partition { note -> note._type.orNull() != 3 }
