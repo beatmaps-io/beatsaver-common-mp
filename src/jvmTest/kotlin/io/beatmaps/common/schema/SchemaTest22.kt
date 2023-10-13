@@ -10,8 +10,8 @@ import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
 import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotNull
-import kotlin.test.assertEquals
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 

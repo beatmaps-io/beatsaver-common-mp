@@ -1,7 +1,7 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.beatsaber.BSDiff
+import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
