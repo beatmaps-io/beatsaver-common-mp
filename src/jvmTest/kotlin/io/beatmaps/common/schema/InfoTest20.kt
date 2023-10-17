@@ -46,7 +46,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NotNull>("_version"),
                 infoViolation<NotNull>("_songName"),
                 infoViolation<NotNull>("_songSubName"),
@@ -91,7 +91,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NotNull>("_customData._contributors"),
                 infoViolation<NotNull>("_customData._editors.MMA2"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._warnings"),
@@ -110,7 +110,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NotNull>("_customData._editors"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData")
             ),
@@ -124,7 +124,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NotNull>("_customData"),
                 infoViolation<NotNull>("_difficultyBeatmapSets")
             ),
@@ -138,7 +138,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NotBlank>("_songName"),
                 infoViolation<MetadataLength>("_songName"),
                 infoViolation<Between<Float>>("_beatsPerMinute"),
@@ -198,7 +198,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<NodePresent>("_version"),
                 infoViolation<NodePresent>("_songName"),
                 infoViolation<NodePresent>("_songSubName"),
@@ -225,7 +225,7 @@ class InfoTest20 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<CorrectType>("_version"),
                 infoViolation<CorrectType>("_songName"),
                 infoViolation<CorrectType>("_songSubName"),

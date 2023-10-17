@@ -1,5 +1,7 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.api.ECharacteristic
+import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.CutDirection
 import io.beatmaps.common.beatsaber.NodePresent
@@ -24,9 +26,28 @@ class SchemaTest22 {
 
     @Test
     fun schema() {
-        val ex = validateFolder("2_2/default") {
-            assertEquals(1, it.obstacleCount())
-        }
+        val ex = validateFolder("2_2/default")
+        assertNull(ex)
+    }
+
+    @Test
+    fun stats() {
+        val ex = validateFolder(
+            "2_2/stats",
+            listOf(
+                DiffValidator(ECharacteristic.Standard, EDifficulty.Easy) { diff, sli ->
+                    assertEquals(1, diff.obstacleCount())
+                    assertEquals(2, diff.noteCount())
+                    assertEquals(3, diff.eventCount())
+                    assertEquals(1, diff.bombCount())
+                    assertEquals(0, diff.arcCount())
+                    assertEquals(0, diff.chainCount())
+                    assertEquals(2f, diff.songLength()) // 2 beats
+                    assertEquals(345, diff.maxScore()) // 230 + 115
+                    assertEquals(2f, diff.mappedNps(sli)) // 1 second long, 2 notes
+                }
+            )
+        )
         assertNull(ex)
     }
 
@@ -36,8 +57,8 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
-                violation<Matches>("version"),
+            listOf(
+                violation<Matches>("_version"),
 
                 violation<In<Int>>("_notes[0]._type"),
                 violation<CutDirection>("_notes[0]._cutDirection"),
@@ -131,7 +152,7 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 violation<CorrectType>("_specialEventsKeywordFilters._keywords[0]._keyword"),
                 violation<CorrectType>("_specialEventsKeywordFilters._keywords[0]._specialEvents"),
                 violation<NotNull>("_specialEventsKeywordFilters._keywords[1]._keyword"),
@@ -168,7 +189,7 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 violation<NotNull>("_specialEventsKeywordFilters._keywords")
             ),
             ex.constraintViolations
@@ -181,8 +202,8 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
-                violation<CorrectType>("version"),
+            listOf(
+                violation<CorrectType>("_version"),
                 violation<CorrectType>("_notes"),
                 violation<CorrectType>("_obstacles"),
                 violation<CorrectType>("_events"),
@@ -201,8 +222,8 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
-                violation<NodePresent>("version"),
+            listOf(
+                violation<NodePresent>("_version"),
                 violation<NodePresent>("_notes"),
                 violation<NodePresent>("_obstacles"),
                 violation<NodePresent>("_events")
@@ -217,8 +238,8 @@ class SchemaTest22 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
-                violation<NotNull>("version"),
+            listOf(
+                violation<NotNull>("_version"),
                 violation<NotNull>("_notes"),
                 violation<NotNull>("_obstacles"),
                 violation<NotNull>("_events"),

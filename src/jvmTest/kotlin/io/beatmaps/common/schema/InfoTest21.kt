@@ -21,7 +21,7 @@ class InfoTest21 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx")
             ),

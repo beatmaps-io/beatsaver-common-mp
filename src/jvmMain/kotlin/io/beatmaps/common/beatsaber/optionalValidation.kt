@@ -1,6 +1,7 @@
 package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
+import kotlinx.serialization.SerialName
 import org.valiktor.DefaultConstraintViolation
 import org.valiktor.Validator
 import org.valiktor.constraints.Between
@@ -12,6 +13,11 @@ import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotBlank
 import org.valiktor.constraints.NotEmpty
 import org.valiktor.constraints.NotNull
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty1
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.KVisibility
 
 fun <E, Q, T : OptionalProperty<Q>> Validator<E>.Property<T?>.existsBefore(ver: Version, requiredVersion: Version): Validator<E>.Property<T?> =
     this.validate(NodePresent) { it == null || ver >= requiredVersion || it !is OptionalProperty.NotPresent }
@@ -166,4 +172,31 @@ inline fun <E, Q : Any, T : OptionalProperty<Q?>> Validator<E>.Property<T?>.vali
         )
     }
     return this
+}
+
+fun <E, T> Validator<E>.validateSerial(property: KProperty1<E, T?>): Validator<E>.Property<T?> = validate(SerialProperty(property))
+
+class SerialProperty<E, T>(private val shadow: KProperty1<E, T>) : KProperty1<E, T> {
+    override val annotations = shadow.annotations
+    private val validationName = annotations.filterIsInstance<ValidationName>()
+    private val serialName = annotations.filterIsInstance<SerialName>()
+
+    override val getter = shadow.getter
+    override val isAbstract = shadow.isAbstract
+    override val isConst = shadow.isConst
+    override val isFinal = shadow.isFinal
+    override val isLateinit = shadow.isLateinit
+    override val isOpen = shadow.isOpen
+    override val isSuspend = shadow.isSuspend
+    override val name = validationName.firstOrNull()?.value ?: serialName.firstOrNull()?.let { "${it.value}(${shadow.name})" } ?: shadow.name
+    override val parameters = shadow.parameters
+    override val returnType = shadow.returnType
+    override val typeParameters = shadow.typeParameters
+    override val visibility = shadow.visibility
+
+    override fun call(vararg args: Any?) = shadow.call(*args)
+    override fun callBy(args: Map<KParameter, Any?>) = shadow.callBy(args)
+    override fun invoke(p1: E) = shadow.invoke(p1)
+    override fun getDelegate(receiver: E) = shadow.getDelegate(receiver)
+    override fun get(receiver: E) = shadow.get(receiver)
 }

@@ -22,7 +22,7 @@ class SchemaTest32 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
+            listOf(
                 violation<NodePresent>("bpmEvents"),
                 violation<NodePresent>("rotationEvents"),
                 violation<NodePresent>("colorNotes"),
@@ -55,17 +55,17 @@ class SchemaTest32 {
         assertNotNull(ex)
 
         assertContentEquals(
-            listOf<Any>(
-                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.chunks"),
-                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.randomType"),
-                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.seed"),
-                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.limit"),
-                violation<NodeNotPresent>("lightColorEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType"),
-                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.chunks"),
-                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.randomType"),
-                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.seed"),
-                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.limit"),
-                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].eventBoxes[0].indexFilter.alsoAffectsType"),
+            listOf(
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).c(chunks)"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).n(randomType)"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).s(seed)"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).l(limit)"),
+                violation<NodeNotPresent>("lightColorEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).d(alsoAffectsType)"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).c(chunks)"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).n(randomType)"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).s(seed)"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).l(limit)"),
+                violation<NodeNotPresent>("lightRotationEventBoxGroups[0].e(eventBoxes)[0].f(indexFilter).d(alsoAffectsType)"),
                 violation<NodeNotPresent>("lightTranslationEventBoxGroups")
             ),
             ex.constraintViolations

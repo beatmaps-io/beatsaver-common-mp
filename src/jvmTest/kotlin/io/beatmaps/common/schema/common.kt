@@ -1,24 +1,28 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.api.ECharacteristic
+import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.valiktor.Constraint
+import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
-import org.valiktor.DefaultConstraintViolation
 import java.io.File
 import java.io.OutputStream
 import java.security.DigestOutputStream
 import java.security.MessageDigest
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 import kotlin.test.assertEquals
 
 object SchemaCommon {
-    fun validateFolder(name: String, diffValidator: ((BSDiff) -> Unit)? = null): ConstraintViolationException? {
+    fun validateFolder(name: String, diffValidators: List<DiffValidator> = listOf()): ConstraintViolationException? {
         val info = javaClass.getResourceAsStream("/$name/Info.dat")!!
         val audio = File(javaClass.getResource("/shared/click.ogg")!!.toURI())
         val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
@@ -44,7 +48,14 @@ object SchemaCommon {
                         null
                     }
                 }
-                diffValidator?.invoke(extractedInfo.diffs.values.first().values.first())
+                diffValidators.forEach {
+                    val char = extractedInfo.diffs.filter { d -> d.key.enumValue() == it.characteristic }
+                    assert(char.size == 1) { "Missing or multiple characteristics for validator" }
+                    val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                    assert(diff.size == 1) { "Missing or multiple difficulty for validator" }
+
+                    it.block.invoke(diff.values.first(), extractedInfo.songLengthInfo!!)
+                }
             }
         } catch (e: ConstraintViolationException) {
             return e
@@ -63,17 +74,23 @@ object SchemaCommon {
         Violation(prop, T::class)
 }
 
-data class Violation<T : Constraint>(val prop: String, val constraintType: KClass<T>) {
+data class DiffValidator(val characteristic: ECharacteristic, val difficulty: EDifficulty, val block: (BSDiff, SongLengthInfo) -> Unit)
+
+data class Violation<T : Constraint>(override val property: String, val constraintType: KClass<T>) : ConstraintViolation {
+    // Will generally error but isn't intended to be used
+    override val constraint: T by lazy { constraintType.createInstance() }
+    override val value: Any? = null
+
     override fun equals(other: Any?): Boolean {
-        if (other is DefaultConstraintViolation) {
-            return other.property == prop && constraintType.isInstance(other.constraint)
+        if (other is ConstraintViolation) {
+            return other.property == property && constraintType.isInstance(other.constraint)
         }
 
         return super.equals(other)
     }
 
     override fun hashCode(): Int {
-        var result = prop.hashCode()
+        var result = property.hashCode()
         result = 31 * result + constraintType.hashCode()
         return result
     }
