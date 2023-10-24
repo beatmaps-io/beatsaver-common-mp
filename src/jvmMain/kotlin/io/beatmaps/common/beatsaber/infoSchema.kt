@@ -27,10 +27,7 @@ import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
 import org.valiktor.DefaultConstraintViolation
-import org.valiktor.Validator
 import org.valiktor.constraints.In
-import org.valiktor.functions.validate
-import org.valiktor.validate
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -162,10 +159,10 @@ data class MapInfo(
             .validate(ImageFormat) { imageInfo == null || arrayOf("jpeg", "jpg", "png").contains(imageInfo.format) }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
-        validate(MapInfo::_customData).correctType().validate {
+        validate(MapInfo::_customData).correctType().validateOptional {
             extraFieldsViolation(
                 constraintViolations,
-                it.orNull()?.additionalInformation?.keys ?: setOf()
+                it.additionalInformation.keys
             )
         }
         validate(MapInfo::_environmentName).correctType().exists().optionalNotNull()
@@ -199,7 +196,7 @@ data class MapCustomData(
     val _editors: OptionalProperty<MapEditors?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
-    fun validate(validator: Validator<MapCustomData>, files: Set<String>) = validator.apply {
+    fun validate(validator: BMValidator<MapCustomData>, files: Set<String>) = validator.apply {
         validate(MapCustomData::_contributors).correctType().optionalNotNull().validateForEach {
             it.validate(this, files)
         }
@@ -214,7 +211,7 @@ data class MapColorScheme(
     val useOverride: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
     val colorScheme: OptionalProperty<ColorScheme?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: Validator<MapColorScheme>) = validator.apply {
+    fun validate(validator: BMValidator<MapColorScheme>) = validator.apply {
         validate(MapColorScheme::useOverride).correctType().optionalNotNull()
         validate(MapColorScheme::colorScheme).correctType().optionalNotNull().validateOptional {
             it.validate(this)
@@ -235,7 +232,7 @@ data class ColorScheme(
     val environmentColorW: OptionalProperty<BSColor?> = OptionalProperty.NotPresent,
     val environmentColorWBoost: OptionalProperty<BSColor?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: Validator<ColorScheme>) = validator.apply {
+    fun validate(validator: BMValidator<ColorScheme>) = validator.apply {
         validate(ColorScheme::colorSchemeId).correctType().optionalNotNull()
 
         listOf(
@@ -256,7 +253,7 @@ data class BSColor(
     val b: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val a: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: Validator<BSColor>) = validator.apply {
+    fun validate(validator: BMValidator<BSColor>) = validator.apply {
         validate(BSColor::r).correctType().optionalNotNull()
         validate(BSColor::g).correctType().optionalNotNull()
         validate(BSColor::b).correctType().optionalNotNull()
@@ -273,7 +270,7 @@ data class MapEditors(
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
     fun validate(
-        validator: Validator<MapEditors>
+        validator: BMValidator<MapEditors>
     ) = validator.apply {
         validate(MapEditors::_lastEditedBy).correctType().optionalNotNull()
         validate(MapEditors::beatSage).correctType().optionalNotNull()
@@ -288,7 +285,7 @@ data class MapEditorVersion(
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
     fun validate(
-        validator: Validator<MapEditorVersion>
+        validator: BMValidator<MapEditorVersion>
     ) = validator.apply {
         validate(MapEditorVersion::version).correctType().optionalNotNull()
     }
@@ -301,7 +298,7 @@ data class Contributor(
     val _iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
 ) {
     fun validate(
-        validator: Validator<Contributor>,
+        validator: BMValidator<Contributor>,
         files: Set<String>
     ) = validator.apply {
         validate(Contributor::_role).correctType().optionalNotNull()
@@ -317,7 +314,7 @@ data class DifficultyBeatmapSet(
     val _difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmap?>>?>,
     val _customData: OptionalProperty<DifficultyBeatmapSetCustomData?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: Validator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
+    fun validate(validator: BMValidator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
         val allowedCharacteristics = ECharacteristic.values().toList().let {
             if (ver < Schema2_1) it.minus(ECharacteristic.Legacy) else it
         }.map { it.name.removePrefix("_") }.toSet()
@@ -348,8 +345,8 @@ data class DifficultyBeatmap(
     val _customData: OptionalProperty<DifficultyBeatmapCustomData?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
-    private fun diffValid(
-        parent: Validator<*>.Property<*>,
+    private fun <E, T> diffValid(
+        parent: BMValidator<E>.BMProperty<T>,
         path: IZipPath?,
         characteristic: DifficultyBeatmapSet,
         difficulty: DifficultyBeatmap,
@@ -374,14 +371,10 @@ data class DifficultyBeatmap(
         val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo._beatsPerMinute.or(0f)) ?: 0f
         parent.addConstraintViolations(
             when (diff) {
-                is BSDifficulty -> Validator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> Validator(diff).apply { this.validateV3(info, maxBeat, Version(diff.version.orNull())) }
+                is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
+                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, maxBeat, Version(diff.version.orNull())) }
             }.constraintViolations.map { constraint ->
-                DefaultConstraintViolation(
-                    property = "`${path?.fileName}`.${constraint.property}",
-                    value = constraint.value,
-                    constraint = constraint.constraint
-                )
+                constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
             }
         )
     }
@@ -389,7 +382,7 @@ data class DifficultyBeatmap(
     private fun self() = this
 
     fun validate(
-        validator: Validator<DifficultyBeatmap>,
+        validator: BMValidator<DifficultyBeatmap>,
         characteristic: DifficultyBeatmapSet,
         files: Set<String>,
         getFile: (String) -> IZipPath?,
@@ -455,8 +448,8 @@ fun extraFieldsViolation(
 ) {
     constraintViolations +=
         notAllowed.intersect(keys).map {
-            DefaultConstraintViolation(
-                property = it,
+            BMConstraintViolation(
+                propertyInfo = listOf(BMPropertyInfo(it)),
                 value = null,
                 constraint = MisplacedCustomData
             )
@@ -475,7 +468,7 @@ data class DifficultyBeatmapCustomData(
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
     fun validate(
-        validator: Validator<DifficultyBeatmapCustomData>
+        validator: BMValidator<DifficultyBeatmapCustomData>
     ) = validator.apply {
         validate(DifficultyBeatmapCustomData::_difficultyLabel).correctType().optionalNotNull()
         validate(DifficultyBeatmapCustomData::_editorOffset).correctType().optionalNotNull()
@@ -494,7 +487,7 @@ data class DifficultyBeatmapSetCustomData(
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : JAdditionalProperties() {
     fun validate(
-        validator: Validator<DifficultyBeatmapSetCustomData>,
+        validator: BMValidator<DifficultyBeatmapSetCustomData>,
         files: Set<String>
     ) = validator.apply {
         validate(DifficultyBeatmapSetCustomData::_characteristicLabel).correctType().optionalNotNull()
