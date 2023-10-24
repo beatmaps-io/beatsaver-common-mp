@@ -88,9 +88,12 @@ data class BMConstraintViolation(
                     baseName = baseName,
                     locale = locale,
                     fallbackBaseName = constraint.messageBundle,
-                    fallbackLocale = Locale.getDefault()),
+                    fallbackLocale = Locale.getDefault()
+                ),
                 constraint.messageKey,
-                constraint.messageParams))
+                constraint.messageParams
+            )
+        )
 }
 
 fun <E, T> KProperty1<E, T>.toInfo(index: Int? = null): BMPropertyInfo {
