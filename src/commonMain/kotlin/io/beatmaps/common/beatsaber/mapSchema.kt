@@ -19,6 +19,9 @@ interface BSCustomData {
     } as Map<*, *>
 }
 
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
+annotation class ValidationName(val value: String)
+
 fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> (obj.getCustomData()["_fake"] as? JsonPrimitive)?.booleanOrNull != true }
 
 fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProperty<T, Float> =

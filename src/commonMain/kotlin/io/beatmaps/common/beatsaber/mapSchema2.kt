@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class BSDifficulty(
-    @SerialName("_version")
+    @SerialName("_version") @ValidationName("_version")
     override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _notes: OptionalProperty<List<OptionalProperty<BSNote?>>?> = OptionalProperty.NotPresent,
     val _obstacles: OptionalProperty<List<OptionalProperty<BSObstacle?>>?> = OptionalProperty.NotPresent,
@@ -61,13 +61,14 @@ data class BSDifficulty(
 }
 
 abstract class BSObject {
-    abstract val _time: OptionalProperty<Float?>
-    val time by orNegativeInfinity { _time }
+    abstract val beat: OptionalProperty<Float?>
+    val time by orNegativeInfinity { beat }
 }
 
 @Serializable
 data class BSNote(
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_time") @ValidationName("_time")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
@@ -82,7 +83,8 @@ data class BSNote(
 
 @Serializable
 data class BSObstacle(
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_time") @ValidationName("_time")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _duration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
@@ -92,7 +94,8 @@ data class BSObstacle(
 
 @Serializable
 data class BSEvent(
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_time") @ValidationName("_time")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
@@ -106,7 +109,8 @@ data class BSCustomDataV2(
 
 @Serializable
 data class BPMChange(
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_time") @ValidationName("_time")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _BPM: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _beatsPerBar: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _metronomeOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent
@@ -114,7 +118,8 @@ data class BPMChange(
 
 @Serializable
 data class BSWaypointV2(
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_time") @ValidationName("_time")
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent

@@ -2,10 +2,9 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.zip.ExtractedInfo
-import org.valiktor.Validator
 import kotlin.reflect.KProperty1
 
-fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
+fun BMValidator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
     validate(BSDifficultyV3::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).correctType().exists().optionalNotNull().validateForEach {
         validate(BSBpmChange::bpm).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
@@ -13,7 +12,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
     }
     validate(BSDifficultyV3::rotationEvents).correctType().exists().optionalNotNull().validateForEach {
         validate(BSRotationEvent::executionTime).correctType().existsBefore(ver, Schema3_3).isIn(0, 1)
-        validate(BSRotationEvent::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSRotationEvent::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSRotationEvent::rotation).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
     validate(BSDifficultyV3::colorNotes).correctType().exists().optionalNotNull().validateForEach {
@@ -23,7 +22,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
                 q == null || (q in 0..8) || (q in 1000..1360)
             }
         }
-        validate(BSNoteV3::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull().let {
+        validate(BSNoteV3::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull().let {
             if (info.duration > 0) it.isBetween(0f, maxBeat)
         }
 
@@ -32,7 +31,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
         validate(BSNoteV3::angleOffset).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
     validate(BSDifficultyV3::bombNotes).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSBomb::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSBomb::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSBomb::x).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSBomb::y).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
@@ -45,7 +44,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
         validate(BSObstacleV3::height).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
     validate(BSDifficultyV3::sliders).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSSlider::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSSlider::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSSlider::color).correctType().existsBefore(ver, Schema3_3).isIn(0, 1)
         validate(BSSlider::x).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSSlider::y).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
@@ -59,7 +58,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
         validate(BSSlider::sliderMidAnchorMode).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
     validate(BSDifficultyV3::burstSliders).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSBurstSlider::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull().let {
+        validate(BSBurstSlider::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull().let {
             if (info.duration > 0) it.isBetween(0f, maxBeat)
         }
         validate(BSBurstSlider::color).correctType().existsBefore(ver, Schema3_3).isIn(0, 1)
@@ -81,7 +80,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
         validate(BSWaypoint::offsetDirection).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
     validate(BSDifficultyV3::basicBeatmapEvents).correctType().exists().optionalNotNull().validateForEach {
-        validate(BSEventV3::_time).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
+        validate(BSEventV3::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSEventV3::eventType).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSEventV3::value).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSEventV3::floatValue).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
@@ -167,12 +166,12 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
     }
     validate(BSDifficultyV3::_fxEventsCollection).correctType().optionalNotNull().onlyExistsAfter(ver, Schema3_3).validateOptional {
         validate(BSFxEventsCollection::intEventsList).correctType().exists().optionalNotNull().validateForEach {
-            validate(BSIntFxEventBaseData::_time).correctType().optionalNotNull()
+            validate(BSIntFxEventBaseData::beat).correctType().optionalNotNull()
             validate(BSIntFxEventBaseData::usePreviousEventValue).correctType().optionalNotNull()
             validate(BSIntFxEventBaseData::value).correctType().optionalNotNull()
         }
         validate(BSFxEventsCollection::floatEventsList).correctType().exists().optionalNotNull().validateForEach {
-            validate(BSFloatFxEventBaseData::_time).correctType().optionalNotNull()
+            validate(BSFloatFxEventBaseData::beat).correctType().optionalNotNull()
             validate(BSFloatFxEventBaseData::usePreviousEventValue).correctType().optionalNotNull()
             validate(BSFloatFxEventBaseData::value).correctType().optionalNotNull()
             validate(BSFloatFxEventBaseData::easeType).correctType().optionalNotNull()
@@ -182,7 +181,7 @@ fun Validator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ve
     validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
 }
 
-fun <T : GroupableEventBox> Validator<T>.validateEventBox(indexFilter: KProperty1<T, OptionalProperty<BSIndexFilter?>>, ver: Version) {
+fun <T : GroupableEventBox> BMValidator<T>.validateEventBox(indexFilter: KProperty1<T, OptionalProperty<BSIndexFilter?>>, ver: Version) {
     validate(indexFilter).correctType().optionalNotNull().exists().validateOptional {
         validate(BSIndexFilter::type).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSIndexFilter::param0).correctType().existsBefore(ver, Schema3_3).optionalNotNull()

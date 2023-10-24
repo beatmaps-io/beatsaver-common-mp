@@ -42,7 +42,7 @@ data class BSDifficultyV3(
     private val firstAndLastLazy by lazy {
         colorNotes.orEmpty().sortedBy { note -> note.time }.let { sorted ->
             if (sorted.isNotEmpty()) {
-                (sorted.first().time ?: 0f) to (sorted.last().time ?: 0f)
+                sorted.first().time to sorted.last().time
             } else {
                 0f to 0f
             }
@@ -63,7 +63,7 @@ data class BSDifficultyV3(
 @Serializable
 data class BSObstacleV3(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
@@ -72,23 +72,23 @@ data class BSObstacleV3(
     val width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("h")
     val height: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSBpmChange(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("m")
     val bpm: OptionalProperty<Float?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSBoostEvent(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
     val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 interface IBSEventBoxGroup<T : GroupableEventBox> {
     val beat: OptionalProperty<Float?>
@@ -104,7 +104,7 @@ data class BSEventBoxGroup<T : GroupableEventBox>(
     override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
     override val eventBoxes: OptionalProperty<List<OptionalProperty<T?>>?> = OptionalProperty.NotPresent
-) : IBSEventBoxGroup<T> {
+) : IBSEventBoxGroup<T>, BSObject() {
     constructor(beat: Float, groupId: Int, eventBoxes: List<T>) :
         this(OptionalProperty.Present(beat), OptionalProperty.Present(groupId), OptionalProperty.Present(eventBoxes.map { OptionalProperty.Present(it) }))
 }
@@ -174,7 +174,7 @@ data class BSLightColorEventBox(
 @Serializable
 data class BSLightColorBaseData(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("i")
     val transitionType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("c")
@@ -183,7 +183,7 @@ data class BSLightColorBaseData(
     val brightness: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("f")
     val strobeFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSLightRotationEventBox(
@@ -211,7 +211,7 @@ data class BSLightRotationEventBox(
 @Serializable
 data class LightRotationBaseData(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
     val usePreviousEventRotationValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
@@ -222,7 +222,7 @@ data class LightRotationBaseData(
     val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
     val rotationDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSLightTranslationEventBox(
@@ -271,14 +271,14 @@ data class BSLightTranslationEventBox(
 @Serializable
 data class LightTranslationBaseData(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
     val usePreviousEventTranslationValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
     val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("t")
     val translation: OptionalProperty<Float?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSIndexFilter(
@@ -312,17 +312,17 @@ data class BSIndexFilter(
 @Serializable
 data class BSWaypoint(
     @SerialName("b")
-    val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
     val offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
-)
+) : BSObject()
 
 @Serializable
 data class BSBomb(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSObject()
@@ -330,7 +330,7 @@ data class BSBomb(
 @Serializable
 data class BSNoteV3(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("a")
@@ -344,7 +344,7 @@ data class BSNoteV3(
 @Serializable
 data class BSBurstSlider(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("c")
     val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
@@ -368,7 +368,7 @@ data class BSBurstSlider(
 @Serializable
 data class BSSlider(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("c")
     val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
@@ -396,7 +396,7 @@ data class BSSlider(
 @Serializable
 data class BSEventV3(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("et")
     val eventType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
@@ -408,7 +408,7 @@ data class BSEventV3(
 @Serializable
 data class BSRotationEvent(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("e")
     val executionTime: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
@@ -431,7 +431,7 @@ abstract class BSFxEventBaseData<T> : BSObject() {
 @Serializable
 data class BSIntFxEventBaseData(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
     override val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("v")
@@ -441,7 +441,7 @@ data class BSIntFxEventBaseData(
 @Serializable
 data class BSFloatFxEventBaseData(
     @SerialName("b")
-    override val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
     override val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("v")
