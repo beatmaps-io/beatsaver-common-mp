@@ -1,7 +1,10 @@
 package io.beatmaps.common.dbo
 
+import io.beatmaps.common.IPlaylistConfig
 import io.beatmaps.common.api.EPlaylistType
+import io.beatmaps.common.db.json
 import io.beatmaps.common.db.postgresEnumeration
+import io.beatmaps.common.jsonLenient
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -50,6 +53,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     val maxNps = decimal("maxNps", 8, 3)
 
     val type = postgresEnumeration<EPlaylistType>("type", "playlistType")
+    val config = json<IPlaylistConfig>("config", json = jsonLenient).nullable()
 
     object Stats {
         val mapperCount = beatmapSubQuery[Beatmap.uploader].countDistinct()
@@ -102,6 +106,7 @@ data class PlaylistDao(val key: EntityID<Int>) : IntEntity(key) {
     val maxNps by Playlist.maxNps
 
     val type by Playlist.type
+    val config by Playlist.config
 }
 
 val bookmark by lazy { PlaylistMap.alias("bookmark") }
