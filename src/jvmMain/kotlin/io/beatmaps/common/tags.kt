@@ -14,7 +14,7 @@ fun MapTags.applyToQuery() = entries.fold(Op.TRUE as Op<Boolean>) { op, t ->
             if (!t.key) {
                 Beatmap.tags.isNull() or not(Beatmap.tags contains t2.value.toTypedArray())
             } else {
-                Beatmap.tags contains arrayOf(t2)
+                Beatmap.tags contains t2.value.toTypedArray()
             }
     }
 }
