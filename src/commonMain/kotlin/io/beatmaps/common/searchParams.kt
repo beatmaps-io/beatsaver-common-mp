@@ -35,9 +35,9 @@ fun MapTagSet.asQuery(): MapTagQuery =
     flatMap { x ->
         x.value.map { x.key to it }
     }
-    .groupBy { it.second.type }
-    .values
-    .toList()
+        .groupBy { it.second.type }
+        .values
+        .toList()
 
 fun String?.toQuery(): MapTagQuery? = this?.split(",")?.map { p ->
     p.split("|").mapNotNull { q ->
