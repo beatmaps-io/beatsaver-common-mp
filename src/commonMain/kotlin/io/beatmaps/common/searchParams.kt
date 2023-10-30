@@ -27,24 +27,43 @@ enum class SearchOrder(val idx: Int, val targets: List<SortOrderTarget>) {
 }
 
 typealias MapTagSet = Map<Boolean, Set<MapTag>>
-typealias MapTags = Map<Boolean, Map<MapTagType, List<String>>>
-fun emptyTags(): MapTags = mapOf(true to mapOf(), false to mapOf())
-fun MapTagSet.toTags(): MapTags = mapValues { o -> o.value.groupBy { y -> y.type }.mapValues { y -> y.value.map { x -> x.slug } } }.filterValues { o -> o.isNotEmpty() }
-fun MapTags.toSet(): MapTagSet = mapValues { o -> o.value.flatMap { x -> x.value.mapNotNull { y -> MapTag.fromSlug(y) } }.toSet() }
-fun MapTags.human() = flatMap { x ->
-    x.value.map { y ->
-        y.value.joinToString(if (x.key) " or " else " and ") {
-            (if (x.key) "" else "!") + it
-        } to y.value.size
+typealias MapTagQuery = List<List<Pair<Boolean, MapTag>>>
+
+fun MapTagSet.toQuery() = asQuery().toQuery()
+
+fun MapTagSet.asQuery(): MapTagQuery =
+    flatMap { x ->
+        x.value.map { x.key to it }
     }
-}.joinToString(" and ") { if (it.second == 1) it.first else "(${it.first})" }
-fun MapTags.toQuery() = flatMap { x ->
-    x.value.map { y ->
-        y.value.joinToString(if (x.key) "|" else ",") {
-            (if (x.key) "" else "!") + it
+    .groupBy { it.second.type }
+    .values
+    .toList()
+
+fun String?.toQuery(): MapTagQuery? = this?.split(",")?.map { p ->
+    p.split("|").mapNotNull { q ->
+        MapTag.fromSlug(q.removePrefix("!"))?.let { m -> !q.startsWith("!") to m }
+    }
+}
+
+fun MapTagQuery.toQuery() = flatMap { x ->
+    x.groupBy { it.first }.map { y ->
+        y.value.joinToString(if (y.key) "|" else ",") {
+            (if (it.first) "" else "!") + it.second.slug
         }
     }
 }.joinToString(",")
-fun String?.toTags(): MapTags? = this?.split(",", "|")?.groupBy { !it.startsWith("!") }?.mapValues {
-    it.value.map { slug -> slug.removePrefix("!") }.groupBy { slug -> MapTag.fromSlug(slug)?.type ?: MapTagType.None }
-}
+
+fun MapTagQuery.human() = flatMap { x ->
+    x.groupBy { it.first }.map { y ->
+        y.value.joinToString(if (y.key) " or " else " and ") {
+            (if (it.first) "" else "!") + it.second.slug
+        } to y.value.size
+    }
+}.joinToString(" and ") { if (it.second == 1) it.first else "(${it.first})" }
+
+fun MapTagQuery.toTagSet(): MapTagSet =
+    flatten()
+        .groupBy { it.first }
+        .mapValues { x ->
+            x.value.map { it.second }.toSet()
+        }
