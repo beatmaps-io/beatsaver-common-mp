@@ -23,11 +23,11 @@ data class UnpublishData(val reason: String) : IModLogOpAction
 
 @Serializable
 @SerialName("UploadLimit")
-class UploadLimitData(val newValue: Int, val newCurator: Boolean, val verifiedMapper: Boolean?, val curatorTab: Boolean?) : IModLogOpAction
+class UploadLimitData(val newValue: Int, val newCurator: Boolean, val verifiedMapper: Boolean? = null, val curatorTab: Boolean? = null) : IModLogOpAction
 
 @Serializable
 @SerialName("Suspend")
-class SuspendData(val suspended: Boolean, val reason: String?) : IModLogOpAction
+class SuspendData(val suspended: Boolean, val reason: String? = null) : IModLogOpAction
 
 @Serializable
 @SerialName("EditPlaylist")
@@ -47,7 +47,7 @@ data class ReviewDeleteData(val reason: String, val text: String? = null, val se
 
 @Serializable
 @SerialName("RevokeSessions")
-data class RevokeSessionsData(val all: Boolean, val reason: String?) : IModLogOpAction
+data class RevokeSessionsData(val all: Boolean, val reason: String? = null) : IModLogOpAction
 
 enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),

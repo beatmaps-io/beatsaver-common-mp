@@ -2,9 +2,8 @@ package io.beatmaps.common.dbo
 
 import io.beatmaps.common.IUserLogOpAction
 import io.beatmaps.common.UserLogOpType
+import io.beatmaps.common.db.json
 import io.beatmaps.common.json
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -17,7 +16,7 @@ object UserLog : IntIdTable("userlog", "logId") {
     val opOn = reference("mapId", Beatmap).nullable()
     val opAt = timestamp("when")
     val type = integer("type")
-    val action = text("action")
+    val action = json<IUserLogOpAction>("action", json = json)
 
     fun insert(userId: Int, mapId: Int?, a: IUserLogOpAction) =
         (UserLogOpType.fromAction(a) ?: throw RuntimeException("Action type not valid")).let { t ->
@@ -25,7 +24,7 @@ object UserLog : IntIdTable("userlog", "logId") {
                 it[opBy] = userId
                 it[opOn] = if (mapId == null) null else EntityID(mapId, Beatmap)
                 it[type] = t.ordinal
-                it[action] = json.encodeToString(a)
+                it[action] = a
             }
         }
 }
@@ -40,5 +39,4 @@ data class UserLogDao(val key: EntityID<Int>) : IntEntity(key) {
     private val action by UserLog.action
 
     fun realType() = UserLogOpType.values()[type]
-    fun realAction() = json.decodeFromString<IUserLogOpAction>(action)
 }

@@ -2,7 +2,9 @@ package io.beatmaps.common.dbo
 
 import io.beatmaps.common.IModLogOpAction
 import io.beatmaps.common.ModLogOpType
-import io.beatmaps.common.jackson
+import io.beatmaps.common.json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.serializer
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -11,7 +13,6 @@ import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.javatime.timestamp
-import java.lang.RuntimeException
 
 object ModLog : IntIdTable("modlog", "logId") {
     val opBy = reference("userId", User)
@@ -30,7 +31,7 @@ object ModLog : IntIdTable("modlog", "logId") {
                 it[opOn] = if (mapId == null) null else EntityID(mapId, Beatmap)
                 it[targetUser] = targetUserId
                 it[type] = t.ordinal
-                it[action] = jackson.writeValueAsString(a)
+                it[action] = json.encodeToString(a)
             }
         }
 }
@@ -46,5 +47,5 @@ data class ModLogDao(val key: EntityID<Int>) : IntEntity(key) {
     private val action by ModLog.action
 
     fun realType() = ModLogOpType.values()[type]
-    fun realAction() = jackson.readValue(action, realType().actionClass.java) as IModLogOpAction
+    fun realAction() = json.decodeFromString(realType().actionClass.serializer(), action) as IModLogOpAction
 }

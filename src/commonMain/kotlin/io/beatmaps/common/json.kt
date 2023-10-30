@@ -15,8 +15,15 @@ val json = Json {
     serializersModule = SerializersModule {
         modlog()
         userlog()
+        playlist()
     }
     prettyPrint = true
+}
+
+val jsonLenient = Json(json) {
+    // TODO: kotlinx.serialization:1.6.1 should fix my issue
+    // https://github.com/Kotlin/kotlinx.serialization/issues/2438
+    isLenient = true
 }
 
 val jsonIgnoreUnknown = Json {
