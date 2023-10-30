@@ -34,7 +34,7 @@ data class SearchParamsPlaylist(
     val fullSpread: Boolean? = null,
     val me: Boolean? = null,
     val cinema: Boolean? = null,
-    val tags: MapTags = mapOf(),
+    val tags: MapTagSet = mapOf(),
     val mappers: List<Int> = listOf()
 )
 

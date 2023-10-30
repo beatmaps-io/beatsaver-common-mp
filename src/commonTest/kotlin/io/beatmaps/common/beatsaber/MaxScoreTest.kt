@@ -1,5 +1,5 @@
-import io.beatmaps.common.beatsaber.MultiplierEventType
-import io.beatmaps.common.beatsaber.ScoreMultiplierCounter
+package io.beatmaps.common.beatsaber
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
