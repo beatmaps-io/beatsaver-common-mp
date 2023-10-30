@@ -19,12 +19,12 @@ data class SearchPlaylistConfig(val searchParams: SearchParamsPlaylist, val mapC
 
 @Serializable
 data class SearchParamsPlaylist(
-    val search: String,
+    val search: String = "",
     val automapper: Boolean? = null,
     val minNps: Float? = null,
     val maxNps: Float? = null,
     val chroma: Boolean? = null,
-    val sortOrder: SearchOrder,
+    val sortOrder: SearchOrder = SearchOrder.Relevance,
     val from: Instant? = null,
     val to: Instant? = null,
     val noodle: Boolean? = null,
@@ -34,7 +34,8 @@ data class SearchParamsPlaylist(
     val fullSpread: Boolean? = null,
     val me: Boolean? = null,
     val cinema: Boolean? = null,
-    val tags: MapTags
+    val tags: MapTags = mapOf(),
+    val mappers: List<Int> = listOf()
 )
 
 fun SerializersModuleBuilder.playlist() = polymorphic(IPlaylistConfig::class) {
