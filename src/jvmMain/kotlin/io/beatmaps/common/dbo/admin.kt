@@ -3,6 +3,7 @@ package io.beatmaps.common.dbo
 import io.beatmaps.common.IModLogOpAction
 import io.beatmaps.common.ModLogOpType
 import io.beatmaps.common.json
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.dao.IntEntity
@@ -47,5 +48,9 @@ data class ModLogDao(val key: EntityID<Int>) : IntEntity(key) {
     private val action by ModLog.action
 
     fun realType() = ModLogOpType.values()[type]
-    fun realAction() = json.decodeFromString(realType().actionClass.serializer(), action) as IModLogOpAction
+    fun realAction() = try {
+        json.decodeFromString(action)
+    } catch (e: Exception) {
+        json.decodeFromString(realType().actionClass.serializer(), action) as IModLogOpAction
+    }
 }
