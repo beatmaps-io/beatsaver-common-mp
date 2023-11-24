@@ -2,11 +2,9 @@ package io.beatmaps.common
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.reflect.KClass
 
+@Serializable
 sealed interface IModLogOpAction
 
 @Serializable
@@ -60,17 +58,4 @@ enum class ModLogOpType(val actionClass: KClass<*>) {
         fun fromAction(action: IModLogOpAction) = map[action::class]
         fun fromName(name: String) = nameMap[name.lowercase()]
     }
-}
-
-fun SerializersModuleBuilder.modlog() = polymorphic(IModLogOpAction::class) {
-    subclass(InfoEditData::class)
-    subclass(DeletedData::class)
-    subclass(UnpublishData::class)
-    subclass(UploadLimitData::class)
-    subclass(SuspendData::class)
-    subclass(EditPlaylistData::class)
-    subclass(DeletedPlaylistData::class)
-    subclass(ReviewModerationData::class)
-    subclass(ReviewDeleteData::class)
-    subclass(RevokeSessionsData::class)
 }

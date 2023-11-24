@@ -9,26 +9,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
-import kotlinx.serialization.modules.SerializersModule
 
 val json = Json {
-    serializersModule = SerializersModule {
-        modlog()
-        userlog()
-        playlist()
-    }
     prettyPrint = true
 }
 
-val jsonLenient = Json(json) {
-    // TODO: kotlinx.serialization:1.6.1 should fix my issue
-    // https://github.com/Kotlin/kotlinx.serialization/issues/2438
-    isLenient = true
-}
-
-val jsonIgnoreUnknown = Json {
+val jsonIgnoreUnknown = Json(json) {
     ignoreUnknownKeys = true
-    prettyPrint = true
     prettyPrintIndent = "  "
 }
 
