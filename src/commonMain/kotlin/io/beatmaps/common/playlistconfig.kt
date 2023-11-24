@@ -3,10 +3,8 @@ package io.beatmaps.common
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
+@Serializable
 sealed interface IPlaylistConfig
 
 @Serializable
@@ -37,7 +35,3 @@ data class SearchParamsPlaylist(
     val tags: MapTagSet = mapOf(),
     val mappers: List<Int> = listOf()
 )
-
-fun SerializersModuleBuilder.playlist() = polymorphic(IPlaylistConfig::class) {
-    subclass(SearchPlaylistConfig::class)
-}

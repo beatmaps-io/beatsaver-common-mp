@@ -2,11 +2,9 @@ package io.beatmaps.common
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.reflect.KClass
 
+@Serializable
 sealed interface IUserLogOpAction
 
 @Serializable
@@ -26,9 +24,4 @@ enum class UserLogOpType(val actionClass: KClass<*>) {
         fun fromAction(action: IUserLogOpAction) = map[action::class]
         fun fromName(name: String) = nameMap[name.lowercase()]
     }
-}
-
-fun SerializersModuleBuilder.userlog() = polymorphic(IUserLogOpAction::class) {
-    subclass(PasswordChangedData::class)
-    subclass(EmailChangedData::class)
 }
