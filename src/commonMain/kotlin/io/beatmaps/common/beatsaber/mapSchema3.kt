@@ -30,7 +30,7 @@ data class BSDifficultyV3(
     val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
 
-    override val _customData: JsonObject? = null
+    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSDiff {
     override fun noteCount() = colorNotes.orEmpty().size
     override fun bombCount() = bombNotes.orEmpty().size

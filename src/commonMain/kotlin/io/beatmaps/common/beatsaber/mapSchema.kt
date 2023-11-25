@@ -6,17 +6,20 @@ import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.or
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlin.properties.ReadOnlyProperty
 
 interface BSCustomData {
-    val _customData: Any?
+    val _customData: OptionalProperty<Any?>
 
-    fun getCustomData() = when (_customData) {
-        is Map<*, *> -> _customData
-        else -> mapOf<String, String>()
-    } as Map<*, *>
+    fun getCustomData() = _customData.let { cd ->
+        when {
+            cd is OptionalProperty.Present && cd.value is JsonObject -> cd.value
+            else -> mapOf<String, String>()
+        }
+    }
 }
 
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
