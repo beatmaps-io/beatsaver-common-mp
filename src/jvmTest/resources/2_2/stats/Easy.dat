@@ -16,6 +16,16 @@
       "_cutDirection": 2
     },
     {
+      "_time": 2.5,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 3,
+      "_cutDirection": 2,
+      "_customData": {
+        "_fake": true
+      }
+    },
+    {
       "_time": 3.0,
       "_lineIndex": 1,
       "_lineLayer": 1,
