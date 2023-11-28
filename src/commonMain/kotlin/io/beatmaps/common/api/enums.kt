@@ -13,6 +13,10 @@ interface HumanEnum<E> where E : Enum<E>, E : HumanEnum<E> {
     fun enumName(): String
 }
 
+enum class AiDeclarationType(val markAsBot: Boolean = true, val override: Boolean = false) {
+    Admin, Uploader, SageScore(override = true), None(false, true)
+}
+
 object ECharacteristicSerializer : KHumanEnumSerializer<ECharacteristic>(enumValues())
 object EDifficultySerializer : KHumanEnumSerializer<EDifficulty>(enumValues())
 open class KHumanEnumSerializer<E>(private val members: Array<E>) : KSerializer<E> where E : Enum<E>, E : HumanEnum<E> {

@@ -1,5 +1,6 @@
 package io.beatmaps.common.dbo
 
+import io.beatmaps.common.api.AiDeclarationType
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
@@ -73,6 +74,8 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val fullSpread = bool("fullSpread")
 
     val tags = array<String>("tags", VarCharColumnType(255)).nullable()
+
+    val declaredAi = postgresEnumeration<AiDeclarationType>("declaredAi", "aiDeclarationType")
 }
 
 data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -117,6 +120,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val sentiment by Beatmap.sentiment
     val reviews by Beatmap.reviews
+
+    val declaredAi by Beatmap.declaredAi
 
     var bookmarked: Boolean? = null
 
