@@ -41,12 +41,12 @@ fun Application.emailQueue() {
                     is SendFailedException -> cause.invalidAddresses.isNotEmpty()
                     else -> false
                 }.let { ignore ->
-                    emailLogger.log(if (ignore) Level.INFO else Level.WARNING, "Sending email resulted in exception. ${e.cause?.message}")
+                    emailLogger.log(
+                        if (ignore) Level.INFO else Level.WARNING,
+                        "Sending email resulted in exception.\nTo: ${emailInfo.to}\nSubject: ${emailInfo.subject}\n${e.cause?.message}"
+                    )
 
-                    if (!ignore) {
-                        delay(60 * 1000)
-                        throw e
-                    }
+                    if (!ignore) throw e
                 }
             }
         }

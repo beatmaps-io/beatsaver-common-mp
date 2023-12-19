@@ -7,12 +7,8 @@ import com.rabbitmq.client.Connection
 import com.rabbitmq.client.DeliverCallback
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import pl.jutupe.ktor_rabbitmq.RabbitMQ
 import pl.jutupe.ktor_rabbitmq.RabbitMQConfiguration
 import pl.jutupe.ktor_rabbitmq.RabbitMQInstance
@@ -73,21 +69,17 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     rabbitDeliverCallback: suspend (consumerTag: String, body: T) -> Unit
 ) {
     val logger = Logger.getLogger("bmio.RabbitMQ.consumeAck")
-    GlobalScope.launch(Dispatchers.IO) {
-        getConnection().createChannel().apply {
-            basicQos(20)
-            basicConsume(
-                queue,
-                false,
-                DeliverCallback { consumerTag, message ->
+    getConnection().createChannel().apply {
+        basicQos(20)
+        basicConsume(
+            queue,
+            false,
+            DeliverCallback { consumerTag, message ->
+                runBlocking(es.asCoroutineDispatcher()) {
                     runCatching {
                         val mappedEntity = jackson.readValue(message.body, clazz.javaObjectType)
 
-                        runBlocking(es.asCoroutineDispatcher()) {
-                            withContext(es.asCoroutineDispatcher()) {
-                                rabbitDeliverCallback.invoke(consumerTag, mappedEntity)
-                            }
-                        }
+                        rabbitDeliverCallback.invoke(consumerTag, mappedEntity)
 
                         basicAck(message.envelope.deliveryTag, false)
                     }.getOrElse {
@@ -95,11 +87,11 @@ fun <T : Any> RabbitMQInstance.consumeAck(
 
                         basicNack(message.envelope.deliveryTag, false, false)
                     }
-                },
-                CancelCallback {
-                    logger.warning("Consume cancelled: $it")
                 }
-            )
-        }
+            },
+            CancelCallback {
+                logger.warning("Consume cancelled: $it")
+            }
+        )
     }
 }
