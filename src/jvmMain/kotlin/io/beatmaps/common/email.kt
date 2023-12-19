@@ -4,7 +4,6 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.util.pipeline.PipelineContext
-import kotlinx.coroutines.delay
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
@@ -30,6 +29,10 @@ fun genericEmail() = SimpleEmail().apply {
 fun Application.emailQueue() {
     rabbitOptional {
         consumeAck("email", EmailInfo::class) { _, emailInfo ->
+            if (emailInfo.to.length < 3) {
+                return@consumeAck
+            }
+
             try {
                 genericEmail().apply {
                     subject = emailInfo.subject
@@ -41,12 +44,12 @@ fun Application.emailQueue() {
                     is SendFailedException -> cause.invalidAddresses.isNotEmpty()
                     else -> false
                 }.let { ignore ->
-                    emailLogger.log(if (ignore) Level.INFO else Level.WARNING, "Sending email resulted in exception. ${e.cause?.message}")
+                    emailLogger.log(
+                        if (ignore) Level.INFO else Level.WARNING,
+                        "Sending email resulted in exception.\nTo: ${emailInfo.to}\nSubject: ${emailInfo.subject}\n${e.cause?.message}"
+                    )
 
-                    if (!ignore) {
-                        delay(60 * 1000)
-                        throw e
-                    }
+                    if (!ignore) throw e
                 }
             }
         }
