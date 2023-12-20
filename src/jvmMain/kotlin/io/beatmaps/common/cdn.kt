@@ -33,17 +33,6 @@ data class CDNUpdate(
     val levelAuthorName: String?,
     val deleted: Boolean
 )
-fun localAvatarFolder() = File(System.getenv("AVATAR_DIR") ?: "K:\\BMAvatar")
-fun localFolder(hash: String) = File(System.getenv("ZIP_DIR") ?: "K:\\BeatSaver", hash.substring(0, 1))
-fun localCoverFolder(hash: String) = File(System.getenv("COVER_DIR") ?: "K:\\BeatSaverCover", hash.substring(0, 1))
-fun localAudioFolder(hash: String) = File(System.getenv("AUDIO_DIR") ?: "K:\\BeatSaverAudio", hash.substring(0, 1))
-fun localPlaylistCoverFolder(size: Int = 256) = File(System.getenv("PLAYLIST_COVER_DIR") ?: "K:\\BeatSaverPlaylist").let { outerFolder ->
-    if (size != 256) {
-        File(outerFolder, "$size")
-    } else {
-        outerFolder
-    }
-}
 
 fun encodeURLPathComponent(path: String?): String =
     try {
