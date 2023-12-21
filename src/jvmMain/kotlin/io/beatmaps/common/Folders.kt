@@ -8,7 +8,8 @@ object Folders {
         ZIP("ZIP_DIR", "zips"),
         COVER("COVER_DIR", "covers"),
         AUDIO("AUDIO_DIR", "audio"),
-        PLAYLIST_COVER("PLAYLIST_COVER_DIR", "playlists")
+        PLAYLIST_COVER("PLAYLIST_COVER_DIR", "playlists"),
+        UPLOAD("UPLOAD_DIR", "uploads")
     }
 
     private val envVals = StorageItem.entries.associateWith<StorageItem, String?> { System.getenv(it.envName) }
@@ -30,6 +31,7 @@ object Folders {
         File(getFolder(si), c).createFolder()
     }
 
+    fun uploadTempFolder() = getFolder(StorageItem.UPLOAD)
     fun localAvatarFolder() = getFolder(StorageItem.AVATAR)
     fun localFolder(hash: String) = getSubFolder(StorageItem.ZIP, hash[0])
     fun localCoverFolder(hash: String) = getSubFolder(StorageItem.COVER, hash[0])
