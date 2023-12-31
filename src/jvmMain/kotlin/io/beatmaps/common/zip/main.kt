@@ -30,20 +30,6 @@ import java.util.ServiceLoader
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty0
-import kotlin.reflect.jvm.isAccessible
-
-val KProperty0<*>.isLazyInitialized: Boolean
-    get() {
-        // Prevent IllegalAccessException from JVM access check on private properties.
-        val originalAccessLevel = isAccessible
-        isAccessible = true
-        val isLazyInitialized = getDelegate().let { d -> if (d is Lazy<*>) d.isInitialized() else true }
-        // Reset access level.
-        isAccessible = originalAccessLevel
-        return isLazyInitialized
-    }
 
 data class ExtractedInfo(
     val allowedFiles: List<String>,
@@ -93,14 +79,12 @@ class ZipPath(private val fs: ZipFile, private val originalPath: String, val hea
     fun deleteIfExists() = header?.let { fs.removeFile(it) }
 }
 
-class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val files: Set<String>, val directories: Set<String>) : AutoCloseable {
-    val infoPath: ZipPath by lazy {
-        getPathDirect(filesOriginalCase.filter { it.endsWith("/info.dat", true) }.minByOrNull { it.length } ?: throw ZipHelperException("Missing Info.dat"))
-    }
+class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directories: Set<String>) : ZipHelper(fs, filesOriginalCase, directories) {
+    val audioFile: File
 
-    val audioFile: File by lazy {
+    init {
         val path = fromInfo(info._songFilename.or(""))
-        File.createTempFile("audio", ".ogg").also { file ->
+        audioFile = File.createTempFile("audio", ".ogg").also { file ->
             file.deleteOnExit()
 
             path?.inputStream()?.use { iss ->
@@ -111,9 +95,65 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
         }
     }
 
-    private fun audioInitialized() = ::audioFile.isLazyInitialized
+    fun generatePreview() = AudioSystem.getAudioInputStream(audioFile).use { oggStream ->
+        convertToPCM(
+            oggStream,
+            info._previewStartTime.or(0f),
+            10.2f
+        ).use(::encodeToMp3)
+    }
 
-    val info by lazy {
+    override fun scoreMap(): Short =
+        ServiceLoader.load(IMapScorerProvider::class.java)
+            .findFirst()
+            .map { s ->
+                s.create().scoreMap(info, audioFile) {
+                    diff(it)
+                }
+            }.orElse(0)
+
+    private fun convertToPCM(input: AudioInputStream, skip: Float, length: Float): AudioInputStream {
+        val sourceFormat = input.format
+        val pcmFormat = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sourceFormat.sampleRate, 16, sourceFormat.channels, sourceFormat.channels * 2, sourceFormat.sampleRate, false)
+        val conv = AudioSystem.getAudioInputStream(pcmFormat, input)
+        conv.skip((skip * conv.format.frameSize * conv.format.frameRate).toLong())
+        val framesOfAudioToCopy = (length * pcmFormat.frameRate).toLong()
+
+        return AudioInputStream(conv, pcmFormat, framesOfAudioToCopy)
+    }
+
+    private fun encodeToMp3(audioInputStream: AudioInputStream): ByteArray {
+        val format = audioInputStream.format
+
+        val encoder = LameEncoder(format, 128, MPEGMode.STEREO, Lame.QUALITY_HIGH, false)
+        val mp3 = ByteArrayOutputStream()
+        val inputBuffer = ByteArray(encoder.pcmBufferSize)
+        val outputBuffer = ByteArray(encoder.pcmBufferSize)
+
+        var bytesRead: Int
+        var bytesWritten: Int
+        while (0 < audioInputStream.read(inputBuffer).also { bytesRead = it }) {
+            bytesWritten = encoder.encodeBuffer(inputBuffer, 0, bytesRead, outputBuffer)
+            mp3.write(outputBuffer, 0, bytesWritten)
+        }
+
+        encoder.close()
+        return mp3.toByteArray()
+    }
+
+    override fun close() {
+        Files.delete(audioFile.toPath())
+    }
+}
+
+open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val directories: Set<String>) : AutoCloseable {
+    val files = filesOriginalCase.map { it.lowercase() }.toSet()
+
+    val infoPath by lazy {
+        getPathDirect(filesOriginalCase.filter { it.endsWith("/info.dat", true) }.minByOrNull { it.length } ?: throw ZipHelperException("Missing Info.dat"))
+    }
+
+    val info = run {
         infoPath.inputStream().use {
             val byteArrayOutputStream = ByteArrayOutputStream()
             it.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
@@ -155,70 +195,15 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
         Unit
     }
 
-    fun scoreMap() =
-        ServiceLoader.load(IMapScorerProvider::class.java)
-            .findFirst()
-            .map { s ->
-                s.create().scoreMap(info, audioFile) {
-                    diff(it)
-                }
-            }.orElse(0)
-
-    fun generatePreview() = AudioSystem.getAudioInputStream(audioFile).use { oggStream ->
-        convertToPCM(
-            oggStream,
-            info._previewStartTime.or(0f),
-            10.2f
-        ).use(::encodeToMp3)
-    }
-
-    private fun convertToPCM(input: AudioInputStream, skip: Float, length: Float): AudioInputStream {
-        val sourceFormat = input.format
-        val pcmFormat = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sourceFormat.sampleRate, 16, sourceFormat.channels, sourceFormat.channels * 2, sourceFormat.sampleRate, false)
-        val conv = AudioSystem.getAudioInputStream(pcmFormat, input)
-        conv.skip((skip * conv.format.frameSize * conv.format.frameRate).toLong())
-        val framesOfAudioToCopy = (length * pcmFormat.frameRate).toLong()
-
-        return AudioInputStream(conv, pcmFormat, framesOfAudioToCopy)
-    }
-
-    private fun encodeToMp3(audioInputStream: AudioInputStream): ByteArray {
-        val format = audioInputStream.format
-
-        val encoder = LameEncoder(format, 128, MPEGMode.STEREO, Lame.QUALITY_HIGH, false)
-        val mp3 = ByteArrayOutputStream()
-        val inputBuffer = ByteArray(encoder.pcmBufferSize)
-        val outputBuffer = ByteArray(encoder.pcmBufferSize)
-
-        var bytesRead: Int
-        var bytesWritten: Int
-        while (0 < audioInputStream.read(inputBuffer).also { bytesRead = it }) {
-            bytesWritten = encoder.encodeBuffer(inputBuffer, 0, bytesRead, outputBuffer)
-            mp3.write(outputBuffer, 0, bytesWritten)
-        }
-
-        encoder.close()
-        return mp3.toByteArray()
-    }
+    open fun scoreMap(): Short = 0
 
     override fun close() {
-        if (audioInitialized()) {
-            Files.delete(audioFile.toPath())
-        }
+        // Do nothing
     }
 
     companion object {
-        fun <T> openZip(file: File, block: ZipHelper.() -> T) = try {
-            ZipFile(file).let { fs ->
-                val (_directories, _files) = fs.fileHeaders.partition {
-                    it.isDirectory
-                }
-
-                val files = _files.map { "/" + it.fileName }
-                val directories = _directories.map { "/" + it.fileName }
-
-                ZipHelper(fs, files.toSet(), files.map { it.lowercase() }.toSet(), directories.toSet()).use(block)
-            }
+        private fun <T> catchZipErrors(file: File, block: () -> T) = try {
+            block()
         } catch (e: ZipException) {
             if (file.exists()) {
                 file.inputStream().use {
@@ -229,7 +214,26 @@ class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>, val
             }
             throw ZipHelperException("Error opening zip file")
         }
+
+        private fun loadZipInfo(file: File): Triple<ZipFile, Set<String>, Set<String>> = ZipFile(file).let { fs ->
+            val (_directories, _files) = fs.fileHeaders.partition {
+                it.isDirectory
+            }
+
+            val files = _files.map { "/" + it.fileName }.toSet()
+            val directories = _directories.map { "/" + it.fileName }.toSet()
+
+            Triple(fs, files, directories)
+        }
+
+        fun <T> openZipNoAudio(file: File, block: ZipHelper.() -> T) = catchZipErrors(file) {
+            val (fs, files, directories) = loadZipInfo(file)
+            ZipHelper(fs, files, directories).use(block)
+        }
+
+        fun <T> openZip(file: File, block: ZipHelperWithAudio.() -> T) = catchZipErrors(file) {
+            val (fs, files, directories) = loadZipInfo(file)
+            ZipHelperWithAudio(fs, files, directories).use(block)
+        }
     }
 }
-
-operator fun <T> Lazy<T>.getValue(thisRef: Any?, property: KProperty<*>) = value
