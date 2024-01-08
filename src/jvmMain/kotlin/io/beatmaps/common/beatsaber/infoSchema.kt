@@ -156,7 +156,7 @@ data class MapInfo(
         val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(ImageFormat) { imageInfo == null || arrayOf("jpeg", "jpg", "png").contains(imageInfo.format) }
+            .validate(ImageFormat) { arrayOf("jpeg", "jpg", "png").contains(imageInfo?.format) }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
         validate(MapInfo::_customData).correctType().validateOptional {
