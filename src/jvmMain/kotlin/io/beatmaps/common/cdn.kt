@@ -9,6 +9,7 @@ import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.response.header
 import io.ktor.server.response.respondFile
 import io.ktor.util.pipeline.PipelineContext
+import kotlinx.serialization.Serializable
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
@@ -25,6 +26,7 @@ fun cleanString(str: String) = str.split(*illegalCharacters).joinToString("")
 fun downloadFilename(mapId: String, songName: String, levelAuthorName: String) =
     cleanString("$mapId ($songName - $levelAuthorName).zip")
 
+@Serializable
 data class CDNUpdate(
     val hash: String?,
     val mapId: Int,
