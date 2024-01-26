@@ -77,7 +77,7 @@ enum class EAlertType(val color: String, val icon: String, private val readableN
     Review("info", "fa-comment"),
     ReviewDeletion("danger", "fa-comment-slash", "Review Deletion"),
     MapRelease("info", "fa-map", "Map Release"),
-    MapCurated("info", "fa-award", "Map Curated"),
+    MapCurated("info", "fa-award", "Followed Curation"),
     Curation("success", "fa-award"),
     Uncuration("danger", "fa-award"),
     Collaboration("warning", "fa-user-friends");
