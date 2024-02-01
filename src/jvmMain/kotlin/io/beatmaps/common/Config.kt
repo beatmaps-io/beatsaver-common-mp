@@ -1,8 +1,8 @@
 package io.beatmaps.common
 
 object Config {
-    private val baseName = System.getenv("BASE_URL") ?: "https://beatsaver.com"
-    private val apiBase = System.getenv("BASE_API_URL") ?: "https://api.beatsaver.com"
+    private val baseName = System.getenv("BASE_URL") ?: "http://localhost:8080"
+    private val apiBase = System.getenv("BASE_API_URL") ?: "http://localhost:8080/api"
 
     private val remoteCdn = System.getenv("REMOTE_CDN").let {
         when (it) {
