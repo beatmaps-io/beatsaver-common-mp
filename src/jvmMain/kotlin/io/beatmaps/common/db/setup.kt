@@ -11,7 +11,7 @@ import javax.sql.DataSource
 
 fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource {
     val dbHost = System.getenv("DB_HOST") ?: "localhost"
-    val dbPort = System.getenv("DB_PORT") ?: "1358"
+    val dbPort = System.getenv("DB_PORT") ?: "5432"
     val dbUser = System.getenv("DB_USER") ?: "beatmaps"
     val dbName = System.getenv("DB_NAME") ?: defaultDb
     val dbPass = System.getenv("DB_PASSWORD") ?: "insecure-password"
