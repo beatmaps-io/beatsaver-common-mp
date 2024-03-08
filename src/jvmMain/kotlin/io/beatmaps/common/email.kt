@@ -10,6 +10,7 @@ import org.apache.commons.mail.SimpleEmail
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.mail.SendFailedException
+import javax.mail.internet.AddressException
 
 val relayHostname: String? = System.getenv("RELAY_HOSTNAME")
 val relayUsername: String? = System.getenv("RELAY_USERNAME")
@@ -42,6 +43,7 @@ fun Application.emailQueue() {
             } catch (e: EmailException) {
                 when (val cause = e.cause) {
                     is SendFailedException -> cause.invalidAddresses.isNotEmpty()
+                    is AddressException -> true
                     else -> false
                 }.let { ignore ->
                     emailLogger.log(
