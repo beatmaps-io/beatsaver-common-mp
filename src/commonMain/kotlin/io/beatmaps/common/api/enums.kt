@@ -79,6 +79,7 @@ enum class EAlertType(val color: String, val icon: String, private val readableN
     MapRelease("info", "fa-map", "Map Release"),
     MapCurated("info", "fa-award", "Followed Curation"),
     Curation("success", "fa-award"),
+    Follow("success", "fa-user-plus"),
     Uncuration("danger", "fa-award"),
     Collaboration("warning", "fa-user-friends");
 

@@ -57,6 +57,7 @@ object User : IntIdTable("uploader", "id") {
     val createdAt = timestamp("createdAt")
     val renamedAt = timestamp("renamedAt")
     val curator = bool("curator")
+    val seniorCurator = bool("seniorCurator")
     val curatorTab = bool("curatorTab")
     val verifiedMapper = bool("verifiedMapper")
     val suspendedAt = timestamp("suspendedAt").nullable()
@@ -65,6 +66,7 @@ object User : IntIdTable("uploader", "id") {
     val patreonId = reference("patreonId", Patreon).nullable()
     val curationAlerts = bool("curationAlerts")
     val reviewAlerts = bool("reviewAlerts")
+    val followAlerts = bool("followAlerts")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -87,6 +89,7 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val uniqueName by User.uniqueName
     val createdAt by User.createdAt
     val curator by User.curator
+    val seniorCurator by User.seniorCurator
     val curatorTab by User.curatorTab
     val verifiedMapper by User.verifiedMapper
     val suspendedAt by User.suspendedAt
@@ -97,6 +100,7 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val curationAlerts by User.curationAlerts
     val reviewAlerts by User.reviewAlerts
+    val followAlerts by User.followAlerts
 }
 
 fun ColumnSet.joinPatreon() = join(Patreon, JoinType.LEFT, onColumn = User.patreonId, otherColumn = Patreon.id)
