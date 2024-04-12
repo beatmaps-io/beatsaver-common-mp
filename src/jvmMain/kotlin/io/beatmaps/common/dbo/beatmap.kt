@@ -66,8 +66,12 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val cinema = bool("cinema")
     val ranked = bool("ranked")
     val qualified = bool("qualified")
+    val blRanked = bool("blRanked")
+    val blQualified = bool("blQualified")
     val rankedAt = timestamp("rankedAt").nullable()
     val qualifiedAt = timestamp("qualifiedAt").nullable()
+    val blRankedAt = timestamp("blRankedAt").nullable()
+    val blQualifiedAt = timestamp("blQualifiedAt").nullable()
 
     val minNps = decimal("minNps", 8, 3)
     val maxNps = decimal("maxNps", 8, 3)
@@ -112,6 +116,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val ranked by Beatmap.ranked
     val qualified by Beatmap.qualified
+    val blRanked by Beatmap.blRanked
+    val blQualified by Beatmap.blQualified
 
     val minNps by Beatmap.minNps
     val maxNps by Beatmap.maxNps
@@ -284,6 +290,7 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val pError = integer("pError")
     val createdAt = timestamp("createdAt")
     val stars = decimal("stars", 4, 2).nullable()
+    val blStars = decimal("blStars", 4, 2).nullable()
     val requirements = array<String>("requirements", VarCharColumnType(64)).nullable()
     val suggestions = array<String>("suggestions", VarCharColumnType(255)).nullable()
     val information = array<String>("information", VarCharColumnType(255)).nullable()
@@ -295,6 +302,8 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
 
     val rankedAt = timestamp("rankedAt").nullable()
     val qualifiedAt = timestamp("qualifiedAt").nullable()
+    val blRankedAt = timestamp("blRankedAt").nullable()
+    val blQualifiedAt = timestamp("blQualifiedAt").nullable()
 
     val uniqueDiff = Index(listOf(versionId, characteristic, difficulty), true, "diff_unique")
 }
@@ -323,6 +332,7 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val pError: Int by Difficulty.pError
     val createdAt: Instant by Difficulty.createdAt
     var stars: BigDecimal? by Difficulty.stars
+    var blStars: BigDecimal? by Difficulty.blStars
     val requirements by Difficulty.requirements
     val suggestions by Difficulty.suggestions
     val information by Difficulty.information
@@ -330,5 +340,7 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val maxScore by Difficulty.maxScore
     val rankedAt by Difficulty.rankedAt
     val qualifiedAt by Difficulty.qualifiedAt
+    val blRankedAt by Difficulty.blRankedAt
+    val blQualifiedAt by Difficulty.blQualifiedAt
     val label by Difficulty.label
 }

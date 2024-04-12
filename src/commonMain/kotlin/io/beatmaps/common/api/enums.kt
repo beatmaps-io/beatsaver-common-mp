@@ -33,14 +33,15 @@ open class KHumanEnumSerializer<E>(private val members: Array<E>) : KSerializer<
     }
 }
 
-inline fun <reified T : Enum<T>> searchEnum(search: String): T {
-    for (each in enumValues<T>()) {
-        if (each.name.removePrefix("_").compareTo(search.replace(" ", ""), ignoreCase = true) == 0) {
-            return each
-        }
+inline fun <reified T : Enum<T>> searchEnumOrNull(search: String) =
+    search.replace(" ", "").let { sanitized ->
+       enumValues<T>().firstOrNull { each ->
+           each.name.removePrefix("_").compareTo(sanitized, ignoreCase = true) == 0
+       }
     }
-    throw IllegalArgumentException("No enum constant for search $search")
-}
+
+inline fun <reified T : Enum<T>> searchEnum(search: String) =
+    searchEnumOrNull<T>(search) ?: throw IllegalArgumentException("No enum constant for search $search")
 
 @Serializable(with = ECharacteristicSerializer::class)
 @Suppress("ktlint:standard:enum-entry-name-case")
