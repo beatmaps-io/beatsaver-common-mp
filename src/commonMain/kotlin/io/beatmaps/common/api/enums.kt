@@ -35,9 +35,9 @@ open class KHumanEnumSerializer<E>(private val members: Array<E>) : KSerializer<
 
 inline fun <reified T : Enum<T>> searchEnumOrNull(search: String) =
     search.replace(" ", "").let { sanitized ->
-       enumValues<T>().firstOrNull { each ->
-           each.name.removePrefix("_").compareTo(sanitized, ignoreCase = true) == 0
-       }
+        enumValues<T>().firstOrNull { each ->
+            each.name.removePrefix("_").compareTo(sanitized, ignoreCase = true) == 0
+        }
     }
 
 inline fun <reified T : Enum<T>> searchEnum(search: String) =
