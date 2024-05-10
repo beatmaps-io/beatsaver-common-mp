@@ -66,7 +66,7 @@ private fun RabbitMQInstance.getConnection() =
 fun <T : Any> RabbitMQInstance.consumeAck(
     queue: String,
     clazz: KClass<T>,
-    rabbitDeliverCallback: suspend (consumerTag: String, body: T) -> Unit
+    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
 ) {
     val logger = Logger.getLogger("bmio.RabbitMQ.consumeAck")
     getConnection().createChannel().apply {
@@ -74,12 +74,12 @@ fun <T : Any> RabbitMQInstance.consumeAck(
         basicConsume(
             queue,
             false,
-            DeliverCallback { consumerTag, message ->
+            DeliverCallback { _, message ->
                 runBlocking(es.asCoroutineDispatcher()) {
                     runCatching {
                         val mappedEntity = jackson.readValue(message.body, clazz.javaObjectType)
 
-                        rabbitDeliverCallback.invoke(consumerTag, mappedEntity)
+                        rabbitDeliverCallback.invoke(message.envelope.routingKey, mappedEntity)
 
                         basicAck(message.envelope.deliveryTag, false)
                     }.getOrElse {
