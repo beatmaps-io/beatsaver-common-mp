@@ -17,8 +17,6 @@ import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.sql.ResultSet
-import java.util.LinkedHashMap
-import java.util.NoSuchElementException
 
 class UpdateReturningStatement(
     private val table: Table,
@@ -56,7 +54,7 @@ class UpdateReturningStatement(
 
     private fun parentPrepareSQL(transaction: Transaction) = transaction.db.dialect.functionProvider.update(table, values.toList(), limit, where, transaction)
 
-    override fun prepareSQL(transaction: Transaction) = buildString {
+    override fun prepareSQL(transaction: Transaction, prepared: Boolean) = buildString {
         append(parentPrepareSQL(transaction))
 
         val dialect = transaction.db.vendor
@@ -67,7 +65,7 @@ class UpdateReturningStatement(
         }
     }
 
-    override fun arguments(): Iterable<Iterable<Pair<IColumnType, Any?>>> = QueryBuilder(true).run {
+    override fun arguments(): Iterable<Iterable<Pair<IColumnType<*>, Any?>>> = QueryBuilder(true).run {
         values.forEach {
             registerArgument(it.key, it.value)
         }
@@ -108,7 +106,7 @@ inline fun <T : IdTable<Key>, Key : Comparable<Key>> T.updateReturning(
         execute(TransactionManager.current())
     }
 
-class NowExpression<T>(override val columnType: IColumnType) : ExpressionWithColumnType<T>() {
+class NowExpression<T>(override val columnType: IColumnType<T & Any>) : ExpressionWithColumnType<T>() {
     constructor(column: Column<T>) : this(column.columnType)
 
     override fun toQueryBuilder(queryBuilder: QueryBuilder) {

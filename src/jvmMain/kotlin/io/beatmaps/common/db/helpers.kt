@@ -46,7 +46,7 @@ infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
     }
 }
 
-infix fun <T, S> ExpressionWithColumnType<T>.contains(arry: Array<in S>): Op<Boolean> = ArrayContainsOp(this, QueryParameter(arry, columnType))
+infix fun <T> ExpressionWithColumnType<List<T>?>.contains(arry: Array<T>): Op<Boolean> = ArrayContainsOp(this, QueryParameter(arry.toList(), columnType))
 infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
 
 fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
@@ -72,7 +72,7 @@ class PgConcat(
 }
 
 class InsensitiveLikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
-infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: String): Op<Boolean> = InsensitiveLikeOp(this, QueryParameter(pattern, columnType))
+infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: T): Op<Boolean> = InsensitiveLikeOp(this, QueryParameter(pattern, columnType))
 infix fun <T : String?> ExpressionWithColumnType<T>.ilike(exp: ExpressionWithColumnType<T>): Op<Boolean> = InsensitiveLikeOp(this, exp)
 
 infix fun <T : String?> ExpressionWithColumnType<T>.startsWith(str: String?): Op<Boolean> = this like (str ?: "") + "%"
@@ -93,7 +93,7 @@ fun <T : Any> wrapAsExpressionNotNull(query: Query) = object : Expression<T>() {
     }
 }
 
-fun <T : Any> wrapAsExpressionNotNull(query: Query, columnType: IColumnType) = object : ExpressionWithColumnType<T>() {
+fun <T : Any> wrapAsExpressionNotNull(query: Query, columnType: IColumnType<T>) = object : ExpressionWithColumnType<T>() {
     override val columnType = columnType
 
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
