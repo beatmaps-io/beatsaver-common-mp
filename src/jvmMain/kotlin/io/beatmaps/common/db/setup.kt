@@ -17,13 +17,13 @@ fun setupDB(defaultDb: String = "beatmaps", app: String = "unknown"): DataSource
     val dbPass = System.getenv("DB_PASSWORD") ?: "insecure-password"
     val dbLeakThreshold = System.getenv("DB_LEAK_THRESHOLD")?.toLongOrNull() ?: 60000
 
-    Database.registerDialect(BMPGDialect.dialectName) { BMPGDialect() }
+    Database.registerDialect(BMPGDialect.DIALECT_NAME) { BMPGDialect() }
 
     return HikariDataSource(
         HikariConfig().apply {
             poolName = "pg-pool"
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = "jdbc:${BMPGDialect.dialectName}://$dbHost:$dbPort/$dbName?reWriteBatchedInserts=true&ApplicationName=$app"
+            jdbcUrl = "jdbc:${BMPGDialect.DIALECT_NAME}://$dbHost:$dbPort/$dbName?reWriteBatchedInserts=true&ApplicationName=$app"
             username = dbUser
             password = dbPass
             minimumIdle = 2
@@ -42,7 +42,7 @@ class BMPGDialect : PostgreSQLDialect() {
         get() = true
 
     companion object {
-        const val dialectName: String = "postgresql"
+        const val DIALECT_NAME: String = "postgresql"
     }
 }
 

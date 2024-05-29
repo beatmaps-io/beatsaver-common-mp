@@ -4,7 +4,6 @@ import io.beatmaps.common.api.AiDeclarationType
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
-import io.beatmaps.common.db.array
 import io.beatmaps.common.db.postgresEnumeration
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -21,7 +20,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.javatime.timestamp
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.wrapAsExpression
 import java.math.BigDecimal
 import java.time.Instant
@@ -137,7 +136,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
         val v = versions.filter { it.value.state != EMapState.Published }
         if (v.isNotEmpty()) {
             val testplayResults = Testplay.joinUploader()
-                .select {
+                .selectAll()
+                .where {
                     Testplay.versionId inList v.map { it.key.value }.toList()
                 }.toList()
 
@@ -169,8 +169,8 @@ fun ColumnSet.joinBookmarked(userId: Int?) =
     join(bookmark, JoinType.LEFT, onColumn = Beatmap.id, otherColumn = bookmark[PlaylistMap.mapId]) {
         bookmark[PlaylistMap.playlistId] eq wrapAsExpression(
             User
-                .slice(User.bookmarksId)
-                .select { User.id eq userId }
+                .select(User.bookmarksId)
+                .where { User.id eq userId }
                 .limit(1)
         )
     }
@@ -291,10 +291,10 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val createdAt = timestamp("createdAt")
     val stars = decimal("stars", 4, 2).nullable()
     val blStars = decimal("blStars", 4, 2).nullable()
-    val requirements = array<String>("requirements", VarCharColumnType(64)).nullable()
-    val suggestions = array<String>("suggestions", VarCharColumnType(255)).nullable()
-    val information = array<String>("information", VarCharColumnType(255)).nullable()
-    val warnings = array<String>("warnings", VarCharColumnType(255)).nullable()
+    val requirements = array("requirements", VarCharColumnType(64)).nullable()
+    val suggestions = array("suggestions", VarCharColumnType(255)).nullable()
+    val information = array("information", VarCharColumnType(255)).nullable()
+    val warnings = array("warnings", VarCharColumnType(255)).nullable()
     val label = varchar("label", 255).nullable()
 
     val maxScore = integer("maxScore")
