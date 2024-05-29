@@ -10,6 +10,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ColumnSet
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Index
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
@@ -60,7 +61,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
         val totalDownvotes = beatmapSubQuery[Beatmap.downVotesInt].sum()
         val averageScore = beatmapSubQuery[Beatmap.score].avg(4)
 
-        val all = listOf(mapperCount, totalDuration, totalUpvotes, totalDownvotes, averageScore)
+        val all = listOf<Expression<*>>(mapperCount, totalDuration, totalUpvotes, totalDownvotes, averageScore)
     }
 }
 
