@@ -16,6 +16,7 @@ import org.jetbrains.exposed.sql.statements.Statement
 import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
 import java.sql.ResultSet
 
 class UpdateReturningStatement(
@@ -57,8 +58,8 @@ class UpdateReturningStatement(
     override fun prepareSQL(transaction: Transaction, prepared: Boolean) = buildString {
         append(parentPrepareSQL(transaction))
 
-        val dialect = transaction.db.vendor
-        if (dialect == "postgresql") {
+        val dialect = transaction.db.dialect
+        if (dialect is PostgreSQLDialect) {
             append(" RETURNING ")
 
             returningColumns.joinTo(this) { transaction.identity(it) }
