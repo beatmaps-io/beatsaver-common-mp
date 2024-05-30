@@ -13,17 +13,17 @@ import io.beatmaps.common.dbo.maxAllowedNps
 import io.beatmaps.common.or
 import io.beatmaps.common.pow
 import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.lang.Float.min
 import java.math.BigDecimal
 
 data class DiffStats(val chroma: Boolean, val noodle: Boolean, val me: Boolean, val cinema: Boolean, val nps: BigDecimal)
-fun Array<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
+fun List<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
 
 fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: DifficultyBeatmapSet, map: MapInfo, sli: SongLengthInfo, ver: VersionsDao? = null): DiffStats {
     val version = ver ?: VersionsDao.wrapRow(
-        Versions.select {
+        Versions.selectAll().where {
             Versions.hash eq hash
         }.first()
     )
@@ -74,8 +74,8 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     it[maxScore] = bsdiff.maxScore()
     it[label] = diff._customData.orNull()?._difficultyLabel?.orNull()?.take(255)
 
-    val requirementsLocal = diff._customData.orNull()?._requirements?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
-    val suggestionsLocal = diff._customData.orNull()?._suggestions?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
+    val requirementsLocal = diff._customData.orNull()?._requirements?.orNull()?.mapNotNull { it.orNull() }
+    val suggestionsLocal = diff._customData.orNull()?._suggestions?.orNull()?.mapNotNull { it.orNull() }
 
     return DiffStats(
         requirementsLocal.containsIgnoreCase("Chroma") || suggestionsLocal.containsIgnoreCase("Chroma"),
@@ -92,7 +92,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
 
         it[requirements] = requirementsLocal
         it[suggestions] = suggestionsLocal
-        it[information] = diff._customData.orNull()?._information?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
-        it[warnings] = diff._customData.orNull()?._warnings?.orNull()?.mapNotNull { it.orNull() }?.toTypedArray()
+        it[information] = diff._customData.orNull()?._information?.orNull()?.mapNotNull { it.orNull() }
+        it[warnings] = diff._customData.orNull()?._warnings?.orNull()?.mapNotNull { it.orNull() }
     }
 }

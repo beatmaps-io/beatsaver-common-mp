@@ -14,22 +14,18 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 import org.postgresql.util.PGobject
 
 class CiTextColumn : TextColumnType() {
-    override fun valueFromDB(value: Any): Any {
+    override fun valueFromDB(value: Any): String {
         if (value is PGobject && value.type == "citext") {
             return value.value ?: ""
         }
         return super.valueFromDB(value)
     }
 
-    override fun valueToDB(value: Any?): Any? {
-        if (value is String) {
-            return PGobject().also {
-                it.type = "citext"
-                it.value = value
-            }
+    override fun valueToDB(value: String?) =
+        PGobject().also {
+            it.type = "citext"
+            it.value = value
         }
-        return super.valueToDB(value)
-    }
 }
 
 fun Table.citext(name: String): Column<String> = registerColumn(name, CiTextColumn())

@@ -1,6 +1,5 @@
 package io.beatmaps.common.dbo
 
-import io.beatmaps.common.db.array
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -15,8 +14,8 @@ object OauthClient : IntIdTable("oauthClients", "id") {
     val clientId = text("clientId")
     val secret = text("secret")
     val name = text("name")
-    val scopes = array<String>("scopes", VarCharColumnType(64))
-    val redirectUrl = array<String>("redirectUrl", TextColumnType())
+    val scopes = array("scopes", VarCharColumnType(64))
+    val redirectUrl = array("redirectUrl", TextColumnType())
     val iconUrl = text("iconUrl").nullable()
 }
 

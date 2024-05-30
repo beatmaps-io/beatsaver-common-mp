@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
 import java.sql.ResultSet
 
 interface ConflictType {
@@ -45,15 +46,15 @@ class ColumnConflict(val column: Column<*>) : ConflictType {
 class UpsertStatement<Key : Any>(table: Table, private val conflict: ConflictType, val update: Boolean = true) :
     InsertStatement<Key>(table, false) {
 
-    override fun prepareSQL(transaction: Transaction) = buildString {
+    override fun prepareSQL(transaction: Transaction, prepared: Boolean) = buildString {
         if (argumentsCache != null) {
             arguments = argumentsCache
         }
 
-        append(super.prepareSQL(transaction))
+        append(super.prepareSQL(transaction, prepared))
 
-        val dialect = transaction.db.vendor
-        if (dialect == "postgresql") {
+        val dialect = transaction.db.dialect
+        if (dialect is PostgreSQLDialect) {
             with(conflict) {
                 prepareSQL()
             }
