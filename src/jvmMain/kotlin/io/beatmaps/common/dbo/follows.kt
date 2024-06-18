@@ -13,6 +13,7 @@ object Follows : IntIdTable("follows", "followId") {
 
     val upload = bool("upload")
     val curation = bool("curation")
+    val collab = bool("collab")
     val following = bool("following")
 
     val since = timestamp("since")
@@ -27,6 +28,7 @@ data class FollowsDao(val key: EntityID<Int>) : IntEntity(key) {
 
     val upload by Follows.upload
     val curation by Follows.curation
+    val collab by Follows.collab
     val following by Follows.following
 
     val since by Follows.since
