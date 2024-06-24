@@ -13,10 +13,8 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
+import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.OutputStream
-import java.security.DigestOutputStream
-import java.security.MessageDigest
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 import kotlin.test.assertEquals
@@ -26,15 +24,14 @@ object SchemaCommon {
         val info = javaClass.getResourceAsStream("/$name/Info.dat")!!
         val audio = File(javaClass.getResource("/shared/click.ogg")!!.toURI())
         val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
-        val md = MessageDigest.getInstance("SHA1")
 
         val str = readFromBytes(info.readAllBytes()).replace("\r\n", "\n")
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(str)
         val mapInfo = jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(jsonElement)
 
         try {
-            DigestOutputStream(OutputStream.nullOutputStream(), md).use { dos ->
-                val extractedInfo = ExtractedInfo(files, dos, mapInfo, 0)
+            ByteArrayOutputStream().use { toHash ->
+                val extractedInfo = ExtractedInfo(files, toHash, mapInfo, 0)
                 mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio) {
                     if (files.contains(it)) {
                         object : IZipPath {
