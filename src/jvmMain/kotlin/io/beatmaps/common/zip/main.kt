@@ -32,7 +32,7 @@ import javax.sound.sampled.AudioSystem
 
 data class ExtractedInfo(
     val allowedFiles: List<String>,
-    val md: ByteArrayOutputStream,
+    val toHash: ByteArrayOutputStream,
     var mapInfo: MapInfo,
     val score: Short,
     val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
