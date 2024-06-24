@@ -19,8 +19,8 @@ enum class UserLogOpType(val actionClass: KClass<*>) {
     EmailChanged(EmailChangedData::class), PasswordChanged(PasswordChangedData::class);
 
     companion object {
-        private val map = values().associateBy(UserLogOpType::actionClass)
-        private val nameMap = values().associateBy { it.name.lowercase() }
+        private val map = entries.associateBy(UserLogOpType::actionClass)
+        private val nameMap = entries.associateBy { it.name.lowercase() }
         fun fromAction(action: IUserLogOpAction) = map[action::class]
         fun fromName(name: String) = nameMap[name.lowercase()]
     }

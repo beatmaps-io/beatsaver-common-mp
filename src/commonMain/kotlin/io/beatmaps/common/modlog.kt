@@ -53,8 +53,8 @@ enum class ModLogOpType(val actionClass: KClass<*>) {
     ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class);
 
     companion object {
-        private val map = values().associateBy(ModLogOpType::actionClass)
-        private val nameMap = values().associateBy { it.name.lowercase() }
+        private val map = entries.associateBy(ModLogOpType::actionClass)
+        private val nameMap = entries.associateBy { it.name.lowercase() }
         fun fromAction(action: IModLogOpAction) = map[action::class]
         fun fromName(name: String) = nameMap[name.lowercase()]
     }

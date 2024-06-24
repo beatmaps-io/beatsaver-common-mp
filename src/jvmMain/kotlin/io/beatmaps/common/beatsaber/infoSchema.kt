@@ -319,7 +319,7 @@ data class DifficultyBeatmapSet(
     val _customData: OptionalProperty<DifficultyBeatmapSetCustomData?> = OptionalProperty.NotPresent
 ) {
     fun validate(validator: BMValidator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
-        val allowedCharacteristics = ECharacteristic.values().toList().let {
+        val allowedCharacteristics = ECharacteristic.entries.let {
             if (ver < Schema2_1) it.minus(ECharacteristic.Legacy) else it
         }.map { it.name.removePrefix("_") }.toSet()
 
@@ -398,7 +398,7 @@ data class DifficultyBeatmap(
             additionalInformation.keys
         )
 
-        val allowedDiffNames = EDifficulty.values().map { it.name }.toSet()
+        val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()
         validate(DifficultyBeatmap::_difficulty).exists()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(_difficulty.orNull())) {
@@ -406,7 +406,7 @@ data class DifficultyBeatmap(
                     it != self() && it._difficulty == self()._difficulty
                 } == false
             }
-        validate(DifficultyBeatmap::_difficultyRank).exists().isIn(EDifficulty.values().map { it.idx })
+        validate(DifficultyBeatmap::_difficultyRank).exists().isIn(EDifficulty.entries.map { it.idx })
             .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank.or(0))?.name ?: "Unknown")) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
                     it != self() && it._difficultyRank == self()._difficultyRank
