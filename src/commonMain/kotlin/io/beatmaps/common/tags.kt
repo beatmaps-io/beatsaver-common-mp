@@ -58,7 +58,7 @@ enum class MapTag(val type: MapTagType, val human: String, val slug: String) {
     Electronic(MapTagType.Genre, "Electronic", "electronic");
 
     companion object {
-        private val map = values().associateBy(MapTag::slug)
+        private val map = entries.associateBy(MapTag::slug)
         fun fromSlug(slug: String) = map[slug]
 
         val maxPerType = mapOf(
@@ -66,7 +66,7 @@ enum class MapTag(val type: MapTagType, val human: String, val slug: String) {
             MapTagType.Genre to 2
         ).withDefault { 0 }
 
-        val sorted = values().sortedWith(compareBy({ it.type.ordinal }, { it.human }))
+        val sorted = entries.sortedWith(compareBy({ it.type.ordinal }, { it.human }))
     }
 }
 
