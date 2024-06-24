@@ -24,7 +24,7 @@ object Alert : IntIdTable("alert", "alertId") {
             it[head] = alertHead
             it[body] = alertBody
             it[type] = alertType
-            it[sentAt] = NowExpression(sentAt.columnType)
+            it[sentAt] = NowExpression(sentAt)
         }.resultedValues?.first()
 
         newAlert?.let { a ->
