@@ -60,7 +60,10 @@
           "_noteJumpMovementSpeed": 0.0,
           "_noteJumpStartBeatOffset": 0.0,
           "_beatmapColorSchemeIdx": 2,
-          "_environmentNameIdx": 3
+          "_environmentNameIdx": 3,
+          "_customData": {
+            "_editorOffset": 1.432
+          }
         }
       ]
     }

@@ -16,7 +16,6 @@ import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -360,7 +359,7 @@ data class DifficultyBeatmap(
         stream?.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
         val bytes = byteArrayOutputStream.toByteArray()
 
-        info.md.write(bytes)
+        info.toHash.write(bytes)
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromBytes(bytes))
         val diff = if (jsonElement.jsonObject.containsKey("version")) {
             jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
