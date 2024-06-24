@@ -25,7 +25,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
-import java.security.DigestOutputStream
 import java.util.ServiceLoader
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioInputStream
@@ -33,7 +32,7 @@ import javax.sound.sampled.AudioSystem
 
 data class ExtractedInfo(
     val allowedFiles: List<String>,
-    val md: DigestOutputStream,
+    val md: ByteArrayOutputStream,
     var mapInfo: MapInfo,
     val score: Short,
     val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
