@@ -83,18 +83,16 @@ kotlin {
 
                 implementation("io.ktor:ktor-client-apache:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
-                implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
                 implementation("org.postgresql:postgresql:42.5.0")
-                implementation("pl.jutupe:ktor-rabbitmq:0.4.5")
+                implementation("pl.jutupe:ktor-rabbitmq:0.5.19")
                 implementation("com.rabbitmq:amqp-client:5.9.0")
 
                 implementation("org.apache.commons:commons-email:1.5")
 
                 // Serialization
-                implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
                 // Metrics
                 implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")

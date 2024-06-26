@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.util.pipeline.PipelineContext
+import kotlinx.serialization.Serializable
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
@@ -17,6 +18,7 @@ val relayUsername: String? = System.getenv("RELAY_USERNAME")
 val relayPassword: String? = System.getenv("RELAY_PASSWORD")
 private val emailLogger = Logger.getLogger("bmio.Email")
 
+@Serializable
 data class EmailInfo(val to: String, val subject: String, val body: String)
 
 fun genericEmail() = SimpleEmail().apply {
@@ -29,7 +31,7 @@ fun genericEmail() = SimpleEmail().apply {
 
 fun Application.emailQueue() {
     rabbitOptional {
-        consumeAck("email", EmailInfo::class) { _, emailInfo ->
+        consumeAck("email", EmailInfo.serializer()) { _, emailInfo ->
             if (emailInfo.to.length < 3) {
                 return@consumeAck
             }
