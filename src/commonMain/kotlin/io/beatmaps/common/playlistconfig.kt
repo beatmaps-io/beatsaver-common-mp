@@ -1,5 +1,6 @@
 package io.beatmaps.common
 
+import io.beatmaps.common.api.RankedFilter
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -26,7 +27,7 @@ data class SearchParamsPlaylist(
     val from: Instant? = null,
     val to: Instant? = null,
     val noodle: Boolean? = null,
-    val ranked: Boolean? = null,
+    val ranked: RankedFilter = RankedFilter.All,
     val curated: Boolean? = null,
     val verified: Boolean? = null,
     val fullSpread: Boolean? = null,
