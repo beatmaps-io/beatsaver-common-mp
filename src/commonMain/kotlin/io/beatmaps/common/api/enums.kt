@@ -111,3 +111,15 @@ enum class EPlaylistType(val anonymousAllowed: Boolean, val orderable: Boolean) 
         fun fromString(type: String?) = map[type]
     }
 }
+
+enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = false) {
+    All,
+    Ranked(true, true),
+    BeatLeader(blRanked = true),
+    ScoreSaber(ssRanked = true);
+
+    companion object {
+        private val map = RankedFilter.entries.associateBy(RankedFilter::name)
+        fun fromString(type: String?) = map[type]
+    }
+}
