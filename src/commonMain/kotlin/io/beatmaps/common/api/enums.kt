@@ -64,7 +64,7 @@ enum class EDifficulty(val idx: Int, private val _human: String, val color: Stri
     override fun enumName() = name
 
     companion object {
-        private val map = values().associateBy(EDifficulty::idx)
+        private val map = entries.associateBy(EDifficulty::idx)
         fun fromInt(type: Int) = map[type]
     }
 }
@@ -87,7 +87,7 @@ enum class EAlertType(val color: String, val icon: String, private val readableN
     fun readable(): String = readableName ?: name
 
     companion object {
-        private val map = EAlertType.values().associateBy { it.name.lowercase() }
+        private val map = entries.associateBy { it.name.lowercase() }
         fun fromLower(lower: String) = EAlertType.map[lower]
         fun fromList(list: String?) = list?.lowercase()?.split(",")?.mapNotNull { a -> EAlertType.fromLower(a) }
     }
@@ -107,7 +107,7 @@ enum class EPlaylistType(val anonymousAllowed: Boolean, val orderable: Boolean) 
     Search(true, false);
 
     companion object {
-        private val map = EPlaylistType.values().associateBy(EPlaylistType::name)
+        private val map = entries.associateBy(EPlaylistType::name)
         fun fromString(type: String?) = map[type]
     }
 }

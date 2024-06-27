@@ -10,7 +10,7 @@ enum class CutDirection {
     Dot;
 
     companion object {
-        private val map = values().associateBy(CutDirection::ordinal)
+        private val map = entries.associateBy(CutDirection::ordinal)
         fun fromInt(cutDirection: Int) = map[cutDirection] ?: Up
     }
 }
@@ -20,7 +20,7 @@ enum class Types(val _type: Int) {
     Red(0), Blue(1), Bomb(3);
 
     companion object {
-        private val map = values().associateBy(Types::_type)
+        private val map = entries.associateBy(Types::_type)
         fun fromInt(type: Int) = map[type]
     }
 }
@@ -34,7 +34,7 @@ enum class LineIndex {
     Left, MiddleLeft, MiddleRight, Right;
 
     companion object {
-        private val map = values().associateBy(LineIndex::ordinal)
+        private val map = entries.associateBy(LineIndex::ordinal)
         fun fromInt(lineIndex: Int) = map[lineIndex]
     }
 }
@@ -42,7 +42,7 @@ enum class LineLayer {
     Bottom, Middle, Top;
 
     companion object {
-        private val map = values().associateBy(LineLayer::ordinal)
+        private val map = entries.associateBy(LineLayer::ordinal)
         fun fromInt(lineLayer: Int) = map[lineLayer]
     }
 }

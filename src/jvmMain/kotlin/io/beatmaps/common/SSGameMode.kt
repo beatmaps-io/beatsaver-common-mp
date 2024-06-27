@@ -8,7 +8,7 @@ enum class SSGameMode(val idx: Int, val characteristic: ECharacteristic) {
     SoloLawless(6, ECharacteristic.Lawless), SoloLegacy(7, ECharacteristic.Legacy);
 
     companion object {
-        private val map = values().associateBy(SSGameMode::idx)
+        private val map = entries.associateBy(SSGameMode::idx)
         fun fromInt(type: Int) = map[type]
     }
 }

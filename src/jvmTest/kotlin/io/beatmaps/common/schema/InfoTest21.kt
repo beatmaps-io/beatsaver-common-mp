@@ -1,5 +1,6 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
@@ -22,6 +23,7 @@ class InfoTest21 {
 
         assertContentEquals(
             listOf(
+                infoViolation<CorrectType>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOffset"),
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx")
             ),
