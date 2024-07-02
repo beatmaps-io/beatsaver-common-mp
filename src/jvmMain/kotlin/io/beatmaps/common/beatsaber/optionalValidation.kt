@@ -14,6 +14,10 @@ import org.valiktor.constraints.NotEmpty
 import org.valiktor.constraints.NotNull
 import kotlin.reflect.KProperty1
 
+interface Validatable<T : Validatable<T>> {
+    fun validate(validator: BMValidator<T>): BMValidator<T>
+}
+
 fun <E, Q, T : OptionalProperty<Q>> BMValidator<E>.BMProperty<T?>.existsBefore(ver: Version, requiredVersion: Version): BMValidator<E>.BMProperty<T?> =
     this.validate(NodePresent) { it == null || ver >= requiredVersion || it !is OptionalProperty.NotPresent }
 
@@ -104,6 +108,14 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValida
     // Required
 }
 
+@JvmName("validateEachAuto")
+fun <E, Q : Validatable<Q>, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValidator<E>.BMProperty<T?>.validateEach(
+    wrongTypesAllowed: Boolean = false,
+    nullsAllowed: Boolean = false
+) = validateForEach(wrongTypesAllowed, nullsAllowed) {
+    it.validate(this)
+}
+
 fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValidator<E>.BMProperty<T?>.validateForEach(
     wrongTypesAllowed: Boolean = false,
     nullsAllowed: Boolean = false,
@@ -146,6 +158,9 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValida
     }
     return this
 }
+
+fun <E, Q : Validatable<Q>, T : OptionalProperty<Q?>> BMValidator<E>.BMProperty<T?>.validate() =
+    validateOptional { it.validate(this) }
 
 inline fun <E, Q : Any, T : OptionalProperty<Q?>> BMValidator<E>.BMProperty<T?>.validateOptional(block: BMValidator<Q>.(Q) -> Unit): BMValidator<E>.BMProperty<T?> {
     val value = this.property.get(this.obj)?.orNull()

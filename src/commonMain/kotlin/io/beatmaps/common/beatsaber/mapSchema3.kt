@@ -29,9 +29,9 @@ data class BSDifficultyV3(
     val _fxEventsCollection: OptionalProperty<BSFxEventsCollection?> = OptionalProperty.NotPresent,
     val basicEventTypesWithKeywords: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent,
     val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
-
-    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSDiff {
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+) : BSDiff, BSLights {
     override fun noteCount() = colorNotes.orEmpty().size
     override fun bombCount() = bombNotes.orEmpty().size
     override fun arcCount() = sliders.orEmpty().size

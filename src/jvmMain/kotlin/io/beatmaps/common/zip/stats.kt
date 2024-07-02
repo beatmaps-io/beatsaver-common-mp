@@ -1,7 +1,10 @@
 package io.beatmaps.common.zip
 
 import io.beatmaps.common.beatsaber.BSDiff
+import io.beatmaps.common.beatsaber.BSLights
+import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.DifficultyBeatmap
+import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
 import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
@@ -36,8 +39,9 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
         it[createdAt] = version.uploaded
 
         val bsdiff = diff(diff._beatmapFilename.or(""))
+        if (bsdiff !is BSLights) throw Exception("Wrong beatmap type")
 
-        stats = sharedInsert(it, diff, bsdiff, map, sli)
+        stats = sharedInsert(it, diff, bsdiff, bsdiff, map, sli)
         it[characteristic] = char.enumValue()
         it[difficulty] = diff.enumValue()
     }
@@ -45,9 +49,9 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
     return stats
 }
 
-fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdiff: BSDiff, map: MapInfo, sli: SongLengthInfo): DiffStats {
-    it[njs] = diff._noteJumpMovementSpeed.or(0f)
-    it[offset] = diff._noteJumpStartBeatOffset.or(0f)
+fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmapInfo, bsdiff: BSDiff, bslights: BSLights?, map: BaseMapInfo, sli: SongLengthInfo): DiffStats {
+    it[njs] = diff.noteJumpMovementSpeed.or(0f)
+    it[offset] = diff.noteJumpStartBeatOffset.or(0f)
 
     checkParity(bsdiff).also { pr ->
         it[pReset] = pr.info
@@ -60,7 +64,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     val len = bsdiff.songLength()
     val noteCount = bsdiff.noteCount()
     val mappedNps = bsdiff.mappedNps(sli)
-    val bpm = map._beatsPerMinute.or(0f)
+    val bpm = map.getBpm() ?: 0f
 
     it[schemaVersion] = bsdiff.version.or("2.2.0")
     it[notes] = noteCount
@@ -68,14 +72,14 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
     it[arcs] = bsdiff.arcCount()
     it[chains] = bsdiff.chainCount()
     it[obstacles] = bsdiff.obstacleCount()
-    it[events] = bsdiff.eventCount()
+    it[events] = bslights?.eventCount() ?: 0
     it[length] = min(len, maxLen).toBigDecimal()
     it[seconds] = min(if (bpm == 0f) 0f else (60 / bpm) * len, maxLen).toBigDecimal()
     it[maxScore] = bsdiff.maxScore()
-    it[label] = diff._customData.orNull()?._difficultyLabel?.orNull()?.take(255)
+    it[label] = diff.customData.orNull()?.difficultyLabel?.orNull()?.take(255)
 
-    val requirementsLocal = diff._customData.orNull()?._requirements?.orNull()?.mapNotNull { it.orNull() }
-    val suggestionsLocal = diff._customData.orNull()?._suggestions?.orNull()?.mapNotNull { it.orNull() }
+    val requirementsLocal = diff.customData.orNull()?.requirements?.orNull()?.mapNotNull { it.orNull() }
+    val suggestionsLocal = diff.customData.orNull()?.suggestions?.orNull()?.mapNotNull { it.orNull() }
 
     return DiffStats(
         requirementsLocal.containsIgnoreCase("Chroma") || suggestionsLocal.containsIgnoreCase("Chroma"),
@@ -92,7 +96,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmap, bsdif
 
         it[requirements] = requirementsLocal
         it[suggestions] = suggestionsLocal
-        it[information] = diff._customData.orNull()?._information?.orNull()?.mapNotNull { it.orNull() }
-        it[warnings] = diff._customData.orNull()?._warnings?.orNull()?.mapNotNull { it.orNull() }
+        it[information] = diff.customData.orNull()?.information?.orNull()?.mapNotNull { it.orNull() }
+        it[warnings] = diff.customData.orNull()?.warnings?.orNull()?.mapNotNull { it.orNull() }
     }
 }

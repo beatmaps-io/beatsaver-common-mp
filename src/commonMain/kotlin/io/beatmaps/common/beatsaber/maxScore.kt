@@ -63,44 +63,8 @@ enum class NoteScoreDefinition(
     fun maxCutScore() = maxCenterDistanceCutScore + maxBeforeCutScore + maxAfterCutScore + fixedCutScore
 }
 
-fun computeMaxMultipliedScoreForBeatmap(data: BSDifficultyV3): Int {
-    val notes = data.colorNotes.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
-    val sliders = data.sliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
-    val burstSliders = data.burstSliders.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
-
-    val slidersByBeat = sliders.groupBy { it.time }
-    val slidersByTailBeat = sliders.groupBy { it.tailTime }
-    val burstSlidersByBeat = burstSliders.groupBy { it.time }
-
-    val noteItems = notes
-        .map {
-            val matchesHead = slidersByBeat[it.time]?.any { s -> it.color == s.color && it.x == s.x && it.y == s.y } == true
-            val matchesTail = slidersByTailBeat[it.time]?.any { s -> it.color == s.color && it.x == s.tailX && it.y == s.tailY } == true
-            val matchesBurst = burstSlidersByBeat[it.time]?.any { s -> it.color == s.color && it.x == s.x && it.y == it.y } == true
-
-            val type = if (matchesTail) {
-                NoteScoreDefinition.SliderTail
-            } else if (matchesBurst) {
-                NoteScoreDefinition.BurstSliderHead
-            } else if (matchesHead) {
-                NoteScoreDefinition.SliderHead
-            } else {
-                NoteScoreDefinition.Normal
-            }
-
-            MaxScoreCounterElement(type, it.time)
-        }
-
-    val burstItems = burstSliders.flatMap {
-        val sliceCount = it.sliceCount.or(0)
-        (1 until sliceCount).map { i ->
-            val t = i / (sliceCount - 1).toFloat()
-            val beat = (it.time + (it.tailTime - it.time) * t)
-            MaxScoreCounterElement(NoteScoreDefinition.BurstSliderElement, beat)
-        }
-    }
-
-    val items = (noteItems + burstItems).sortedWith(compareBy<MaxScoreCounterElement> { it.time }.thenBy { it.scoreDef.maxCutScore() })
+fun computeMaxMultipliedScoreForBeatmap(vararg raw: List<MaxScoreCounterElement>): Int {
+    val items = raw.flatMap { it }.sortedWith(compareBy<MaxScoreCounterElement> { it.time }.thenBy { it.scoreDef.maxCutScore() })
 
     return items.fold(ScoreMultiplierCounter() to 0) { (smc, score), elem ->
         smc.processMultiplierEvent(MultiplierEventType.Positive).let { newSmc ->

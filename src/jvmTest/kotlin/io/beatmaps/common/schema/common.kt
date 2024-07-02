@@ -3,13 +3,14 @@ package io.beatmaps.common.schema
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.BSLights
+import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.toJson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
-import kotlinx.serialization.json.decodeFromJsonElement
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
@@ -23,11 +24,11 @@ object SchemaCommon {
     fun validateFolder(name: String, diffValidators: List<DiffValidator> = listOf()): ConstraintViolationException? {
         val info = javaClass.getResourceAsStream("/$name/Info.dat")!!
         val audio = File(javaClass.getResource("/shared/click.ogg")!!.toURI())
-        val files = listOf("Info.dat", "Easy.dat", "click.ogg", "click.png")
+        val files = listOf("Info.dat", "Easy.dat", "Lights.dat", "BPMInfo.dat", "click.ogg", "click.png")
 
         val str = readFromBytes(info.readAllBytes()).replace("\r\n", "\n")
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(str)
-        val mapInfo = jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(jsonElement)
+        val mapInfo = BaseMapInfo.parse(jsonElement)
 
         try {
             ByteArrayOutputStream().use { toHash ->
@@ -46,12 +47,15 @@ object SchemaCommon {
                     }
                 }
                 diffValidators.forEach {
-                    val char = extractedInfo.diffs.filter { d -> d.key.enumValue() == it.characteristic }
-                    assert(char.size == 1) { "Missing or multiple characteristics for validator" }
-                    val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
-                    assert(diff.size == 1) { "Missing or multiple difficulty for validator" }
+                    val char = extractedInfo.diffs.filter { d -> d.key == it.characteristic }
+                    val charLights = extractedInfo.lights.filter { d -> d.key == it.characteristic }
+                    assert(char.size == 1 && charLights.size == 1) { "Missing or multiple characteristics for validator" }
 
-                    it.block.invoke(diff.values.first(), extractedInfo.songLengthInfo!!)
+                    val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                    val diffLights = charLights.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                    assert(diff.size == 1 && diffLights.size == 1) { "Missing or multiple difficulty for validator" }
+
+                    it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
                 }
             }
         } catch (e: ConstraintViolationException) {
@@ -71,7 +75,7 @@ object SchemaCommon {
         Violation(prop, T::class)
 }
 
-data class DiffValidator(val characteristic: ECharacteristic, val difficulty: EDifficulty, val block: (BSDiff, SongLengthInfo) -> Unit)
+data class DiffValidator(val characteristic: ECharacteristic, val difficulty: EDifficulty, val block: (BSDiff, BSLights, SongLengthInfo) -> Unit)
 
 data class Violation<T : Constraint>(override val property: String, val constraintType: KClass<T>) : ConstraintViolation {
     // Will generally error but isn't intended to be used

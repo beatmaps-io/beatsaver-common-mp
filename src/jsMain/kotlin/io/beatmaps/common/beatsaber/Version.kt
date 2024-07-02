@@ -6,7 +6,7 @@ actual class Version actual constructor(val version: String?) : Comparable<Versi
             .substringBefore('-')
             .split('.')
             .dropLastWhile { it.isEmpty() }
-            .map(Integer::valueOf)
+            .map(String::toInt)
             .toIntArray()
     }
 

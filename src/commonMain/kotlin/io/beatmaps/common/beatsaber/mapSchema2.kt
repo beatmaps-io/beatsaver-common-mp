@@ -18,9 +18,10 @@ data class BSDifficulty(
     val _events: OptionalProperty<List<OptionalProperty<BSEvent?>>?> = OptionalProperty.NotPresent,
     val _waypoints: OptionalProperty<List<OptionalProperty<BSWaypointV2?>>?> = OptionalProperty.NotPresent,
     val _specialEventsKeywordFilters: OptionalProperty<BSSpecialEventKeywordFilters?> = OptionalProperty.NotPresent,
-    override val _customData: OptionalProperty<BSCustomDataV2?> = OptionalProperty.NotPresent,
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<BSCustomDataV2?> = OptionalProperty.NotPresent,
     val _BPMChanges: OptionalProperty<List<OptionalProperty<BPMChange?>>?> = OptionalProperty.NotPresent
-) : BSDiff {
+) : BSDiff, BSLights {
     fun notes() = _notes.orEmpty()
     fun events() = _events.orEmpty()
     fun obstacles() = _obstacles.orEmpty()
@@ -73,7 +74,8 @@ data class BSNote(
     val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _cutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject() {
     val lineIndex by orMinValue { _lineIndex }
     val lineLayer by orMinValue { _lineLayer }
@@ -89,7 +91,8 @@ data class BSObstacle(
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _duration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject()
 
 @Serializable
@@ -98,7 +101,8 @@ data class BSEvent(
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    override val _customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSCustomData, BSObject()
 
 @Serializable
