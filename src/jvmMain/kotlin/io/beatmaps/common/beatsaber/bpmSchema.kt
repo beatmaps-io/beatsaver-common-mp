@@ -1,64 +1,67 @@
+@file:UseSerializers(OptionalPropertySerializer::class)
+
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.OptionalProperty
+import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.jsonIgnoreUnknown
+import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
-import org.valiktor.Validator
-import org.valiktor.functions.isLessThanOrEqualTo
-import org.valiktor.functions.isNotNull
-import org.valiktor.functions.isPositiveOrZero
-import org.valiktor.functions.matches
-import org.valiktor.functions.validateForEach
-import org.valiktor.validate
 import kotlin.math.roundToInt
 
 @Serializable
 data class BPMInfo(
-    @SerialName("_version") override val version: String,
-    @SerialName("_songSampleCount") override val songSampleCount: Int,
-    @SerialName("_songFrequency") override val songFrequency: Int,
-    @SerialName("_regions") override val bpmData: List<BPMRegion>
+    @SerialName("_version") @ValidationName("_version")
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_songSampleCount") @ValidationName("_songSampleCount")
+    override val songSampleCount: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_songFrequency") @ValidationName("_songFrequency")
+    override val songFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_regions") @ValidationName("_regions")
+    override val bpmData: OptionalProperty<List<OptionalProperty<BPMRegion?>>?> = OptionalProperty.NotPresent
 ) : BPMInfoBase() {
     override fun validate() = validate(this) {
-        validate(BPMInfo::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-        validate(BPMInfo::songSampleCount).isPositiveOrZero()
-        validate(BPMInfo::songFrequency).isPositiveOrZero()
-        validate(BPMInfo::bpmData).validateForEach { it.validate(this, this@BPMInfo) }
+        validate(BPMInfo::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+        validate(BPMInfo::songSampleCount).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMInfo::songFrequency).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMInfo::bpmData).correctType().exists().optionalNotNull().validateForEach { it.validate(this, this@BPMInfo) }
     }
 }
 
 @Serializable
 data class BPMInfoV4(
-    override val version: String,
-    val songChecksum: String,
-    override val songSampleCount: Int,
-    override val songFrequency: Int,
-    override val bpmData: List<BPMRegionV4>
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val songChecksum: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    override val songSampleCount: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val songFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    override val bpmData: OptionalProperty<List<OptionalProperty<BPMRegionV4?>>?> = OptionalProperty.NotPresent
 ) : BPMInfoBase() {
     override fun validate() = validate(this) {
-        validate(BPMInfoV4::version).isNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-        validate(BPMInfoV4::songChecksum).isNotNull()
-        validate(BPMInfoV4::songSampleCount).isPositiveOrZero()
-        validate(BPMInfoV4::songFrequency).isPositiveOrZero()
-        validate(BPMInfoV4::bpmData).validateForEach { it.validate(this, this@BPMInfoV4) }
+        validate(BPMInfoV4::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+        validate(BPMInfoV4::songChecksum).correctType().exists().optionalNotNull()
+        validate(BPMInfoV4::songSampleCount).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMInfoV4::songFrequency).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMInfoV4::bpmData).correctType().exists().optionalNotNull().validateForEach { it.validate(this, this@BPMInfoV4) }
     }
 }
 
 abstract class BPMInfoBase : SongLengthInfo {
-    abstract val version: String
-    abstract val songFrequency: Int
-    abstract val songSampleCount: Int
-    abstract val bpmData: List<IBPMRegion<*>>
+    abstract val version: OptionalProperty<String?>
+    abstract val songFrequency: OptionalProperty<Int?>
+    abstract val songSampleCount: OptionalProperty<Int?>
+    abstract val bpmData: OptionalProperty<List<OptionalProperty<IBPMRegion<*>?>>?>
 
     abstract fun validate(): BPMInfoBase
 
-    private fun maximumInfo() = bpmData.maxByOrNull { it.endBeat }?.let {
+    private fun maximumInfo() = bpmData.orEmpty().maxByOrNull { it.endBeat.or(0f) }?.let {
         // Find the last region, time after is at song's bpm
-        it.endBeat to samplesToDuration(songSampleCount - it.endSampleIndex)
+        it.endBeat.or(0f) to samplesToDuration(songSampleCount.or(0) - it.endSampleIndex.or(0))
     } ?: (0f to duration())
 
     override fun maximumBeat(bpm: Float) = maximumInfo().let {
@@ -66,26 +69,26 @@ abstract class BPMInfoBase : SongLengthInfo {
     }
 
     override fun secondsToTime(sec: Float) =
-        bpmData.find { it.startSampleIndex < durationToSamples(sec) && durationToSamples(sec) < it.endSampleIndex }?.let {
+        bpmData.orEmpty().find { it.startSampleIndex.or(0) < durationToSamples(sec) && durationToSamples(sec) < it.endSampleIndex.or(0) }?.let {
             // We're in this region. Interpolate!
-            val lengthInSamples = it.endSampleIndex - it.startSampleIndex
-            val percent = (durationToSamples(sec) - it.startSampleIndex) / lengthInSamples
-            val lengthInBeats = it.endBeat - it.startBeat
-            it.startBeat + (lengthInBeats * percent)
+            val lengthInSamples = it.endSampleIndex.or(0) - it.startSampleIndex.or(0)
+            val percent = (durationToSamples(sec) - it.startSampleIndex.or(0)) / lengthInSamples
+            val lengthInBeats = it.endBeat.or(0f) - it.startBeat.or(0f)
+            it.startBeat.or(0f) + (lengthInBeats * percent)
         } ?: 0f
 
     override fun timeToSeconds(time: Float) =
-        bpmData.find { it.startBeat <= time && time < it.endBeat }?.let {
+        bpmData.orEmpty().find { it.startBeat.or(0f) <= time && time < it.endBeat.or(0f) }?.let {
             // We're in this region. Interpolate!
-            val lengthInBeats = it.endBeat - it.startBeat
-            val percent = (time - it.startBeat) / lengthInBeats
-            val lengthInSamples = it.endSampleIndex - it.startSampleIndex
-            samplesToDuration(it.startSampleIndex + (lengthInSamples * percent).roundToInt())
+            val lengthInBeats = it.endBeat.or(0f) - it.startBeat.or(0f)
+            val percent = (time - it.startBeat.or(0f)) / lengthInBeats
+            val lengthInSamples = it.endSampleIndex.or(0) - it.startSampleIndex.or(0)
+            samplesToDuration(it.startSampleIndex.or(0) + (lengthInSamples * percent).roundToInt())
         } ?: 0f
 
-    protected fun duration() = samplesToDuration(songSampleCount)
-    private fun samplesToDuration(samples: Int) = samples / songFrequency.toFloat()
-    private fun durationToSamples(duration: Float) = (duration * songFrequency).roundToInt()
+    protected fun duration() = samplesToDuration(songSampleCount.or(0))
+    private fun samplesToDuration(samples: Int) = samples / songFrequency.or(1).toFloat()
+    private fun durationToSamples(duration: Float) = (duration * songFrequency.or(0)).roundToInt()
 
     companion object {
         fun parse(element: JsonElement) =
@@ -105,39 +108,47 @@ class LegacySongLengthInfo(private val info: ExtractedInfo) : SongLengthInfo {
 
 @Serializable
 data class BPMRegion(
-    @SerialName("_startSampleIndex") override val startSampleIndex: Int,
-    @SerialName("_endSampleIndex") override val endSampleIndex: Int,
-    @SerialName("_startBeat") override val startBeat: Float,
-    @SerialName("_endBeat") override val endBeat: Float
+    @SerialName("_startSampleIndex") @ValidationName("_startSampleIndex")
+    override val startSampleIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_endSampleIndex") @ValidationName("_endSampleIndex")
+    override val endSampleIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_startBeat") @ValidationName("_startBeat")
+    override val startBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("_endBeat") @ValidationName("_endBeat")
+    override val endBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) : IBPMRegion<BPMRegion> {
-    override fun validate(validator: Validator<BPMRegion>, bpmInfo: BPMInfoBase) = validator.apply {
-        validate(BPMRegion::startSampleIndex).isPositiveOrZero().isLessThanOrEqualTo(bpmInfo.songSampleCount)
-        validate(BPMRegion::endSampleIndex).isPositiveOrZero().isLessThanOrEqualTo(bpmInfo.songSampleCount)
-        validate(BPMRegion::startBeat).isPositiveOrZero()
-        validate(BPMRegion::endBeat).isPositiveOrZero()
+    override fun validate(validator: BMValidator<BPMRegion>, bpmInfo: BPMInfoBase) = validator.apply {
+        validate(BPMRegion::startSampleIndex).correctType().exists().optionalNotNull()
+            .isPositiveOrZero()
+        validate(BPMRegion::endSampleIndex).correctType().exists().optionalNotNull()
+            .isGreaterThanOrEqualTo(startSampleIndex.or(0)).isLessThanOrEqualTo(bpmInfo.songSampleCount.or(0))
+        validate(BPMRegion::startBeat).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMRegion::endBeat).correctType().exists().optionalNotNull().isGreaterThanOrEqualTo(startBeat.or(0f))
     }
 }
 
 @Serializable
 data class BPMRegionV4(
-    @SerialName("si") override val startSampleIndex: Int,
-    @SerialName("ei") override val endSampleIndex: Int,
-    @SerialName("sb") override val startBeat: Float,
-    @SerialName("eb") override val endBeat: Float
+    @SerialName("si") override val startSampleIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("ei") override val endSampleIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("sb") override val startBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    @SerialName("eb") override val endBeat: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) : IBPMRegion<BPMRegionV4> {
-    override fun validate(validator: Validator<BPMRegionV4>, bpmInfo: BPMInfoBase) = validator.apply {
-        validate(BPMRegionV4::startSampleIndex).isPositiveOrZero().isLessThanOrEqualTo(bpmInfo.songSampleCount)
-        validate(BPMRegionV4::endSampleIndex).isPositiveOrZero().isLessThanOrEqualTo(bpmInfo.songSampleCount)
-        validate(BPMRegionV4::startBeat).isPositiveOrZero()
-        validate(BPMRegionV4::endBeat).isPositiveOrZero()
+    override fun validate(validator: BMValidator<BPMRegionV4>, bpmInfo: BPMInfoBase) = validator.apply {
+        validate(BPMRegionV4::startSampleIndex).correctType().exists().optionalNotNull()
+            .isPositiveOrZero()
+        validate(BPMRegionV4::endSampleIndex).correctType().exists().optionalNotNull()
+            .isGreaterThanOrEqualTo(startSampleIndex.or(0)).isLessThanOrEqualTo(bpmInfo.songSampleCount.or(0))
+        validate(BPMRegionV4::startBeat).correctType().exists().optionalNotNull().isPositiveOrZero()
+        validate(BPMRegionV4::endBeat).correctType().exists().optionalNotNull().isGreaterThanOrEqualTo(startBeat.or(0f))
     }
 }
 
 interface IBPMRegion<T : IBPMRegion<T>> {
-    val startSampleIndex: Int
-    val endSampleIndex: Int
-    val startBeat: Float
-    val endBeat: Float
+    val startSampleIndex: OptionalProperty<Int?>
+    val endSampleIndex: OptionalProperty<Int?>
+    val startBeat: OptionalProperty<Float?>
+    val endBeat: OptionalProperty<Float?>
 
-    fun validate(validator: Validator<T>, bpmInfo: BPMInfoBase): Validator<T>
+    fun validate(validator: BMValidator<T>, bpmInfo: BPMInfoBase): BMValidator<T>
 }

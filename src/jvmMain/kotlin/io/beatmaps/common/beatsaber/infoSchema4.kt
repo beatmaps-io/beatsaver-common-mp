@@ -13,7 +13,6 @@ import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
@@ -35,8 +34,7 @@ data class MapInfoV4(
     val environmentNames: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
     val colorSchemes: OptionalProperty<List<OptionalProperty<MapColorSchemeV4?>>?> = OptionalProperty.NotPresent,
     val difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmapV4?>>?> = OptionalProperty.NotPresent,
-    // TODO: Probably seperate V4 format??
-    val customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent
+    val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
     override val audioDataFilename = audio.orNull()?.audioDataFilename?.orNull() ?: "BPMInfo.dat"
 
@@ -72,9 +70,8 @@ data class MapInfoV4(
         validate(MapInfoV4::customData).correctType().validateOptional {
             extraFieldsViolation(
                 constraintViolations,
-                it.additionalInformation.keys
+                it.keys
             )
-            it.validate(this, files)
         }
 
         validate(MapInfoV4::difficultyBeatmaps).correctType().exists().optionalNotNull().isNotEmpty().validateForEach {
@@ -86,19 +83,25 @@ data class MapInfoV4(
     override fun getBpm() = audio.orNull()?.bpm?.orNull()
     override fun getSongName() = song.orNull()?.title?.orNull()
     override fun getSubName() = song.orNull()?.subTitle?.orNull()
-    override fun getLevelAuthorNames() = difficultyBeatmaps.orNull()?.flatMap { it.orNull()?.beatmapAuthors?.orNull()?.mappers?.orEmpty() ?: listOf() } ?: listOf()
+    override fun getLevelAuthorNames() = difficultyBeatmaps.orNull()?.flatMap {
+        it.orNull()?.beatmapAuthors?.orNull().let { authors ->
+            authors?.mappers.orEmpty() + authors?.lighters.orEmpty()
+        }
+    }?.toSet() ?: setOf()
     override fun getSongAuthorName() = song.orNull()?.author?.orNull()
     override fun getSongFilename() = audio.orNull()?.songFilename?.orNull()
     override fun setSongFilename(filename: String?) = copy(audio = OptionalProperty.Present(audio.or(AudioInfo()).copy(songFilename = OptionalProperty.Present(filename))))
 
-    override fun getExtraFiles() = listOfNotNull(coverImageFilename.orNull(), getSongFilename()) +
-        (customData.orNull()?._contributors?.orNull()?.mapNotNull { it.orNull()?._iconPath?.orNull() } ?: listOf()) +
-        difficultyBeatmaps.or(listOf()).mapNotNull { diff ->
-            diff.orNull()?.let { diffNotNull ->
-                // TODO: Custom data
-                listOfNotNull(diffNotNull.beatmapDataFilename.orNull(), diffNotNull.lightshowDataFilename.orNull())
-            }
-        }.flatten()
+    override fun getExtraFiles() =
+        (songFiles() + beatmapExtraFiles()).toSet()
+
+    private fun songFiles() =
+        listOfNotNull(coverImageFilename.orNull(), getSongFilename(), songPreviewFilename.orNull())
+
+    private fun beatmapExtraFiles() =
+        difficultyBeatmaps.orEmpty().flatMap { diff ->
+            diff.extraFiles()
+        }
 
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
 }
@@ -164,10 +167,12 @@ data class MapColorSchemeV4(
             MapColorSchemeV4::saberAColor, MapColorSchemeV4::saberBColor, MapColorSchemeV4::environmentColor0, MapColorSchemeV4::environmentColor1, MapColorSchemeV4::obstaclesColor,
             MapColorSchemeV4::environmentColor0Boost, MapColorSchemeV4::environmentColor1Boost, MapColorSchemeV4::environmentColorW, MapColorSchemeV4::environmentColorWBoost
         ).forEach { prop ->
-            validate(prop).correctType().optionalNotNull().validateOptional {
-                // TODO: Validate hex format
-            }
+            validate(prop).correctType().optionalNotNull().matches(regex)
         }
+    }
+
+    companion object {
+        val regex = Regex("#[0-9A-Fa-f]{8}")
     }
 }
 
@@ -310,6 +315,8 @@ data class DifficultyBeatmapV4(
     }
 
     override fun enumValue() = searchEnum<EDifficulty>(difficulty.or(""))
+    override fun extraFiles() = setOfNotNull(beatmapDataFilename.orNull(), lightshowDataFilename.orNull())
+
     private fun charEnum() = searchEnum<ECharacteristic>(characteristic.or(""))
 
     companion object {
@@ -323,6 +330,7 @@ data class BeatmapAuthors(
     val lighters: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent
 ) : Validatable<BeatmapAuthors> {
     override fun validate(validator: BMValidator<BeatmapAuthors>) = validator.apply {
-
+        validate(BeatmapAuthors::mappers).correctType().exists().optionalNotNull()
+        validate(BeatmapAuthors::lighters).correctType().exists().optionalNotNull()
     }
 }

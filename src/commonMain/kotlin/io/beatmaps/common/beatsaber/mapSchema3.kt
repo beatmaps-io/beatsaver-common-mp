@@ -72,7 +72,7 @@ data class BSObstacleV3(
     val width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("h")
     val height: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSBpmChange(
@@ -80,7 +80,7 @@ data class BSBpmChange(
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("m")
     val bpm: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSBoostEvent(
@@ -88,7 +88,7 @@ data class BSBoostEvent(
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
     val boost: OptionalProperty<Boolean?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 interface IBSEventBoxGroup<T : GroupableEventBox> {
     val beat: OptionalProperty<Float?>
@@ -104,7 +104,7 @@ data class BSEventBoxGroup<T : GroupableEventBox>(
     override val groupId: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
     override val eventBoxes: OptionalProperty<List<OptionalProperty<T?>>?> = OptionalProperty.NotPresent
-) : IBSEventBoxGroup<T>, BSObject() {
+) : IBSEventBoxGroup<T>, IBSObject by BSObject(beat) {
     constructor(beat: Float, groupId: Int, eventBoxes: List<T>) :
         this(OptionalProperty.Present(beat), OptionalProperty.Present(groupId), OptionalProperty.Present(eventBoxes.map { OptionalProperty.Present(it) }))
 }
@@ -125,10 +125,13 @@ data class BSVfxEventBoxGroup(
     override val eventBoxes: OptionalProperty<List<OptionalProperty<BSVfxEventBox?>>?> = OptionalProperty.NotPresent
 ) : IBSEventBoxGroup<BSVfxEventBox>
 
-interface GroupableEventBox {
-    val indexFilter: OptionalProperty<BSIndexFilter?>
+interface EventBox : BSIndexable {
     val beatDistributionParam: OptionalProperty<Float?>
     val beatDistributionParamType: OptionalProperty<Int?>
+}
+
+interface GroupableEventBox : EventBox {
+    val indexFilter: OptionalProperty<BSIndexFilter?>
 }
 
 @Serializable
@@ -183,7 +186,7 @@ data class BSLightColorBaseData(
     val brightness: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("f")
     val strobeFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSLightRotationEventBox(
@@ -222,7 +225,7 @@ data class LightRotationBaseData(
     val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("o")
     val rotationDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSLightTranslationEventBox(
@@ -278,7 +281,7 @@ data class LightTranslationBaseData(
     val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("t")
     val translation: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSIndexFilter(
@@ -317,7 +320,7 @@ data class BSWaypoint(
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
     val offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSBomb(
@@ -325,7 +328,7 @@ data class BSBomb(
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val x: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val y: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSNoteV3(
@@ -339,7 +342,7 @@ data class BSNoteV3(
     val color: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("d")
     val direction: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSBurstSlider(
@@ -361,7 +364,7 @@ data class BSBurstSlider(
     val sliceCount: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("s")
     val squishAmount: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject() {
+) : IBSObject by BSObject(beat) {
     val tailTime by orNegativeInfinity { tailBeat }
 }
 
@@ -389,7 +392,7 @@ data class BSSlider(
     val tailCutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("m")
     val sliderMidAnchorMode: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject() {
+) : IBSObject by BSObject(beat) {
     val tailTime by orNegativeInfinity { tailBeat }
 }
 
@@ -403,7 +406,7 @@ data class BSEventV3(
     val value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("f")
     val floatValue: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSRotationEvent(
@@ -413,7 +416,7 @@ data class BSRotationEvent(
     val executionTime: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("r")
     val rotation: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSFxEventsCollection(
@@ -423,7 +426,7 @@ data class BSFxEventsCollection(
     val floatEventsList: OptionalProperty<List<OptionalProperty<BSFloatFxEventBaseData?>>?> = OptionalProperty.NotPresent
 )
 
-abstract class BSFxEventBaseData<T> : BSObject() {
+abstract class BSFxEventBaseData<T> : IBSObject {
     abstract val usePreviousEventValue: OptionalProperty<Int?>
     abstract val value: OptionalProperty<T?>
 }
@@ -436,7 +439,7 @@ data class BSIntFxEventBaseData(
     override val usePreviousEventValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("v")
     override val value: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSFxEventBaseData<Int>()
+) : BSFxEventBaseData<Int>(), IBSObject by BSObject(beat)
 
 @Serializable
 data class BSFloatFxEventBaseData(
@@ -448,4 +451,4 @@ data class BSFloatFxEventBaseData(
     override val value: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("i")
     val easeType: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSFxEventBaseData<Float>()
+) : BSFxEventBaseData<Float>(), IBSObject by BSObject(beat)

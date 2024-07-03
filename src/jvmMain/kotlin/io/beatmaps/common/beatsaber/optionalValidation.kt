@@ -8,6 +8,7 @@ import org.valiktor.constraints.Equals
 import org.valiktor.constraints.GreaterOrEqual
 import org.valiktor.constraints.In
 import org.valiktor.constraints.Less
+import org.valiktor.constraints.LessOrEqual
 import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotBlank
 import org.valiktor.constraints.NotEmpty
@@ -57,14 +58,22 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValida
 fun <E, T : OptionalProperty<Float?>> BMValidator<E>.BMProperty<T?>.isZero(): BMValidator<E>.BMProperty<T?> =
     this.validate(Equals(0f)) { it != null && it.validate { q -> q == null || q == 0f } }
 
+@JvmName("flotIsPositiveOrZero")
 fun <E, T : OptionalProperty<Float?>> BMValidator<E>.BMProperty<T?>.isPositiveOrZero(): BMValidator<E>.BMProperty<T?> =
     isGreaterThanOrEqualTo(0f)
+
+@JvmName("intIsPositiveOrZero")
+fun <E, T : OptionalProperty<Int?>> BMValidator<E>.BMProperty<T?>.isPositiveOrZero(): BMValidator<E>.BMProperty<T?> =
+    isGreaterThanOrEqualTo(0)
 
 fun <E, Q : Comparable<Q>, T : OptionalProperty<Q?>> BMValidator<E>.BMProperty<T?>.isGreaterThanOrEqualTo(value: Q): BMValidator<E>.BMProperty<T?> =
     this.validate(GreaterOrEqual(value)) { it != null && it.validate { q -> q == null || q >= value } }
 
 fun <E, Q : Comparable<Q>, T : OptionalProperty<Q?>> BMValidator<E>.BMProperty<T?>.isLessThan(value: Q): BMValidator<E>.BMProperty<T?> =
     this.validate(Less(value)) { it != null && it.validate { q -> q == null || q < value } }
+
+fun <E, Q : Comparable<Q>, T : OptionalProperty<Q?>> BMValidator<E>.BMProperty<T?>.isLessThanOrEqualTo(value: Q): BMValidator<E>.BMProperty<T?> =
+    this.validate(LessOrEqual(value)) { it != null && it.validate { q -> q == null || q <= value } }
 
 fun <E, T : OptionalProperty<String?>> BMValidator<E>.BMProperty<T?>.isNotBlank(): BMValidator<E>.BMProperty<T?> =
     this.validate(NotBlank) { it != null && it.validate { q -> q == null || q.isNotBlank() } }

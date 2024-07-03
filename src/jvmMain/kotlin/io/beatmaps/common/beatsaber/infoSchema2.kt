@@ -17,9 +17,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
 import org.valiktor.constraints.In
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -109,19 +107,25 @@ data class MapInfo(
     override fun getBpm() = _beatsPerMinute.orNull()
     override fun getSongName() = _songName.orNull()
     override fun getSubName() = _songSubName.orNull()
-    override fun getLevelAuthorNames() = listOfNotNull(_levelAuthorName.orNull())
+    override fun getLevelAuthorNames() = setOfNotNull(_levelAuthorName.orNull())
     override fun getSongAuthorName() = _songAuthorName.orNull()
     override fun getSongFilename() = _songFilename.orNull()
     override fun setSongFilename(filename: String?) = copy(_songFilename = OptionalProperty.Present(filename))
-    override fun getExtraFiles() = listOfNotNull(_coverImageFilename.orNull(), getSongFilename()) +
-        (_customData.orNull()?._contributors?.orNull()?.mapNotNull { it.orNull()?._iconPath?.orNull() } ?: listOf()) +
-        _difficultyBeatmapSets.or(listOf()).mapNotNull { set ->
-            set.orNull()?.let { setNotNull ->
-                listOfNotNull(setNotNull._customData.orNull()?._characteristicIconImageFilename?.orNull()).plus(
-                    setNotNull._difficultyBeatmaps.or(listOf()).mapNotNull { it.orNull()?._beatmapFilename?.orNull() }
-                )
-            }
-        }.flatten()
+    override fun getExtraFiles() =
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
+
+    private fun songFiles() =
+        listOfNotNull(_coverImageFilename.orNull(), getSongFilename())
+
+    private fun contributorsExtraFiles() =
+        _customData.orNull()?._contributors.orEmpty().mapNotNull { it._iconPath.orNull() }
+
+    private fun beatmapExtraFiles() =
+        _difficultyBeatmapSets.orEmpty().flatMap { setNotNull ->
+            listOfNotNull(setNotNull._customData.orNull()?._characteristicIconImageFilename?.orNull()).plus(
+                setNotNull._difficultyBeatmaps.orEmpty().flatMap { it.extraFiles() }
+            )
+        }
 
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
 }
@@ -265,6 +269,7 @@ data class DifficultyBeatmapSet(
 
 interface DifficultyBeatmapInfo : BSCustomData {
     fun enumValue(): EDifficulty
+    fun extraFiles(): Set<String>
     override val customData: OptionalProperty<DifficultyBeatmapCustomDataBase?>
     val noteJumpMovementSpeed: OptionalProperty<Float?>
     val noteJumpStartBeatOffset: OptionalProperty<Float?>
@@ -375,6 +380,7 @@ data class DifficultyBeatmap(
     }
 
     override fun enumValue() = EDifficulty.fromInt(_difficultyRank.or(0)) ?: searchEnum(_difficulty.or(""))
+    override fun extraFiles() = setOfNotNull(_beatmapFilename.orNull())
 }
 
 @Serializable

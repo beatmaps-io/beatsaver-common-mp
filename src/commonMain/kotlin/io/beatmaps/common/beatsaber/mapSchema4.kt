@@ -56,8 +56,9 @@ data class BSDifficultyV4(
 
 typealias BSIndexedV4<T> = BSIndexedGeneric<BSDifficultyV4, T>
 
-abstract class BSIndexedGeneric<U, T : BSIndexable> : BSIndexed, BSObject() {
+abstract class BSIndexedGeneric<U, T : BSIndexable> : BSIndexed {
     abstract val prop: KProperty1<U, OptionalProperty<List<OptionalProperty<T?>>?>>
+
     fun getData(diff: U) =
         getForProp(index, prop.get(diff))
 
@@ -81,7 +82,7 @@ data class BSNoteV4(
     val rotationLane: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSNoteDataV4>() {
+) : BSIndexedV4<BSNoteDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::colorNotesData
 }
 
@@ -105,7 +106,7 @@ data class BSBombV4(
     val rotationLane: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSBombDataV4>() {
+) : BSIndexedV4<BSBombDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::bombNotesData
 }
 
@@ -123,7 +124,7 @@ data class BSObstacleV4(
     val rotationLane: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("i")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSObstacleDataV4>() {
+) : BSIndexedV4<BSObstacleDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::obstaclesData
 }
 
@@ -155,7 +156,7 @@ data class BSArcV4(
     val tailIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("ai")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSArcDataV4>() {
+) : BSIndexedV4<BSArcDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::arcsData
 
     val tailTime by orNegativeInfinity { tailBeat }
@@ -187,7 +188,7 @@ data class BSChainV4(
     val headIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("ci")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSChainDataV4>() {
+) : BSIndexedV4<BSChainDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::chainsData
 
     val tailTime by orNegativeInfinity { tailBeat }
@@ -212,7 +213,7 @@ data class BSRotationsV4(
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("i")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSIndexedV4<BSRotationsDataV4>() {
+) : BSIndexedV4<BSRotationsDataV4>(), IBSObject by BSObject(beat) {
     override val prop = BSDifficultyV4::spawnRotationsData
 }
 

@@ -61,9 +61,13 @@ data class BSDifficulty(
         }
 }
 
-abstract class BSObject {
-    abstract val beat: OptionalProperty<Float?>
-    val time by orNegativeInfinity { beat }
+interface IBSObject {
+    val beat: OptionalProperty<Float?>
+    val time: Float
+}
+
+class BSObject(override val beat: OptionalProperty<Float?>) : IBSObject {
+    override val time by orNegativeInfinity { beat }
 }
 
 @Serializable
@@ -76,7 +80,7 @@ data class BSNote(
     val _cutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
     override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, BSObject() {
+) : BSCustomData, IBSObject by BSObject(beat) {
     val lineIndex by orMinValue { _lineIndex }
     val lineLayer by orMinValue { _lineLayer }
     val type by orMinValue { _type }
@@ -93,7 +97,7 @@ data class BSObstacle(
     val _width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
     override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, BSObject()
+) : BSCustomData, IBSObject by BSObject(beat)
 
 @Serializable
 data class BSEvent(
@@ -103,7 +107,7 @@ data class BSEvent(
     val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
     override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, BSObject()
+) : BSCustomData, IBSObject by BSObject(beat)
 
 @Serializable
 data class BSCustomDataV2(
@@ -118,7 +122,7 @@ data class BPMChange(
     val _BPM: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _beatsPerBar: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _metronomeOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSWaypointV2(
@@ -127,7 +131,7 @@ data class BSWaypointV2(
     val _lineIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _lineLayer: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _offsetDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent
-) : BSObject()
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSSpecialEventKeywordFilters(

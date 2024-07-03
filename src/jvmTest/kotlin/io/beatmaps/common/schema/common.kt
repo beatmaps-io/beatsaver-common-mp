@@ -71,6 +71,9 @@ object SchemaCommon {
     inline fun <reified T : Constraint> violation(prop: String) =
         infoViolation<T>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop")
 
+    inline fun <reified T : Constraint> bpmViolation(prop: String) =
+        infoViolation<T>("`BPMInfo.dat`.$prop")
+
     inline fun <reified T : Constraint> infoViolation(prop: String) =
         Violation(prop, T::class)
 }

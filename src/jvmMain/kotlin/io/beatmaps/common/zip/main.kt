@@ -1,20 +1,13 @@
 package io.beatmaps.common.zip
 
 import io.beatmaps.common.api.ECharacteristic
-import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSDifficulty
-import io.beatmaps.common.beatsaber.BSDifficultyV3
 import io.beatmaps.common.beatsaber.BSLights
 import io.beatmaps.common.beatsaber.BaseMapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmap
 import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
 import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonObject
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.FileHeader
@@ -102,7 +95,7 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
         convertToPCM(
             oggStream,
             // TODO: Use preview file if V4?
-            //info._previewStartTime.or(0f),
+            // info._previewStartTime.or(0f),
             0f,
             10.2f
         ).use(::encodeToMp3)

@@ -112,4 +112,5 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         validate(BSRotationsDataV4::executionTime).correctType().exists().optionalNotNull()
         validate(BSRotationsDataV4::rotation).correctType().exists().optionalNotNull()
     }
+    validate(BSDifficultyV4::customData).correctType().optionalNotNull()
 }

@@ -1,7 +1,5 @@
 package io.beatmaps.common.beatsaber
 
-import io.beatmaps.common.or
-
 data class ScoreMultiplierCounter(
     val multiplier: Int = 1,
     val multiplierIncreaseProgress: Int = 0,

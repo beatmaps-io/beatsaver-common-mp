@@ -114,12 +114,12 @@ abstract class BaseMapInfo {
     abstract fun getBpm(): Float?
     abstract fun getSongName(): String?
     abstract fun getSubName(): String?
-    abstract fun getLevelAuthorNames(): List<String>
+    abstract fun getLevelAuthorNames(): Set<String>
     abstract fun getSongAuthorName(): String?
     abstract fun getSongFilename(): String?
     abstract fun setSongFilename(filename: String?): BaseMapInfo
 
-    abstract fun getExtraFiles(): List<String>
+    abstract fun getExtraFiles(): Set<String>
     abstract fun toJsonElement(): JsonElement
 
     companion object {
