@@ -44,13 +44,21 @@ data class ReviewModerationData(val oldSentiment: Int, val newSentiment: Int, va
 data class ReviewDeleteData(val reason: String, val text: String? = null, val sentiment: Int? = null) : IModLogOpAction
 
 @Serializable
+@SerialName("ReplyModeration")
+data class ReplyModerationData(val oldText: String, val newText: String) : IModLogOpAction
+
+@Serializable
+@SerialName("ReplyDelete")
+data class ReplyDeleteData(val reason: String, val text: String? = null) : IModLogOpAction
+
+@Serializable
 @SerialName("RevokeSessions")
 data class RevokeSessionsData(val all: Boolean, val reason: String? = null) : IModLogOpAction
 
 enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
     Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
-    ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class);
+    ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class);
 
     companion object {
         private val map = entries.associateBy(ModLogOpType::actionClass)
