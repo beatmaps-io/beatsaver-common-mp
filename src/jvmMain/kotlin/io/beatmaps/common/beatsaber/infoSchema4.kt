@@ -13,6 +13,7 @@ import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
@@ -208,7 +209,8 @@ data class DifficultyBeatmapV4(
     val beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     override val noteJumpMovementSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     override val noteJumpStartBeatOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
-    val beatmapDataFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("beatmapDataFilename") @ValidationName("beatmapDataFilename")
+    override val beatmapFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val lightshowDataFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
     override val customData: OptionalProperty<DifficultyBeatmapV4CustomData?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
@@ -296,10 +298,10 @@ data class DifficultyBeatmapV4(
         validate(DifficultyBeatmapV4::noteJumpMovementSpeed).exists().correctType().optionalNotNull()
         validate(DifficultyBeatmapV4::noteJumpStartBeatOffset).exists().correctType().optionalNotNull()
 
-        validate(DifficultyBeatmapV4::beatmapDataFilename).exists().correctType().optionalNotNull()
+        validate(DifficultyBeatmapV4::beatmapFilename).exists().correctType().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .also {
-                val filename = beatmapDataFilename.orNull()
+                val filename = beatmapFilename.orNull()
                 if (filename != null && files.contains(filename.lowercase())) {
                     diffValid(it, getFile(filename), info)
                 }
@@ -316,7 +318,7 @@ data class DifficultyBeatmapV4(
     }
 
     override fun enumValue() = searchEnum<EDifficulty>(difficulty.or(""))
-    override fun extraFiles() = setOfNotNull(beatmapDataFilename.orNull(), lightshowDataFilename.orNull())
+    override fun extraFiles() = setOfNotNull(beatmapFilename.orNull(), lightshowDataFilename.orNull())
 
     private fun charEnum() = searchEnum<ECharacteristic>(characteristic.or(""))
 

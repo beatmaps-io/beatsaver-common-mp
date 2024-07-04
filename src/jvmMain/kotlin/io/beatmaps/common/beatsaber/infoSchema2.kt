@@ -274,6 +274,7 @@ interface DifficultyBeatmapInfo : BSCustomData {
     override val customData: OptionalProperty<DifficultyBeatmapCustomDataBase?>
     val noteJumpMovementSpeed: OptionalProperty<Float?>
     val noteJumpStartBeatOffset: OptionalProperty<Float?>
+    val beatmapFilename: OptionalProperty<String?>
 }
 
 interface DifficultyBeatmapCustomDataBase {
@@ -288,7 +289,8 @@ interface DifficultyBeatmapCustomDataBase {
 data class DifficultyBeatmap(
     val _difficulty: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _difficultyRank: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    val _beatmapFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_beatmapFilename") @ValidationName("_beatmapFilename")
+    override val beatmapFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
     @SerialName("_noteJumpMovementSpeed")
     override val noteJumpMovementSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("_noteJumpStartBeatOffset")
@@ -362,10 +364,10 @@ data class DifficultyBeatmap(
                     it != this@DifficultyBeatmap && it._difficultyRank == this@DifficultyBeatmap._difficultyRank
                 } == false
             }
-        validate(DifficultyBeatmap::_beatmapFilename).exists().optionalNotNull()
+        validate(DifficultyBeatmap::beatmapFilename).exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .also {
-                val filename = _beatmapFilename.orNull()
+                val filename = beatmapFilename.orNull()
                 if (filename != null && files.contains(filename.lowercase())) {
                     diffValid(it, getFile(filename), characteristic, info)
                 }
@@ -381,7 +383,7 @@ data class DifficultyBeatmap(
     }
 
     override fun enumValue() = EDifficulty.fromInt(_difficultyRank.or(0)) ?: searchEnum(_difficulty.or(""))
-    override fun extraFiles() = setOfNotNull(_beatmapFilename.orNull())
+    override fun extraFiles() = setOfNotNull(beatmapFilename.orNull())
 }
 
 @Serializable

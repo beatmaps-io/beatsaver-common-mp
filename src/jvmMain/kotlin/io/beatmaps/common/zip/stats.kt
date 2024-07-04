@@ -38,7 +38,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
         it[versionId] = version.id
         it[createdAt] = version.uploaded
 
-        val bsdiff = diff(diff._beatmapFilename.or(""))
+        val bsdiff = diff(diff.beatmapFilename.or(""))
         if (bsdiff !is BSLights) throw Exception("Wrong beatmap type")
 
         stats = sharedInsert(it, diff, bsdiff, bsdiff, map, sli)
