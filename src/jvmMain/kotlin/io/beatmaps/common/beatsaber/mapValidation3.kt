@@ -1,15 +1,34 @@
 package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
+import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo
 import kotlin.reflect.KProperty1
 
-fun BMValidator<BSDifficultyV3>.validateV3(info: ExtractedInfo, maxBeat: Float, ver: Version) {
+data class BpmTracker(val seconds: Float, val beat: Float, val bpm: Float)
+
+fun BMValidator<BSDifficultyV3>.validateV3(info: ExtractedInfo, diff: BSDifficultyV3, bpmInfoMaxBeat: Float, ver: Version) {
     validate(BSDifficultyV3::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
     validate(BSDifficultyV3::bpmEvents).correctType().exists().optionalNotNull().validateForEach {
         validate(BSBpmChange::bpm).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
         validate(BSBpmChange::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
     }
+
+    val bpmEvents = diff.bpmEvents.orEmpty()
+    val maxBeat = if (bpmEvents.isNotEmpty()) {
+        // Regenerate maxBeat based on bpmEvents
+        val end = bpmEvents.fold(BpmTracker(0f, 0f, info.mapInfo.getBpm() ?: 60f)) { oldData, newBpm ->
+            BpmTracker(
+                oldData.seconds + (((newBpm.beat.or(0f) - oldData.beat) / oldData.bpm) * 60f),
+                newBpm.beat.or(oldData.beat),
+                newBpm.bpm.or(60f)
+            )
+        }
+        end.beat + (((info.duration - end.seconds) / 60f) * end.bpm)
+    } else {
+        bpmInfoMaxBeat
+    }
+
     validate(BSDifficultyV3::rotationEvents).correctType().exists().optionalNotNull().validateForEach {
         validate(BSRotationEvent::executionTime).correctType().existsBefore(ver, Schema3_3).isIn(0, 1)
         validate(BSRotationEvent::beat).correctType().existsBefore(ver, Schema3_3).optionalNotNull()

@@ -66,23 +66,39 @@ abstract class BaseMapInfo {
     }
 
     protected fun audioValid(audio: File, info: ExtractedInfo) =
+        audioValid(audio) {
+            info.duration = it
+        }
+
+    protected fun audioValid(audio: File, block: (Float) -> Unit = {}) =
+        internalAudioValid(audio).let { duration ->
+            if (duration != null) {
+                block(duration)
+
+                duration > 0
+            } else {
+                false
+            }
+        }
+
+    private fun internalAudioValid(audio: File): Float? =
         try {
             val header = OggFileReader().read(audio).audioHeader
             if (header is GenericAudioHeader) {
-                info.duration = header.preciseLength
+                header.preciseLength
             } else {
                 // May have been rounded down
-                info.duration = (header.trackLength + 1).toFloat()
+                (header.trackLength + 1).toFloat()
             }
         } catch (e: Exception) {
             try {
                 AudioSystem.getAudioInputStream(audio).use { wavInfo ->
-                    info.duration = ((wavInfo.frameLength + 0.0) / wavInfo.format.sampleRate).toFloat()
+                    ((wavInfo.frameLength + 0.0) / wavInfo.format.sampleRate).toFloat()
                 }
             } catch (e: Exception) {
                 null
             }
-        } != null && info.duration > 0
+        }
 
     protected abstract val audioDataFilename: String
     protected fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
@@ -107,7 +123,7 @@ abstract class BaseMapInfo {
             }
         } ?: LegacySongLengthInfo(info)
 
-    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> IZipPath?): BaseMapInfo
+    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
     abstract fun getEnvironments(): List<String>
@@ -115,12 +131,14 @@ abstract class BaseMapInfo {
     abstract fun getSongName(): String?
     abstract fun getSubName(): String?
     abstract fun getLevelAuthorNames(): Set<String>
+    fun getLevelAuthorNamesString() = getLevelAuthorNames().joinToString()
     abstract fun getSongAuthorName(): String?
     abstract fun getSongFilename(): String?
     abstract fun setSongFilename(filename: String?): BaseMapInfo
 
     abstract fun getExtraFiles(): Set<String>
     abstract fun toJsonElement(): JsonElement
+    abstract fun getPreviewInfo(): PreviewInfo
 
     companion object {
         fun parse(element: JsonElement) =
@@ -131,6 +149,8 @@ abstract class BaseMapInfo {
             }
     }
 }
+
+data class PreviewInfo(val filename: String, val start: Float, val duration: Float)
 
 fun BaseMapInfo.toJson() = (jsonIgnoreUnknown.encodeToString(toJsonElement()) + "\n")
     .replace(Regex("\\[\n +]"), "[]")

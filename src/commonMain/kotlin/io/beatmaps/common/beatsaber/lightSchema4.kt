@@ -33,7 +33,9 @@ data class BSLightingV4(
     val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
     override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSLights {
-    override fun eventCount() = basicEvents.orEmpty().size
+    override fun eventCount() = basicEvents.orEmpty().size +
+        colorBoostEvents.orEmpty().size + eventBoxGroups.orEmpty().sumOf { it.eventBoxes.orEmpty().size }
+
 }
 
 typealias BSIndexedLightV4<T> = BSIndexedGeneric<BSLightingV4, T>

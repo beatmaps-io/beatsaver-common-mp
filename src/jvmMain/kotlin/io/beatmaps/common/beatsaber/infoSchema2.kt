@@ -47,7 +47,7 @@ data class MapInfo(
 ) : BaseMapInfo() {
     override val audioDataFilename = "BPMInfo.dat"
 
-    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> IZipPath?) = validate(this) {
+    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         val ver = Version(_version.orNull())
 
@@ -128,6 +128,7 @@ data class MapInfo(
         }
 
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
+    override fun getPreviewInfo() = PreviewInfo(_songFilename.or(""), _previewStartTime.or(0f), _previewDuration.or(0f))
 }
 
 @Serializable
@@ -326,7 +327,7 @@ data class DifficultyBeatmap(
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, maxBeat, Version(diff.version.orNull())) }
+                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
                 is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
             }.constraintViolations.map { constraint ->
                 constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))

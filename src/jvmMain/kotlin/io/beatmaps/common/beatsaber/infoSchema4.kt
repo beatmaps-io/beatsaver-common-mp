@@ -38,12 +38,14 @@ data class MapInfoV4(
 ) : BaseMapInfo() {
     override val audioDataFilename = audio.orNull()?.audioDataFilename?.orNull() ?: "BPMInfo.dat"
 
-    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, getFile: (String) -> IZipPath?) = validate(this) {
+    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         // val ver = Version(version.orNull())
 
         validate(MapInfoV4::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
-        validate(MapInfoV4::song).correctType().exists().optionalNotNull().validate()
+        validate(MapInfoV4::song).correctType().exists().optionalNotNull().validate().validate(MetadataLength) { op ->
+            op == null || op.validate { (getSongName()?.length ?: 0) + getLevelAuthorNamesString().length <= 100 }
+        }
         validate(MapInfoV4::audio).correctType().exists().optionalNotNull().validateOptional {
             it.validate(this, files) {
                 audioValid(audio, info)
@@ -51,8 +53,7 @@ data class MapInfoV4(
         }
         validate(MapInfoV4::songPreviewFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            // .validate(AudioFormat) { it == null || audioValid(audio, info) }
-            // TODO: Validate this is valid audio?
+            .validate(AudioFormat) { it == null || audioValid(preview) }
 
         val imageInfo = coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfoV4::coverImageFilename).correctType().exists().optionalNotNull()
@@ -103,6 +104,10 @@ data class MapInfoV4(
             diff.extraFiles()
         }
 
+    override fun getPreviewInfo() = audio.orNull().let { a ->
+        PreviewInfo(songPreviewFilename.or(""), a?.previewStartTime.or(0f), a?.previewDuration.or(0f))
+    }
+
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
 }
 
@@ -113,9 +118,7 @@ data class SongInfo(
     val author: OptionalProperty<String?> = OptionalProperty.NotPresent
 ) : Validatable<SongInfo> {
     override fun validate(validator: BMValidator<SongInfo>) = validator.apply {
-        validate(SongInfo::title).correctType().exists().optionalNotNull().isNotBlank().validate(MetadataLength) { op ->
-            op == null || op.validate { (it?.length ?: 0) + (author.orNull()?.length ?: 0) <= 100 }
-        }
+        validate(SongInfo::title).correctType().exists().optionalNotNull().isNotBlank()
         validate(SongInfo::subTitle).correctType().exists().optionalNotNull()
         validate(SongInfo::author).correctType().exists().optionalNotNull()
     }
@@ -230,11 +233,10 @@ data class DifficultyBeatmapV4(
         info.diffs.getOrPut(charEnum()) { mutableMapOf() }[this] = diff
 
         val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
-        // TODO: Can V4 info have V2 map?
         parent.addConstraintViolations(
             when (diff) {
                 is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, maxBeat, Version(diff.version.orNull())) }
+                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
                 is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
             }.constraintViolations.map { constraint ->
                 constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
@@ -253,11 +255,10 @@ data class DifficultyBeatmapV4(
         info.lights.getOrPut(charEnum()) { mutableMapOf() }[this] = lights
 
         val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
-        // TODO: Can V4 info have V2 map?
         parent.addConstraintViolations(
             when (lights) {
                 is BSDifficulty -> BMValidator(lights).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(lights).apply { this.validateV3(info, maxBeat, Version(lights.version.orNull())) }
+                is BSDifficultyV3 -> BMValidator(lights).apply { this.validateV3(info, lights, maxBeat, Version(lights.version.orNull())) }
                 is BSLightingV4 -> BMValidator(lights).apply { this.validateV4(info, lights, maxBeat, Version(lights.version.orNull())) }
             }.constraintViolations.map { constraint ->
                 constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
@@ -304,7 +305,7 @@ data class DifficultyBeatmapV4(
                 }
             }
 
-        validate(DifficultyBeatmapV4::lightshowDataFilename).exists().correctType().optionalNotNull()
+        validate(DifficultyBeatmapV4::lightshowDataFilename).correctType().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
             .also {
                 val filename = lightshowDataFilename.orNull()

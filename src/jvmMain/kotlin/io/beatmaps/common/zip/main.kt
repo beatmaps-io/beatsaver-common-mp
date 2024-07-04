@@ -5,6 +5,7 @@ import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSLights
 import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
+import io.beatmaps.common.beatsaber.PreviewInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
@@ -77,9 +78,12 @@ class ZipPath(private val fs: ZipFile, private val originalPath: String, val hea
 
 class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directories: Set<String>) : ZipHelper(fs, filesOriginalCase, directories) {
     val audioFile: File
+    val previewAudioFile: File
+    private val previewInfo: PreviewInfo = info.getPreviewInfo()
 
     init {
-        val path = fromInfo(info.getSongFilename() ?: "")
+        val songFilename = info.getSongFilename() ?: ""
+        val path = fromInfo(songFilename)
         audioFile = File.createTempFile("audio", ".ogg").also { file ->
             file.deleteOnExit()
 
@@ -89,17 +93,30 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
                 }
             }
         }
+        previewAudioFile = if (previewInfo.filename == songFilename) {
+            audioFile
+        } else {
+            val previewPath = fromInfo(previewInfo.filename)
+            File.createTempFile("preview", ".ogg").also { file ->
+                file.deleteOnExit()
+
+                previewPath?.inputStream()?.use { iss ->
+                    file.outputStream().use {
+                        iss.copyTo(it, sizeLimit = 50 * 1024 * 1024)
+                    }
+                }
+            }
+        }
     }
 
-    fun generatePreview() = AudioSystem.getAudioInputStream(audioFile).use { oggStream ->
-        convertToPCM(
-            oggStream,
-            // TODO: Use preview file if V4?
-            // info._previewStartTime.or(0f),
-            0f,
-            10.2f
-        ).use(::encodeToMp3)
-    }
+    fun generatePreview() =
+        AudioSystem.getAudioInputStream(previewAudioFile).use { oggStream ->
+            convertToPCM(
+                oggStream,
+                previewInfo.start,
+                10.2f
+            ).use(::encodeToMp3)
+        }
 
     override fun scoreMap(): Short =
         ServiceLoader.load(IMapScorerProvider::class.java)
@@ -140,6 +157,9 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
     }
 
     override fun close() {
+        if (audioFile != previewAudioFile) {
+            Files.delete(previewAudioFile.toPath())
+        }
         Files.delete(audioFile.toPath())
     }
 }

@@ -33,7 +33,7 @@ object SchemaCommon {
         try {
             ByteArrayOutputStream().use { toHash ->
                 val extractedInfo = ExtractedInfo(files, toHash, mapInfo, 0)
-                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio) {
+                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
                     if (files.contains(it)) {
                         object : IZipPath {
                             override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
@@ -70,6 +70,12 @@ object SchemaCommon {
 
     inline fun <reified T : Constraint> violation(prop: String) =
         infoViolation<T>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0].`Easy.dat`.$prop")
+
+    inline fun <reified T : Constraint> violation4(prop: String) =
+        infoViolation<T>("difficultyBeatmaps[0].`Easy.dat`.$prop")
+
+    inline fun <reified T : Constraint> violation4L(prop: String) =
+        infoViolation<T>("difficultyBeatmaps[0].`Lights.dat`.$prop")
 
     inline fun <reified T : Constraint> bpmViolation(prop: String) =
         infoViolation<T>("`BPMInfo.dat`.$prop")
