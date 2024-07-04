@@ -11,7 +11,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         }
         validate(BSNoteV4::rotationLane).correctType().exists().optionalNotNull()
         validate(BSNoteV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            note.getData(diff) != null
+            note.index.orNull() == null || note.getData(diff) != null
         }
     }
     validate(BSDifficultyV4::colorNotesData).correctType().exists().optionalNotNull().validateForEach {
@@ -31,7 +31,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         }
         validate(BSBombV4::rotationLane).correctType().exists().optionalNotNull()
         validate(BSBombV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            bomb.getData(diff) != null
+            bomb.index.orNull() == null || bomb.getData(diff) != null
         }
     }
     validate(BSDifficultyV4::bombNotesData).correctType().exists().optionalNotNull().validateForEach {
@@ -44,7 +44,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         }
         validate(BSObstacleV4::rotationLane).correctType().exists().optionalNotNull()
         validate(BSObstacleV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            obstacle.getData(diff) != null
+            obstacle.index.orNull() == null || obstacle.getData(diff) != null
         }
     }
     validate(BSDifficultyV4::obstaclesData).correctType().exists().optionalNotNull().validateForEach {
@@ -64,13 +64,13 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         validate(BSArcV4::headRotationLane).correctType().exists().optionalNotNull()
         validate(BSArcV4::tailRotationLane).correctType().exists().optionalNotNull()
         validate(BSArcV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            arc.getData(diff) != null
+            arc.index.orNull() == null || arc.getData(diff) != null
         }
         validate(BSArcV4::headIndex).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            arc.getHead(diff) != null
+            arc.headIndex.orNull() == null || arc.getHead(diff) != null
         }
         validate(BSArcV4::tailIndex).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            arc.getTail(diff) != null
+            arc.headIndex.orNull() == null || arc.getTail(diff) != null
         }
     }
     validate(BSDifficultyV4::arcsData).correctType().exists().optionalNotNull().validateForEach {
@@ -88,10 +88,10 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         validate(BSChainV4::headRotationLane).correctType().exists().optionalNotNull()
         validate(BSChainV4::tailRotationLane).correctType().exists().optionalNotNull()
         validate(BSChainV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            chain.getData(diff) != null
+            chain.index.orNull() == null || chain.getData(diff) != null
         }
         validate(BSChainV4::headIndex).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            chain.getHead(diff) != null
+            chain.headIndex.orNull() == null || chain.getHead(diff) != null
         }
     }
     validate(BSDifficultyV4::chainsData).correctType().exists().optionalNotNull().validateForEach {
@@ -105,7 +105,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
             if (info.duration > 0) it.isBetween(0f, maxBeat)
         }
         validate(BSRotationsV4::index).correctType().exists().optionalNotNull().validate(IndexedConstraint) {
-            rotation.getData(diff) != null
+            rotation.index.orNull() == null || rotation.getData(diff) != null
         }
     }
     validate(BSDifficultyV4::spawnRotationsData).correctType().exists().optionalNotNull().validateForEach {

@@ -1,0 +1,201 @@
+{
+  "version": "4.0.0",
+  "colorNotes": [
+    {
+      "b": "",
+      "r": "",
+      "i": ""
+    },
+    {
+      "b": null,
+      "r": null,
+      "i": null
+    },
+    {},
+    0,
+    null
+  ],
+  "colorNotesData": [
+    {
+      "x": "",
+      "y": "",
+      "c": "",
+      "d": "",
+      "a": ""
+    },
+    {
+      "x": null,
+      "y": null,
+      "c": null,
+      "d": null,
+      "a": null
+    },
+    {},
+    0,
+    null
+  ],
+  "bombNotes": [
+    {
+      "b": "",
+      "r": "",
+      "i": ""
+    },
+    {
+      "b": null,
+      "r": null,
+      "i": null
+    },
+    {},
+    0,
+    null
+  ],
+  "bombNotesData": [
+    {
+      "x": "",
+      "y": ""
+    },
+    {
+      "x": null,
+      "y": null
+    },
+    {},
+    0,
+    null
+  ],
+  "obstacles": [
+    {
+      "b": "",
+      "r": "",
+      "i": ""
+    },
+    {
+      "b": null,
+      "r": null,
+      "i": null
+    },
+    {},
+    0,
+    null
+  ],
+  "obstaclesData": [
+    {
+      "d": "",
+      "x": "",
+      "y": "",
+      "w": "",
+      "h": ""
+    },
+    {
+      "d": null,
+      "x": null,
+      "y": null,
+      "w": null,
+      "h": null
+    },
+    {},
+    0,
+    null
+  ],
+  "arcs": [
+    {
+      "hb": "",
+      "tb": "",
+      "hr": "",
+      "tr": "",
+      "hi": "",
+      "ti": "",
+      "ai": ""
+    },
+    {
+      "hb": null,
+      "tb": null,
+      "hr": null,
+      "tr": null,
+      "hi": null,
+      "ti": null,
+      "ai": null
+    },
+    {},
+    0,
+    null
+  ],
+  "arcsData": [
+    {
+      "m": "",
+      "tm": "",
+      "a": ""
+    },
+    {
+      "m": null,
+      "tm": null,
+      "a": null
+    },
+    {},
+    0,
+    null
+  ],
+  "chains": [
+    {
+      "hb": "",
+      "tb": "",
+      "hr": "",
+      "tr": "",
+      "i": "",
+      "ci": ""
+    },
+    {
+      "hb": null,
+      "tb": null,
+      "hr": null,
+      "tr": null,
+      "i": null,
+      "ci": null
+    },
+    {},
+    0,
+    null
+  ],
+  "chainsData": [
+    {
+      "tx": "",
+      "ty": "",
+      "c": "",
+      "s": ""
+    },
+    {
+      "tx": null,
+      "ty": null,
+      "c": null,
+      "s": null
+    },
+    {},
+    0,
+    null
+  ],
+  "spawnRotations": [
+    {
+      "b": "",
+      "i": ""
+    },
+    {
+      "b": null,
+      "i": null
+    },
+    {},
+    0,
+    null
+  ],
+  "spawnRotationsData": [
+    {
+      "t": "",
+      "r": ""
+    },
+    {
+      "t": null,
+      "r": null
+    },
+    {},
+    0,
+    null
+  ]
+}
