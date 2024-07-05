@@ -6,14 +6,14 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.serialization.kotlinx.json.json
-import java.net.Inet4Address
 
 private fun setupClient(block: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {}) = HttpClient(Apache) {
     install(HttpTimeout)
-    install(ContentNegotiation) {
-        json(jsonIgnoreUnknown)
-    }
+
+    block()
 
     engine {
         customizeClient {
@@ -21,19 +21,16 @@ private fun setupClient(block: HttpClientConfig<ApacheEngineConfig>.() -> Unit =
             setMaxConnPerRoute(20)
         }
     }
-
-    block()
 }
 
-val client = setupClient()
-val localIps = (System.getenv("LOCAL_IPS") ?: "").split(",").filter { it.isNotEmpty() }.map { Inet4Address.getByName(it) }
-
-val randomClient = setupClient {
-    engine {
-        customizeRequest {
-            if (localIps.isNotEmpty()) {
-                setLocalAddress(localIps.random())
-            }
-        }
+val client = setupClient {
+    install(ContentNegotiation) {
+        val converter = JacksonConverter(jackson)
+        register(ContentType.Application.Json, converter)
+    }
+}
+val jsonClient = setupClient {
+    install(ContentNegotiation) {
+        json(jsonIgnoreUnknown)
     }
 }
