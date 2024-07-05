@@ -58,7 +58,7 @@ fun <E, Q : Any, T : OptionalProperty<Iterable<OptionalProperty<Q?>>?>> BMValida
 fun <E, T : OptionalProperty<Float?>> BMValidator<E>.BMProperty<T?>.isZero(): BMValidator<E>.BMProperty<T?> =
     this.validate(Equals(0f)) { it != null && it.validate { q -> q == null || q == 0f } }
 
-@JvmName("flotIsPositiveOrZero")
+@JvmName("floatIsPositiveOrZero")
 fun <E, T : OptionalProperty<Float?>> BMValidator<E>.BMProperty<T?>.isPositiveOrZero(): BMValidator<E>.BMProperty<T?> =
     isGreaterThanOrEqualTo(0f)
 
