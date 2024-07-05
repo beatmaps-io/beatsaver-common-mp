@@ -17,14 +17,6 @@ import io.beatmaps.common.api.HumanEnum
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 
-val inlineJackson: ObjectMapper = jacksonObjectMapper()
-    .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-    .registerModule(KotlinTimeModule())
-    .registerModule(JavaTimeModule())
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-
 val jackson: ObjectMapper = jacksonObjectMapper()
     .enable(SerializationFeature.INDENT_OUTPUT)
     .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
