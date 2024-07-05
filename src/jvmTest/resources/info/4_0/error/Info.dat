@@ -1,0 +1,49 @@
+{
+  "version": "4.0.0",
+  "song": {
+    "title": "",
+    "subTitle": "",
+    "author": ""
+  },
+  "audio": {
+    "songFilename": "missing.ogg",
+    "songDuration": 202.0,
+    "audioDataFilename": "BPMInfo.dat",
+    "bpm": 1200.0,
+    "lufs": 0.0,
+    "previewStartTime": -10.0,
+    "previewDuration": -10.0
+  },
+  "songPreviewFilename": "missing.ogg",
+  "coverImageFilename": "missing.png",
+  "environmentNames": [
+    "NotReal"
+  ],
+  "colorSchemes": [
+    {
+      "useOverride": true,
+      "colorSchemeName": "Weave",
+      "saberAColor": "red",
+      "saberBColor": "#D91616"
+    }
+  ],
+  "difficultyBeatmaps": [
+    {
+      "characteristic": "Bad",
+      "difficulty": "Mid",
+      "beatmapAuthors": {
+        "mappers": [
+          "MORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERSMORETHAN100CHARACTERS"
+        ],
+        "lighters": [
+        ]
+      },
+      "environmentNameIdx": 2,
+      "beatmapColorSchemeIdx": 2,
+      "noteJumpMovementSpeed": 0.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "missing.dat",
+      "lightshowDataFilename": "missing.dat"
+    }
+  ]
+}

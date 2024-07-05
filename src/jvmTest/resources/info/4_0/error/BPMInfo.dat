@@ -1,0 +1,56 @@
+{
+  "version": "4.0.0",
+  "songChecksum": "",
+  "songSampleCount": 1149214,
+  "songFrequency": 44100,
+  "bpmData": [
+    {
+      "si": null,
+      "ei": null,
+      "sb": null,
+      "eb": null
+    },
+    {
+      "si": "",
+      "ei": "",
+      "sb": "",
+      "eb": ""
+    },
+    {},
+    {
+      "si": 1000,
+      "ei": 100,
+      "sb": 100,
+      "eb": 10
+    },
+    {
+      "si": -100,
+      "ei": 11492140,
+      "sb": -5,
+      "eb": 10000
+    }
+  ],
+  "lufsData": [
+    {
+      "si": null,
+      "ei": null,
+      "l": null
+    },
+    {
+      "si": "",
+      "ei": "",
+      "l": ""
+    },
+    {},
+    {
+      "si": 1000,
+      "ei": 100,
+      "l": -1
+    },
+    {
+      "si": -1,
+      "ei": 11492140,
+      "l": 0
+    }
+  ]
+}

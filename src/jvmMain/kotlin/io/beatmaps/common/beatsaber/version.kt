@@ -1,6 +1,6 @@
 package io.beatmaps.common.beatsaber
 
-class Version(val version: String?) : Comparable<Version?> {
+actual class Version actual constructor(val version: String?) : Comparable<Version?> {
     private val numbers: IntArray by lazy {
         (version ?: "")
             .substringBefore('-')
@@ -10,9 +10,9 @@ class Version(val version: String?) : Comparable<Version?> {
             .toIntArray()
     }
 
-    val major = numbers.getOrElse(0) { 0 }
-    val minor = numbers.getOrElse(1) { 0 }
-    val patch = numbers.getOrElse(2) { 0 }
+    actual val major = numbers.getOrElse(0) { 0 }
+    actual val minor = numbers.getOrElse(1) { 0 }
+    actual val patch = numbers.getOrElse(2) { 0 }
 
     override fun compareTo(other: Version?): Int {
         if (other == null) return 1

@@ -17,6 +17,12 @@ class InfoTest21 {
     }
 
     @Test
+    fun with4_0() {
+        val ex = validateFolder("info/2_1/with4_0")
+        assertNull(ex)
+    }
+
+    @Test
     fun error() {
         val ex = validateFolder("info/2_1/error")
         assertNotNull(ex)

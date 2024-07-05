@@ -26,7 +26,7 @@ fun BMValidator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
             validate(BSSpecialEventsForKeyword::_specialEvents).correctType().exists().optionalNotNull().validateEach()
         }
     }
-    validate(BSDifficulty::_customData).correctType().optionalNotNull().validateOptional {
+    validate(BSDifficulty::customData).correctType().optionalNotNull().validateOptional {
         validate(BSCustomDataV2::_time).correctType().optionalNotNull()
         validate(BSCustomDataV2::_BPMChanges).correctType().optionalNotNull().validateWith(::validateBPMChange)
     }

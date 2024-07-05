@@ -35,10 +35,10 @@ class SchemaTest22 {
         val ex = validateFolder(
             "2_2/stats",
             listOf(
-                DiffValidator(ECharacteristic.Standard, EDifficulty.Easy) { diff, sli ->
+                DiffValidator(ECharacteristic.Standard, EDifficulty.Easy) { diff, lights, sli ->
                     assertEquals(1, diff.obstacleCount())
                     assertEquals(2, diff.noteCount())
-                    assertEquals(3, diff.eventCount())
+                    assertEquals(3, lights.eventCount())
                     assertEquals(1, diff.bombCount())
                     assertEquals(0, diff.arcCount())
                     assertEquals(0, diff.chainCount())

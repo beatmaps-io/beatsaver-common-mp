@@ -4,17 +4,23 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.properties.ReadOnlyProperty
 
 interface BSCustomData {
-    val _customData: OptionalProperty<Any?>
+    val customData: OptionalProperty<Any?>
 
-    fun getCustomData() = _customData.let { cd ->
+    fun getCustomData() = customData.let { cd ->
         when {
             cd is OptionalProperty.Present && cd.value is JsonObject -> cd.value
             else -> mapOf<String, String>()
@@ -32,17 +38,34 @@ fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProp
 fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, Int> =
     ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Int.MIN_VALUE) }
 
-fun <T> OptionalProperty<List<OptionalProperty<T?>>?>.orEmpty() = or(listOf()).mapNotNull { it.orNull() }
+fun <T> OptionalProperty<List<OptionalProperty<T?>>?>?.orEmpty() = or(listOf()).mapNotNull { it.orNull() }
 
-sealed interface BSDiff : BSCustomData {
+interface BSVersioned {
     val version: OptionalProperty<String?>
+}
+
+sealed interface BSDiff : BSCustomData, BSVersioned {
     fun noteCount(): Int
     fun bombCount(): Int
     fun arcCount(): Int
     fun chainCount(): Int
-    fun eventCount(): Int
     fun obstacleCount(): Int
     fun songLength(): Float
     fun maxScore(): Int
     fun mappedNps(sli: SongLengthInfo): Float
+
+    companion object {
+        fun parse(element: JsonElement) =
+            element.jsonObject.let { obj ->
+                if (obj.containsKey("version")) {
+                    val version = Version(obj["version"]?.jsonPrimitive?.contentOrNull)
+                    when (version.major) {
+                        4 -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV4>(element)
+                        else -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(element)
+                    }
+                } else {
+                    jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(element)
+                }
+            }
+    }
 }
