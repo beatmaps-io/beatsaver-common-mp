@@ -1,0 +1,15 @@
+{
+  "version": "4.0.0",
+  "colorNotes": null,
+  "colorNotesData": null,
+  "bombNotes": null,
+  "bombNotesData": null,
+  "obstacles": null,
+  "obstaclesData": null,
+  "arcs": null,
+  "arcsData": null,
+  "chains": null,
+  "chainsData": null,
+  "spawnRotations": null,
+  "spawnRotationsData": null
+}

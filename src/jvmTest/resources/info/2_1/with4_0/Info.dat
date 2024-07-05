@@ -1,0 +1,68 @@
+{
+  "_version": "2.1.0",
+  "_songName": "A",
+  "_songSubName": "",
+  "_songAuthorName": "",
+  "_levelAuthorName": "",
+  "_beatsPerMinute": 120.0,
+  "_songTimeOffset": 0.0,
+  "_shuffle": 0.0,
+  "_shufflePeriod": 0.0,
+  "_previewStartTime": 0.0,
+  "_previewDuration": 0.0,
+  "_songFilename": "click.ogg",
+  "_coverImageFilename": "click.png",
+  "_environmentName": "LinkinPark2Environment",
+  "_allDirectionsEnvironmentName": "GlassDesertEnvironment",
+  "_environmentNames": [
+    "TriangleEnvironment",
+    "DragonsEnvironment",
+    "OriginsEnvironment"
+  ],
+  "_colorSchemes": [
+    {
+      "useOverride": true,
+      "colorScheme": {
+        "colorSchemeId": "example",
+        "obstaclesColor": {
+          "r": 0.2,
+          "g": 0.8,
+          "b": 0.2,
+          "a": 2.0
+        }
+      }
+    },
+    {
+      "useOverride": true,
+      "colorScheme": {
+        "colorSchemeId": "environment",
+        "environmentColor0": {
+          "r": 0.7,
+          "g": 0.1,
+          "b": 0.4
+        },
+        "environmentColor1": {
+          "r": 0.9,
+          "g": 0.9,
+          "b": 0.9
+        }
+      }
+    }
+  ],
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Easy",
+          "_difficultyRank": 1,
+          "_beatmapFilename": "Easy.dat",
+          "_noteJumpMovementSpeed": 0.0,
+          "_noteJumpStartBeatOffset": 0.0,
+          "_beatmapColorSchemeIdx": 1,
+          "_environmentNameIdx": 2
+        }
+      ]
+    }
+  ]
+}

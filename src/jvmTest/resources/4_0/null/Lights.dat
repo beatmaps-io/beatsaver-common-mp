@@ -1,0 +1,21 @@
+{
+  "version": "4.0.0",
+  "basicEvents": null,
+  "basicEventsData": null,
+  "colorBoostEvents": null,
+  "colorBoostEventsData": null,
+  "waypoints": null,
+  "waypointsData": null,
+  "basicEventTypesWithKeywords": null,
+  "eventBoxGroups": null,
+  "indexFilters": null,
+  "lightColorEventBoxes": null,
+  "lightColorEvents": null,
+  "lightRotationEventBoxes": null,
+  "lightRotationEvents": null,
+  "lightTranslationEventBoxes": null,
+  "lightTranslationEvents": null,
+  "fxEventBoxes": null,
+  "floatFxEvents": null,
+  "useNormalEventsAsCompatibleEvents": null
+}

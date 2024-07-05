@@ -1,0 +1,63 @@
+{
+  "_version": "2.2.0",
+  "_notes": [
+    {
+      "_time": 1,
+      "_lineIndex": 2,
+      "_lineLayer": 2,
+      "_type": 1,
+      "_cutDirection": 2
+    },
+    {
+      "_time": 2,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 0,
+      "_cutDirection": 2
+    },
+    {
+      "_time": 2.5,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 3,
+      "_cutDirection": 2,
+      "_customData": {
+        "_fake": true
+      }
+    },
+    {
+      "_time": 3.0,
+      "_lineIndex": 1,
+      "_lineLayer": 1,
+      "_type": 3,
+      "_cutDirection": 2
+    }
+  ],
+  "_events": [
+    {
+      "_time": 1.0,
+      "_value": 2,
+      "_type": 1
+    },
+    {
+      "_time": 32.0,
+      "_value": 0,
+      "_type": 0
+    },
+    {
+      "_time": 64.0,
+      "_value": 10,
+      "_type": 10
+    }
+  ],
+  "_obstacles": [
+    {
+      "_time": 1.0,
+      "_duration": 2.0,
+      "_lineIndex": 2,
+      "_width": 2,
+      "_type": 1
+    }
+  ],
+  "_waypoints": []
+}

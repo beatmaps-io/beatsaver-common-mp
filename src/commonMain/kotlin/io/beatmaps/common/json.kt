@@ -37,7 +37,7 @@ sealed class OptionalProperty<out T> {
     abstract fun orNull(): T?
 }
 
-fun <T : Any> OptionalProperty<T?>.or(v: T) = orNull() ?: v
+fun <T : Any> OptionalProperty<T?>?.or(v: T) = this?.orNull() ?: v
 
 @Suppress("UNCHECKED_CAST")
 open class OptionalPropertySerializer<T>(

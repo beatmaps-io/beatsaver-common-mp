@@ -1,17 +1,14 @@
 package io.beatmaps.common.zip
 
+import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSDifficulty
-import io.beatmaps.common.beatsaber.BSDifficultyV3
-import io.beatmaps.common.beatsaber.DifficultyBeatmap
-import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
-import io.beatmaps.common.beatsaber.MapInfo
+import io.beatmaps.common.beatsaber.BSLights
+import io.beatmaps.common.beatsaber.BaseMapInfo
+import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
+import io.beatmaps.common.beatsaber.PreviewInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
-import io.beatmaps.common.or
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonObject
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.FileHeader
@@ -33,9 +30,10 @@ import javax.sound.sampled.AudioSystem
 data class ExtractedInfo(
     val allowedFiles: List<String>,
     val toHash: ByteArrayOutputStream,
-    var mapInfo: MapInfo,
+    var mapInfo: BaseMapInfo,
     val score: Short,
-    val diffs: MutableMap<DifficultyBeatmapSet, MutableMap<DifficultyBeatmap, BSDiff>> = mutableMapOf(),
+    val diffs: MutableMap<ECharacteristic, MutableMap<DifficultyBeatmapInfo, BSDiff>> = mutableMapOf(),
+    val lights: MutableMap<ECharacteristic, MutableMap<DifficultyBeatmapInfo, BSLights>> = mutableMapOf(),
     var duration: Float = 0f,
     var thumbnail: ByteArrayOutputStream? = null,
     var preview: ByteArrayOutputStream? = null,
@@ -43,7 +41,7 @@ data class ExtractedInfo(
 )
 
 interface IMapScorer {
-    fun scoreMap(infoFile: MapInfo, audio: File, block: (String) -> BSDiff): Short
+    fun scoreMap(infoFile: BaseMapInfo, audio: File, block: (String) -> BSDiff): Short
 }
 interface IMapScorerProvider {
     fun create(): IMapScorer
@@ -80,9 +78,12 @@ class ZipPath(private val fs: ZipFile, private val originalPath: String, val hea
 
 class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directories: Set<String>) : ZipHelper(fs, filesOriginalCase, directories) {
     val audioFile: File
+    val previewAudioFile: File
+    private val previewInfo: PreviewInfo = info.getPreviewInfo()
 
     init {
-        val path = fromInfo(info._songFilename.or(""))
+        val songFilename = info.getSongFilename() ?: ""
+        val path = fromInfo(songFilename)
         audioFile = File.createTempFile("audio", ".ogg").also { file ->
             file.deleteOnExit()
 
@@ -92,15 +93,30 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
                 }
             }
         }
+        previewAudioFile = if (previewInfo.filename == songFilename) {
+            audioFile
+        } else {
+            val previewPath = fromInfo(previewInfo.filename)
+            File.createTempFile("preview", ".ogg").also { file ->
+                file.deleteOnExit()
+
+                previewPath?.inputStream()?.use { iss ->
+                    file.outputStream().use {
+                        iss.copyTo(it, sizeLimit = 50 * 1024 * 1024)
+                    }
+                }
+            }
+        }
     }
 
-    fun generatePreview() = AudioSystem.getAudioInputStream(audioFile).use { oggStream ->
-        convertToPCM(
-            oggStream,
-            info._previewStartTime.or(0f),
-            10.2f
-        ).use(::encodeToMp3)
-    }
+    fun generatePreview() =
+        AudioSystem.getAudioInputStream(previewAudioFile).use { oggStream ->
+            convertToPCM(
+                oggStream,
+                previewInfo.start,
+                10.2f
+            ).use(::encodeToMp3)
+        }
 
     override fun scoreMap(): Short =
         ServiceLoader.load(IMapScorerProvider::class.java)
@@ -141,6 +157,9 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
     }
 
     override fun close() {
+        if (audioFile != previewAudioFile) {
+            Files.delete(previewAudioFile.toPath())
+        }
         Files.delete(audioFile.toPath())
     }
 }
@@ -159,7 +178,7 @@ open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>
 
             readFromBytes(byteArrayOutputStream.toByteArray()).let { str ->
                 jsonIgnoreUnknown.parseToJsonElement(str).let { jsonElement ->
-                    jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(jsonElement)
+                    BaseMapInfo.parse(jsonElement)
                 }
             }
         }
@@ -173,11 +192,7 @@ open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>
         (fromInfo(path) ?: throw ZipHelperException("Difficulty file missing")).inputStream().buffered().use { stream ->
             val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromStream(stream))
 
-            if (jsonElement.jsonObject.containsKey("version")) {
-                jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(jsonElement)
-            } else {
-                jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(jsonElement)
-            }
+            BSDiff.parse(jsonElement)
         }
     }
 
