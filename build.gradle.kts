@@ -91,6 +91,8 @@ kotlin {
                 implementation("org.apache.commons:commons-email:1.5")
 
                 // Serialization
+                implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 

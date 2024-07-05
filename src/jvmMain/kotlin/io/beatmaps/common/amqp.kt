@@ -20,6 +20,7 @@ import pl.jutupe.ktor_rabbitmq.rabbitConsumer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.logging.Logger
+import kotlin.reflect.KClass
 import kotlin.reflect.full.starProjectedType
 
 val es: ExecutorService = Executors.newFixedThreadPool(4)
@@ -29,7 +30,7 @@ val rabbitHost: String = System.getenv("RABBITMQ_HOST") ?: ""
 val rabbitPort: String = System.getenv("RABBITMQ_PORT") ?: "5672"
 val rabbitUser: String = System.getenv("RABBITMQ_USER") ?: "guest"
 val rabbitPass: String = System.getenv("RABBITMQ_PASS") ?: "guest"
-val rabbitVhost: String = System.getenv("RABBITMQ_VHOST") ?: ""
+val rabbitVhost: String = System.getenv("RABBITMQ_VHOST") ?: "%2F"
 private val rabbitLogger = Logger.getLogger("bmio.RabbitMQ")
 val genericQueueConfig = mapOf("x-dead-letter-exchange" to "beatmaps.dlq")
 
@@ -75,6 +76,24 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     serializer: KSerializer<T>,
     prefetchCount: Int = 20,
     rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
+) = consumeAck<T>(queue, { message ->
+    json.decodeFromString(serializer, message)
+}, prefetchCount, rabbitDeliverCallback)
+
+fun <T : Any> RabbitMQInstance.consumeAck(
+    queue: String,
+    clazz: KClass<T>,
+    prefetchCount: Int = 20,
+    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
+) = consumeAck<T>(queue, { message ->
+    jackson.readValue(message, clazz.javaObjectType)
+}, prefetchCount, rabbitDeliverCallback)
+
+fun <T : Any> RabbitMQInstance.consumeAck(
+    queue: String,
+    serializer: (String) -> T,
+    prefetchCount: Int = 20,
+    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
 ) {
     val logger = Logger.getLogger("bmio.RabbitMQ.consumeAck")
     getConnection().createChannel().apply {
@@ -85,7 +104,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
             DeliverCallback { _, message ->
                 runBlocking(es.asCoroutineDispatcher()) {
                     runCatching {
-                        val mappedEntity = json.decodeFromString(serializer, message.body.toString(Charsets.UTF_8))
+                        val mappedEntity = serializer(message.body.toString(Charsets.UTF_8))
 
                         rabbitDeliverCallback.invoke(message.envelope.routingKey, mappedEntity)
 
