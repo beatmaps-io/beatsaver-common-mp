@@ -34,15 +34,20 @@ val rabbitVhost: String = System.getenv("RABBITMQ_VHOST") ?: "%2F"
 private val rabbitLogger = Logger.getLogger("bmio.RabbitMQ")
 val genericQueueConfig = mapOf("x-dead-letter-exchange" to "beatmaps.dlq")
 
-fun RabbitMQConfiguration.setupAMQP(block: Channel.() -> Unit = {}) = apply {
+fun RabbitMQConfiguration.setupAMQP(useJackson: Boolean = true, block: Channel.() -> Unit = {}) = apply {
     uri = "amqp://$rabbitUser:$rabbitPass@$rabbitHost:$rabbitPort/$rabbitVhost"
     connectionName = hostname
 
-    serialize { it, type -> json.encodeToString(serializer(type.starProjectedType), it).encodeToByteArray() }
-    // This isn't used afaik
-    deserialize { bytes, type ->
-        val serializer = serializer(type.starProjectedType)
-        json.decodeFromString(serializer, bytes.decodeToString())!!
+    if (useJackson) {
+        serialize { it, _ -> jackson.writeValueAsBytes(it) }
+        deserialize { bytes, type -> jackson.readValue(bytes, type.javaObjectType) }
+    } else {
+        serialize { it, type -> json.encodeToString(serializer(type.starProjectedType), it).encodeToByteArray() }
+        // This isn't used afaik
+        deserialize { bytes, type ->
+            val serializer = serializer(type.starProjectedType)
+            json.decodeFromString(serializer, bytes.decodeToString())!!
+        }
     }
 
     initialize(block)
