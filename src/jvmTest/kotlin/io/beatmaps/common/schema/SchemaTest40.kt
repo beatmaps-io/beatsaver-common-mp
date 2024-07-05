@@ -3,17 +3,12 @@ package io.beatmaps.common.schema
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.CorrectType
-import io.beatmaps.common.beatsaber.CutDirection
-import io.beatmaps.common.beatsaber.IndexedConstraint
-import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation4
 import io.beatmaps.common.schema.SchemaCommon.violation4L
 import org.junit.Test
-import org.valiktor.constraints.Between
 import org.valiktor.constraints.In
-import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotNull
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -361,7 +356,7 @@ class SchemaTest40 {
                 violation4<NodePresent>("spawnRotationsData[2].t(executionTime)"),
                 violation4<NodePresent>("spawnRotationsData[2].r(rotation)"),
                 violation4<CorrectType>("spawnRotationsData[3]"),
-                violation4<NotNull>("spawnRotationsData[4]"),
+                violation4<NotNull>("spawnRotationsData[4]")
             ),
             ex.constraintViolations
         )

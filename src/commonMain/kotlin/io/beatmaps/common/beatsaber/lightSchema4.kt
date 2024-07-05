@@ -35,7 +35,6 @@ data class BSLightingV4(
 ) : BSLights {
     override fun eventCount() = basicEvents.orEmpty().size +
         colorBoostEvents.orEmpty().size + eventBoxGroups.orEmpty().sumOf { it.eventBoxes.orEmpty().size }
-
 }
 
 typealias BSIndexedLightV4<T> = BSIndexedGeneric<BSLightingV4, T>
