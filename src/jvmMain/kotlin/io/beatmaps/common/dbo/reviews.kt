@@ -45,7 +45,7 @@ object ReviewReply : IntIdTable("review_reply", "replyId") {
 data class ReviewReplyDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<ReviewReplyDao>(ReviewReply)
     val review by ReviewDao referencedOn ReviewReply.reviewId
-    val user by UserDao referencedOn  ReviewReply.userId
+    val user by UserDao referencedOn ReviewReply.userId
     val text by ReviewReply.text
     val createdAt by ReviewReply.createdAt
     val updatedAt by ReviewReply.updatedAt
