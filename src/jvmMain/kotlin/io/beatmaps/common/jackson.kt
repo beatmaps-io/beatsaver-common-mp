@@ -16,6 +16,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.beatmaps.common.api.HumanEnum
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
 
 val jackson: ObjectMapper = jacksonObjectMapper()
     .enable(SerializationFeature.INDENT_OUTPUT)
@@ -35,6 +37,17 @@ class KotlinTimeModule : SimpleModule() {
         addSerializer(MapTag::class.java, MapTagsSerializer.INSTANCE)
         addDeserializer(MapTag::class.java, MapTagsDeserializer.INSTANCE)
         addDeserializer(LocalDate::class.java, LocalDateDeserializer.INSTANCE)
+        addSerializer(JsonElement::class.java, JsonElementSerializer.INSTANCE)
+    }
+}
+
+class JsonElementSerializer : StdSerializer<JsonElement>(JsonElement::class.java) {
+    companion object {
+        val INSTANCE: JsonElementSerializer = JsonElementSerializer()
+    }
+
+    override fun serialize(value: JsonElement?, gen: JsonGenerator, serializers: SerializerProvider) {
+        gen.writeRaw(": " + json.encodeToString(value))
     }
 }
 
