@@ -1,5 +1,6 @@
 package io.beatmaps.common.zip
 
+import io.beatmaps.common.FileLimits
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSLights
@@ -89,7 +90,7 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
 
             path?.inputStream()?.use { iss ->
                 file.outputStream().use {
-                    iss.copyTo(it, sizeLimit = 50 * 1024 * 1024)
+                    iss.copyTo(it, sizeLimit = FileLimits.SONG_LIMIT)
                 }
             }
         }
@@ -102,7 +103,7 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
 
                 previewPath?.inputStream()?.use { iss ->
                     file.outputStream().use {
-                        iss.copyTo(it, sizeLimit = 50 * 1024 * 1024)
+                        iss.copyTo(it, sizeLimit = FileLimits.SONG_LIMIT)
                     }
                 }
             }
@@ -174,7 +175,7 @@ open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>
     val info = run {
         infoPath.inputStream().use {
             val byteArrayOutputStream = ByteArrayOutputStream()
-            it.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
+            it.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.DIFF_LIMIT)
 
             readFromBytes(byteArrayOutputStream.toByteArray()).let { str ->
                 jsonIgnoreUnknown.parseToJsonElement(str).let { jsonElement ->

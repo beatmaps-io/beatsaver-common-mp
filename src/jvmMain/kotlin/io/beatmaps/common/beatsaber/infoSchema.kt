@@ -3,6 +3,7 @@
 package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.AdditionalProperties
+import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.copyTo
@@ -104,7 +105,7 @@ abstract class BaseMapInfo {
     protected fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
         getFile(audioDataFilename)?.inputStream()?.use { stream ->
             val byteArrayOutputStream = ByteArrayOutputStream()
-            stream.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
+            stream.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.SONG_LIMIT)
 
             jsonIgnoreUnknown.parseToJsonElement(readFromBytes(byteArrayOutputStream.toByteArray())).let { jsonElement ->
                 BPMInfoBase.parse(jsonElement)
