@@ -64,10 +64,10 @@ fun Application.rabbitOptional(configuration: RabbitMQInstance.() -> Unit) {
 fun Application.rb() = if (rabbitHost.isNotEmpty()) { attributes[RabbitMQ.RabbitMQKey] } else null
 fun ApplicationCall.rb() = application.rb()
 
-inline fun <reified T> Application.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
-    rb()?.publish(exchange, routingKey, props, json.encodeToString(body))
+inline fun <reified T : Any> Application.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
+    rb()?.publish(exchange, routingKey, props, body)
 
-inline fun <reified T> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
+inline fun <reified T : Any> ApplicationCall.pub(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) =
     application.pub(exchange, routingKey, props, body)
 
 private fun RabbitMQInstance.getConnection() =
