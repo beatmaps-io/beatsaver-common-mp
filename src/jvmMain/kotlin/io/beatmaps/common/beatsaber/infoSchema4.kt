@@ -2,6 +2,7 @@
 
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.api.ECharacteristic
@@ -217,7 +218,7 @@ data class DifficultyBeatmapV4(
 ) : DifficultyBeatmapInfo, JAdditionalProperties() {
     private fun extractAndHash(stream: InputStream?, info: ExtractedInfo): JsonElement {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        stream?.copyTo(byteArrayOutputStream, sizeLimit = 50 * 1024 * 1024)
+        stream?.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.DIFF_LIMIT)
         val bytes = byteArrayOutputStream.toByteArray()
 
         info.toHash.write(bytes)
