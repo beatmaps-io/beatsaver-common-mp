@@ -14,6 +14,10 @@ val json = Json {
     prettyPrint = true
 }
 
+val jsonWithDefaults = Json(json) {
+    encodeDefaults = true
+}
+
 val jsonIgnoreUnknown = Json(json) {
     ignoreUnknownKeys = true
     prettyPrintIndent = "  "
