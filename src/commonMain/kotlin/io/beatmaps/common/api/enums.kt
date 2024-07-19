@@ -76,6 +76,7 @@ enum class EMapState {
 enum class EAlertType(val color: String, val icon: String, private val readableName: String? = null) {
     Deletion("danger", "fa-exclamation-circle"),
     Review("info", "fa-comment"),
+    ReviewReply("info", "fa-reply"),
     ReviewDeletion("danger", "fa-comment-slash", "Review Deletion"),
     MapRelease("info", "fa-map", "Map Release"),
     MapCurated("info", "fa-award", "Followed Curation"),
