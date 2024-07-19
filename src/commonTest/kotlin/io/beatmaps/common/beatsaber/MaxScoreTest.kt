@@ -3,7 +3,7 @@ package io.beatmaps.common.beatsaber
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal class MaxScoreTest {
+class MaxScoreTest {
     @Test
     fun testFirstTick() {
         val test = ScoreMultiplierCounter()

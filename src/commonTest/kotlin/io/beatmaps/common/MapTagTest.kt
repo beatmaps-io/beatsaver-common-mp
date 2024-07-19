@@ -3,7 +3,7 @@ package io.beatmaps.common
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal class MapTagTest {
+class MapTagTest {
     @Test
     fun mapTagToQueryTest() {
         val tags: MapTagSet = mapOf(
