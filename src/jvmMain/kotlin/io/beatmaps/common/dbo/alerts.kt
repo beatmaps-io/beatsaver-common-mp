@@ -3,6 +3,7 @@ package io.beatmaps.common.dbo
 import io.beatmaps.common.api.EAlertType
 import io.beatmaps.common.db.NowExpression
 import io.beatmaps.common.db.postgresEnumeration
+import io.beatmaps.common.util.TextHelper
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -38,6 +39,9 @@ object Alert : IntIdTable("alert", "alertId") {
 
     fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientId: Int) =
         insert(alertHead, alertBody, alertType, listOf(recipientId))
+
+    fun forDescription(text: String) =
+        TextHelper.ellipsize(text.replace(Regex("\n+"), " "), 100)
 }
 
 data class AlertDao(val key: EntityID<Int>) : IntEntity(key) {
