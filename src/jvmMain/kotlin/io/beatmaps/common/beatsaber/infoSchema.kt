@@ -36,9 +36,9 @@ data class ImageInfo(val format: String, val width: Int, val height: Int)
 
 fun <T> ParseResult<T>.check() = when (this) {
     is ParseResult.MultipleVersions -> {
-        throw ConstraintViolationException(setOf(
-            BMConstraintViolation(listOf(BMPropertyInfo("version/_version")), null, MultipleVersionsConstraint)
-        ))
+        throw ConstraintViolationException(
+            setOf(BMConstraintViolation(listOf(BMPropertyInfo("version/_version")), null, MultipleVersionsConstraint))
+        )
     }
     is ParseResult.Success -> data
 }

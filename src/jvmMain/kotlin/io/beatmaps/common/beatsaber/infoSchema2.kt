@@ -20,7 +20,6 @@ import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import org.valiktor.ConstraintViolationException
-import org.valiktor.DefaultConstraintViolation
 import org.valiktor.constraints.In
 import java.io.ByteArrayOutputStream
 import java.io.File
