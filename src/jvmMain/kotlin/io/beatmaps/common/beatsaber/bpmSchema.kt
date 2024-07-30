@@ -92,9 +92,9 @@ abstract class BPMInfoBase : SongLengthInfo {
 
     companion object {
         fun parse(element: JsonElement) =
-            if (element.jsonObject.containsKey("version")) {
+            element.jsonObject.parseBS({
                 jsonIgnoreUnknown.decodeFromJsonElement<BPMInfoV4>(element)
-            } else {
+            }) {
                 jsonIgnoreUnknown.decodeFromJsonElement<BPMInfo>(element)
             }
     }

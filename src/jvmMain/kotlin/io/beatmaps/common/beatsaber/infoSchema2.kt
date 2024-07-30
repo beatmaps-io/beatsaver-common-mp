@@ -19,6 +19,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import org.valiktor.ConstraintViolationException
+import org.valiktor.DefaultConstraintViolation
 import org.valiktor.constraints.In
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -314,28 +316,30 @@ data class DifficultyBeatmap(
 
         info.toHash.write(bytes)
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromBytes(bytes))
-        val diff = BSDiff.parse(jsonElement)
+        try {
+            val diff = BSDiff.parse(jsonElement).check()
 
-        info.diffs.getOrPut(characteristic.enumValue()) {
-            mutableMapOf()
-        }[this] = diff
-
-        if (diff is BSLights) {
-            info.lights.getOrPut(characteristic.enumValue()) {
+            info.diffs.getOrPut(characteristic.enumValue()) {
                 mutableMapOf()
             }[this] = diff
-        }
 
-        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
-        parent.addConstraintViolations(
-            when (diff) {
-                is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
-                is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
-            }.constraintViolations.map { constraint ->
-                constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
+            if (diff is BSLights) {
+                info.lights.getOrPut(characteristic.enumValue()) {
+                    mutableMapOf()
+                }[this] = diff
             }
-        )
+
+            val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
+            parent.addConstraintViolations(
+                when (diff) {
+                    is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
+                    is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
+                    is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
+                }.constraintViolations.addParent(path?.fileName)
+            )
+        } catch (e: ConstraintViolationException) {
+            parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        }
     }
 
     fun validate(

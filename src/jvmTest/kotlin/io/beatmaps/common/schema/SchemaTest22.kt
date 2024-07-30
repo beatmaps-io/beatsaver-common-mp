@@ -4,6 +4,7 @@ import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.CutDirection
+import io.beatmaps.common.beatsaber.MultipleVersionsConstraint
 import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation
@@ -247,6 +248,19 @@ class SchemaTest22 {
                 violation<NotNull>("_specialEventsKeywordFilters"),
                 violation<NotNull>("_customData"),
                 violation<NotNull>("_BPMChanges")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun as3_2() {
+        val ex = validateFolder("2_2/as3_2")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf(
+                violation<MultipleVersionsConstraint>("version/_version")
             ),
             ex.constraintViolations
         )
