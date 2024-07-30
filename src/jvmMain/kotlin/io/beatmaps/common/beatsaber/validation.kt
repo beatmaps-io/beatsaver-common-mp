@@ -5,6 +5,7 @@ import org.valiktor.Constraint
 object CorrectType : Constraint
 object NodePresent : Constraint
 object NodeNotPresent : Constraint
+object MultipleVersionsConstraint : Constraint
 
 object InFiles : Constraint
 object ImageSquare : Constraint

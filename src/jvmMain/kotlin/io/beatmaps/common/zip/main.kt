@@ -8,6 +8,7 @@ import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
 import io.beatmaps.common.beatsaber.PreviewInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.check
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import net.lingala.zip4j.ZipFile
@@ -179,7 +180,7 @@ open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>
 
             readFromBytes(byteArrayOutputStream.toByteArray()).let { str ->
                 jsonIgnoreUnknown.parseToJsonElement(str).let { jsonElement ->
-                    BaseMapInfo.parse(jsonElement)
+                    BaseMapInfo.parse(jsonElement).check()
                 }
             }
         }
@@ -193,7 +194,7 @@ open class ZipHelper(private val fs: ZipFile, val filesOriginalCase: Set<String>
         (fromInfo(path) ?: throw ZipHelperException("Difficulty file missing")).inputStream().buffered().use { stream ->
             val jsonElement = jsonIgnoreUnknown.parseToJsonElement(readFromStream(stream))
 
-            BSDiff.parse(jsonElement)
+            BSDiff.parse(jsonElement).check()
         }
     }
 

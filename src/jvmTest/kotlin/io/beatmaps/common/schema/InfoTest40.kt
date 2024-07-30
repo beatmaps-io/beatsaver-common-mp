@@ -3,6 +3,7 @@ package io.beatmaps.common.schema
 import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.InFiles
 import io.beatmaps.common.beatsaber.MetadataLength
+import io.beatmaps.common.beatsaber.MultipleVersionsConstraint
 import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.bpmViolation
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
@@ -31,6 +32,19 @@ class InfoTest40 {
     fun with2_0() {
         val ex = validateFolder("info/4_0/with2_0")
         assertNull(ex)
+    }
+
+    @Test
+    fun as2_0() {
+        val ex = validateFolder("info/4_0/as2_0")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf(
+                infoViolation<MultipleVersionsConstraint>("version/_version")
+            ),
+            ex.constraintViolations
+        )
     }
 
     @Test

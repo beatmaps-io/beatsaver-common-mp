@@ -20,6 +20,7 @@ import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
+import org.valiktor.ConstraintViolationException
 import org.valiktor.constraints.In
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -231,20 +232,23 @@ data class DifficultyBeatmapV4(
         info: ExtractedInfo
     ) = path?.inputStream().use { stream ->
         val jsonElement = extractAndHash(stream, info)
-        val diff = BSDiff.parse(jsonElement)
 
-        info.diffs.getOrPut(charEnum()) { mutableMapOf() }[this] = diff
+        try {
+            val diff = BSDiff.parse(jsonElement).check()
 
-        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
-        parent.addConstraintViolations(
-            when (diff) {
-                is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
-                is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
-            }.constraintViolations.map { constraint ->
-                constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
-            }
-        )
+            info.diffs.getOrPut(charEnum()) { mutableMapOf() }[this] = diff
+
+            val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
+            parent.addConstraintViolations(
+                when (diff) {
+                    is BSDifficulty -> BMValidator(diff).apply { this.validate(info, maxBeat) }
+                    is BSDifficultyV3 -> BMValidator(diff).apply { this.validateV3(info, diff, maxBeat, Version(diff.version.orNull())) }
+                    is BSDifficultyV4 -> BMValidator(diff).apply { this.validateV4(info, diff, maxBeat, Version(diff.version.orNull())) }
+                }.constraintViolations.addParent(path?.fileName)
+            )
+        } catch (e: ConstraintViolationException) {
+            parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        }
     }
 
     private fun <E, T> lightsValid(
@@ -253,20 +257,25 @@ data class DifficultyBeatmapV4(
         info: ExtractedInfo
     ) = path?.inputStream().use { stream ->
         val jsonElement = extractAndHash(stream, info)
-        val lights = BSLights.parse(jsonElement)
 
-        info.lights.getOrPut(charEnum()) { mutableMapOf() }[this] = lights
+        try {
+            val lights = BSLights.parse(jsonElement).check()
 
-        val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
-        parent.addConstraintViolations(
-            when (lights) {
-                is BSDifficulty -> BMValidator(lights).apply { this.validate(info, maxBeat) }
-                is BSDifficultyV3 -> BMValidator(lights).apply { this.validateV3(info, lights, maxBeat, Version(lights.version.orNull())) }
-                is BSLightingV4 -> BMValidator(lights).apply { this.validateV4(info, lights, maxBeat, Version(lights.version.orNull())) }
-            }.constraintViolations.map { constraint ->
-                constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
-            }
-        )
+            info.lights.getOrPut(charEnum()) { mutableMapOf() }[this] = lights
+
+            val maxBeat = info.songLengthInfo?.maximumBeat(info.mapInfo.getBpm() ?: 0f) ?: 0f
+            parent.addConstraintViolations(
+                when (lights) {
+                    is BSDifficulty -> BMValidator(lights).apply { this.validate(info, maxBeat) }
+                    is BSDifficultyV3 -> BMValidator(lights).apply { this.validateV3(info, lights, maxBeat, Version(lights.version.orNull())) }
+                    is BSLightingV4 -> BMValidator(lights).apply { this.validateV4(info, lights, maxBeat, Version(lights.version.orNull())) }
+                }.constraintViolations.map { constraint ->
+                    constraint.addParent(BMPropertyInfo("`${path?.fileName}`"))
+                }
+            )
+        } catch (e: ConstraintViolationException) {
+            parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        }
     }
 
     fun validate(

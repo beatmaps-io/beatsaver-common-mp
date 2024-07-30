@@ -6,6 +6,7 @@ import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSLights
 import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.check
 import io.beatmaps.common.beatsaber.toJson
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
@@ -28,9 +29,10 @@ object SchemaCommon {
 
         val str = readFromBytes(info.readAllBytes()).replace("\r\n", "\n")
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(str)
-        val mapInfo = BaseMapInfo.parse(jsonElement)
 
         try {
+            val mapInfo = BaseMapInfo.parse(jsonElement).check()
+
             ByteArrayOutputStream().use { toHash ->
                 val extractedInfo = ExtractedInfo(files, toHash, mapInfo, 0)
                 mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
@@ -58,12 +60,12 @@ object SchemaCommon {
                     it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
                 }
             }
+
+            // Check encoded version matches original
+            assertEquals(str, mapInfo.toJson())
         } catch (e: ConstraintViolationException) {
             return e
         }
-
-        // Check encoded version matches original
-        assertEquals(str, mapInfo.toJson())
 
         return null
     }

@@ -34,6 +34,19 @@ abstract class JAdditionalProperties : AdditionalProperties {
 
 data class ImageInfo(val format: String, val width: Int, val height: Int)
 
+fun <T> ParseResult<T>.check() = when (this) {
+    is ParseResult.MultipleVersions -> {
+        throw ConstraintViolationException(
+            setOf(BMConstraintViolation(listOf(BMPropertyInfo("version/_version")), null, MultipleVersionsConstraint))
+        )
+    }
+    is ParseResult.Success -> data
+}
+
+fun Iterable<ConstraintViolation>.addParent(fileName: String?) = this.map { constraint ->
+    constraint.addParent(BMPropertyInfo("`$fileName`"))
+}
+
 abstract class BaseMapInfo {
     protected fun imageInfo(path: IZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
         try {
@@ -109,9 +122,9 @@ abstract class BaseMapInfo {
 
             jsonIgnoreUnknown.parseToJsonElement(readFromBytes(byteArrayOutputStream.toByteArray())).let { jsonElement ->
                 BPMInfoBase.parse(jsonElement)
-            }.also {
+            }.let { bpmInfo ->
                 try {
-                    it.validate()
+                    bpmInfo.check().also { it.validate() }
                 } catch (e: ConstraintViolationException) {
                     constraintViolations += e.constraintViolations.map { cv ->
                         DefaultConstraintViolation(
@@ -120,6 +133,8 @@ abstract class BaseMapInfo {
                             cv.constraint
                         )
                     }
+
+                    null
                 }
             }
         } ?: LegacySongLengthInfo(info)
@@ -143,9 +158,9 @@ abstract class BaseMapInfo {
 
     companion object {
         fun parse(element: JsonElement) =
-            if (element.jsonObject.containsKey("version")) {
+            element.jsonObject.parseBS({
                 jsonIgnoreUnknown.decodeFromJsonElement<MapInfoV4>(element)
-            } else {
+            }) {
                 jsonIgnoreUnknown.decodeFromJsonElement<MapInfo>(element)
             }
     }

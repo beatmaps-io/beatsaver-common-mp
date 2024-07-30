@@ -44,6 +44,25 @@ interface BSVersioned {
     val version: OptionalProperty<String?>
 }
 
+sealed interface ParseResult<T> {
+    data class Success<T>(val data: T) : ParseResult<T>
+    class MultipleVersions<T> : ParseResult<T>
+}
+
+fun <T> JsonObject.parseBS(newBlock: (Version) -> T, oldBlock: () -> T): ParseResult<T> {
+    val newVersion = containsKey("version")
+    val oldVersion = containsKey("_version")
+
+    return when {
+        newVersion && oldVersion -> ParseResult.MultipleVersions()
+        newVersion -> {
+            val version = Version(this["version"]?.jsonPrimitive?.contentOrNull)
+            ParseResult.Success(newBlock(version))
+        }
+        else -> ParseResult.Success(oldBlock())
+    }
+}
+
 sealed interface BSDiff : BSCustomData, BSVersioned {
     fun noteCount(): Int
     fun bombCount(): Int
@@ -56,16 +75,13 @@ sealed interface BSDiff : BSCustomData, BSVersioned {
 
     companion object {
         fun parse(element: JsonElement) =
-            element.jsonObject.let { obj ->
-                if (obj.containsKey("version")) {
-                    val version = Version(obj["version"]?.jsonPrimitive?.contentOrNull)
-                    when (version.major) {
-                        4 -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV4>(element)
-                        else -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(element)
-                    }
-                } else {
-                    jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(element)
+            element.jsonObject.parseBS({ version ->
+                when (version.major) {
+                    4 -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV4>(element)
+                    else -> jsonIgnoreUnknown.decodeFromJsonElement<BSDifficultyV3>(element)
                 }
+            }) {
+                jsonIgnoreUnknown.decodeFromJsonElement<BSDifficulty>(element)
             }
     }
 }
