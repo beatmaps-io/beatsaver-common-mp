@@ -39,6 +39,7 @@ fun <T> orMinValue(block: (T) -> OptionalProperty<Int?>): ReadOnlyProperty<T, In
     ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Int.MIN_VALUE) }
 
 fun <T> OptionalProperty<List<OptionalProperty<T?>>?>?.orEmpty() = or(listOf()).mapNotNull { it.orNull() }
+fun <T> OptionalProperty<T?>.mapChanged(changes: Map<T, T>) = changes[orNull()]?.let { OptionalProperty.Present(it) } ?: this
 
 interface BSVersioned {
     val version: OptionalProperty<String?>

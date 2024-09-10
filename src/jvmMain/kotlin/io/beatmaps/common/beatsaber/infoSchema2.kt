@@ -112,7 +112,7 @@ data class MapInfo(
     override fun getLevelAuthorNames() = setOfNotNull(_levelAuthorName.orNull())
     override fun getSongAuthorName() = _songAuthorName.orNull()
     override fun getSongFilename() = _songFilename.orNull()
-    override fun setSongFilename(filename: String?) = copy(_songFilename = OptionalProperty.Present(filename))
+    override fun updateFiles(changes: Map<String, String>) = copy(_songFilename = _songFilename.mapChanged(changes))
     override fun getExtraFiles() =
         (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
 

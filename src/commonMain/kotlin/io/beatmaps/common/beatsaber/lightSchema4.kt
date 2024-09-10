@@ -4,6 +4,7 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -158,11 +159,7 @@ data class BSEventBoxDataV4(
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSIndexed {
     fun getEvent(diff: BSLightingV4, type: EventBoxType) =
-        type.field?.get(diff)?.let { list ->
-            index.orNull()?.let {
-                list.orEmpty().getOrNull(it)
-            }
-        }
+        type.field?.get(diff)?.orEmpty()?.getOrNull(index.or(0))
 }
 
 @Serializable
@@ -216,7 +213,7 @@ data class BSLightColorEventV4(
     @SerialName("f")
     val strobeFrequency: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("sb")
-    val strobeBrightness: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    val strobeBrightness: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("sf")
     val strobeFade: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSIndexable, BoxedEvent

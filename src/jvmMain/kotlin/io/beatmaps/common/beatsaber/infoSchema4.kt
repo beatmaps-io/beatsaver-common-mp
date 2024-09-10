@@ -94,7 +94,15 @@ data class MapInfoV4(
     }?.toSet() ?: setOf()
     override fun getSongAuthorName() = song.orNull()?.author?.orNull()
     override fun getSongFilename() = audio.orNull()?.songFilename?.orNull()
-    override fun setSongFilename(filename: String?) = copy(audio = OptionalProperty.Present(audio.or(AudioInfo()).copy(songFilename = OptionalProperty.Present(filename))))
+    override fun updateFiles(changes: Map<String, String>) =
+        copy(
+            audio = OptionalProperty.Present(
+                audio.or(AudioInfo()).let {
+                    it.copy(songFilename = it.songFilename.mapChanged(changes))
+                }
+            ),
+            songPreviewFilename = songPreviewFilename.mapChanged(changes)
+        )
 
     override fun getExtraFiles() =
         (songFiles() + beatmapExtraFiles()).toSet()
@@ -178,7 +186,7 @@ data class MapColorSchemeV4(
     }
 
     companion object {
-        val regex = Regex("#[0-9A-Fa-f]{8}")
+        val regex = Regex("#?[0-9A-Fa-f]{8}")
     }
 }
 
