@@ -150,7 +150,7 @@ abstract class BaseMapInfo {
     fun getLevelAuthorNamesString() = getLevelAuthorNames().joinToString()
     abstract fun getSongAuthorName(): String?
     abstract fun getSongFilename(): String?
-    abstract fun setSongFilename(filename: String?): BaseMapInfo
+    abstract fun updateFiles(changes: Map<String, String>): BaseMapInfo
 
     abstract fun getExtraFiles(): Set<String>
     abstract fun toJsonElement(): JsonElement

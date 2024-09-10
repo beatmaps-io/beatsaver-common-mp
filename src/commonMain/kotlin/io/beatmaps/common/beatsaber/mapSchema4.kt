@@ -4,6 +4,7 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -63,9 +64,7 @@ abstract class BSIndexedGeneric<U, T : BSIndexable> : BSIndexed {
         getForProp(index, prop.get(diff))
 
     protected fun <T : BSIndexable> getForProp(index: OptionalProperty<Int?>, list: OptionalProperty<List<OptionalProperty<T?>>?>) =
-        index.orNull()?.let {
-            list.orEmpty().getOrNull(it)
-        }
+        list.orEmpty().getOrNull(index.or(0))
 }
 
 interface BSIndexed {
