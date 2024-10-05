@@ -105,7 +105,7 @@ data class MapInfoV4(
         )
 
     override fun getExtraFiles() =
-        (songFiles() + beatmapExtraFiles()).toSet()
+        (songFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
 
     private fun songFiles() =
         listOfNotNull(coverImageFilename.orNull(), getSongFilename(), songPreviewFilename.orNull())
