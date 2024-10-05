@@ -18,7 +18,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import org.valiktor.ConstraintViolationException
 import org.valiktor.constraints.In
@@ -37,7 +36,7 @@ data class MapInfoV4(
     val environmentNames: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
     val colorSchemes: OptionalProperty<List<OptionalProperty<MapColorSchemeV4?>>?> = OptionalProperty.NotPresent,
     val difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmapV4?>>?> = OptionalProperty.NotPresent,
-    val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    val customData: OptionalProperty<InfoCustomDataV4?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
     override val audioDataFilename = audio.orNull()?.audioDataFilename?.orNull() ?: "BPMInfo.dat"
 
@@ -74,8 +73,9 @@ data class MapInfoV4(
         validate(MapInfoV4::customData).correctType().validateOptional {
             extraFieldsViolation(
                 constraintViolations,
-                it.keys
+                it.additionalInformation.keys
             )
+            it.validate(this, files)
         }
 
         validate(MapInfoV4::difficultyBeatmaps).correctType().exists().optionalNotNull().isNotEmpty().validateForEach {
@@ -105,10 +105,13 @@ data class MapInfoV4(
         )
 
     override fun getExtraFiles() =
-        (songFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
 
     private fun songFiles() =
         listOfNotNull(coverImageFilename.orNull(), getSongFilename(), songPreviewFilename.orNull())
+
+    private fun contributorsExtraFiles() =
+        customData.orNull()?.contributors.orEmpty().mapNotNull { it.iconPath.orNull() }
 
     private fun beatmapExtraFiles() =
         difficultyBeatmaps.orEmpty().flatMap { diff ->
@@ -353,5 +356,34 @@ data class BeatmapAuthors(
     override fun validate(validator: BMValidator<BeatmapAuthors>) = validator.apply {
         validate(BeatmapAuthors::mappers).correctType().exists().optionalNotNull()
         validate(BeatmapAuthors::lighters).correctType().exists().optionalNotNull()
+    }
+}
+
+@Serializable
+data class InfoCustomDataV4(
+    val contributors: OptionalProperty<List<OptionalProperty<ContributorV4?>>?> = OptionalProperty.NotPresent,
+    override val additionalInformation: Map<String, JsonElement> = mapOf()
+) : JAdditionalProperties() {
+    fun validate(validator: BMValidator<InfoCustomDataV4>, files: Set<String>) = validator.apply {
+        validate(InfoCustomDataV4::contributors).correctType().optionalNotNull().validateForEach {
+            it.validate(this, files)
+        }
+    }
+}
+
+@Serializable
+data class ContributorV4(
+    val role: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val name: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
+) {
+    fun validate(
+        validator: BMValidator<ContributorV4>,
+        files: Set<String>
+    ) = validator.apply {
+        validate(ContributorV4::role).correctType().optionalNotNull()
+        validate(ContributorV4::name).correctType().optionalNotNull()
+        validate(ContributorV4::iconPath).correctType().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q.isNullOrEmpty() || files.contains(q.lowercase()) } }
     }
 }

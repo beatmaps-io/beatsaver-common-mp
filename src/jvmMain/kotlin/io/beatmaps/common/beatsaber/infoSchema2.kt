@@ -114,7 +114,7 @@ data class MapInfo(
     override fun getSongFilename() = _songFilename.orNull()
     override fun updateFiles(changes: Map<String, String>) = copy(_songFilename = _songFilename.mapChanged(changes))
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
 
     private fun songFiles() =
         listOfNotNull(_coverImageFilename.orNull(), getSongFilename())
