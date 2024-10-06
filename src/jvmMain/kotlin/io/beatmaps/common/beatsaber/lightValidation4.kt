@@ -113,7 +113,7 @@ fun BMValidator<BSLightingV4>.validateV4(info: ExtractedInfo, diff: BSLightingV4
     validate(BSLightingV4::floatFxEvents).correctType().exists().optionalNotNull().validateForEach {
         validateEvent()
     }
-    validate(BSLightingV4::useNormalEventsAsCompatibleEvents).exists().correctType().optionalNotNull()
+    validate(BSLightingV4::useNormalEventsAsCompatibleEvents).correctType().optionalNotNull()
     validate(BSLightingV4::customData).correctType().optionalNotNull()
 }
 
