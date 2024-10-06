@@ -130,8 +130,7 @@ class SchemaTest40 {
                 violation4L<NodePresent>("lightTranslationEventBoxes"),
                 violation4L<NodePresent>("lightTranslationEvents"),
                 violation4L<NodePresent>("fxEventBoxes"),
-                violation4L<NodePresent>("floatFxEvents"),
-                violation4L<NodePresent>("useNormalEventsAsCompatibleEvents")
+                violation4L<NodePresent>("floatFxEvents")
             ),
             ex.constraintViolations
         )
