@@ -90,6 +90,8 @@ abstract class BPMInfoBase : SongLengthInfo {
     private fun samplesToDuration(samples: Int) = samples / songFrequency.or(1).toFloat()
     private fun durationToSamples(duration: Float) = (duration * songFrequency.or(0)).roundToInt()
 
+    override fun withBpmEvents(events: List<BSBpmChange>) = this
+
     companion object {
         fun parse(element: JsonElement) =
             element.jsonObject.parseBS({
@@ -104,6 +106,38 @@ class LegacySongLengthInfo(private val info: ExtractedInfo) : SongLengthInfo {
     override fun maximumBeat(bpm: Float) = secondsToTime(info.duration)
     override fun timeToSeconds(time: Float) = (time / (info.mapInfo.getBpm() ?: 1f)) * 60
     override fun secondsToTime(sec: Float) = (sec / 60) * (info.mapInfo.getBpm() ?: 1f)
+
+    override fun withBpmEvents(events: List<BSBpmChange>) = BPMChangeLengthInfo(info, events)
+}
+
+data class BpmTracker(val seconds: Float, val beat: Float, val bpm: Float)
+
+class BPMChangeLengthInfo(private val info: ExtractedInfo, private val events: List<BSBpmChange>) : SongLengthInfo {
+    private val trackers = events.fold(listOf(BpmTracker(0f, 0f, info.mapInfo.getBpm() ?: 60f))) { list, newBpm ->
+        val oldData = list.last()
+        list.plus(
+            BpmTracker(
+                oldData.seconds + (((newBpm.beat.or(0f) - oldData.beat) / oldData.bpm) * 60f),
+                newBpm.beat.or(oldData.beat),
+                newBpm.bpm.or(60f)
+            )
+        )
+    }
+
+    override fun maximumBeat(bpm: Float) =
+        trackers.last().let { end -> end.beat + (((info.duration - end.seconds) / 60f) * end.bpm) }
+
+    override fun timeToSeconds(time: Float) =
+        trackers.last { it.beat <= time }.let { previousBpmEvent ->
+            previousBpmEvent.seconds + (((time - previousBpmEvent.beat) / previousBpmEvent.bpm) * 60f)
+        }
+
+    override fun secondsToTime(sec: Float) =
+        trackers.last { it.seconds <= sec }.let { previousBpmEvent ->
+            previousBpmEvent.beat + (((sec - previousBpmEvent.seconds) / 60f) * previousBpmEvent.bpm)
+        }
+
+    override fun withBpmEvents(events: List<BSBpmChange>) = BPMChangeLengthInfo(info, events)
 }
 
 @Serializable

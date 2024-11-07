@@ -3,14 +3,11 @@
 package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.AdditionalProperties
-import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
-import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
-import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
@@ -21,7 +18,6 @@ import org.jaudiotagger.audio.generic.GenericAudioHeader
 import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
-import org.valiktor.DefaultConstraintViolation
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -115,29 +111,8 @@ abstract class BaseMapInfo {
         }
 
     protected abstract val audioDataFilename: String
-    protected fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>) =
-        getFile(audioDataFilename)?.inputStream()?.use { stream ->
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            stream.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.SONG_LIMIT)
-
-            jsonIgnoreUnknown.parseToJsonElement(readFromBytes(byteArrayOutputStream.toByteArray())).let { jsonElement ->
-                BPMInfoBase.parse(jsonElement)
-            }.let { bpmInfo ->
-                try {
-                    bpmInfo.check().also { it.validate() }
-                } catch (e: ConstraintViolationException) {
-                    constraintViolations += e.constraintViolations.map { cv ->
-                        DefaultConstraintViolation(
-                            "`$audioDataFilename`.${cv.property}",
-                            cv.value,
-                            cv.constraint
-                        )
-                    }
-
-                    null
-                }
-            }
-        } ?: LegacySongLengthInfo(info)
+    protected open fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
+        LegacySongLengthInfo(info)
 
     abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
 

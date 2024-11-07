@@ -53,7 +53,7 @@ data class BSDifficultyV3(
     private val maxScoreLazy by lazy { computeMaxMultipliedScoreForBeatmap(this) }
     override fun maxScore() = maxScoreLazy
     override fun mappedNps(sli: SongLengthInfo) =
-        sli.let {
+        sli.withBpmEvents(bpmEvents.orEmpty()).let {
             it.timeToSeconds(firstAndLastLazy.second) - it.timeToSeconds(firstAndLastLazy.first)
         }.let { len ->
             if (len == 0f) 0f else noteCount() / len
