@@ -40,8 +40,6 @@ data class MapInfoV4(
     val difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmapV4?>>?> = OptionalProperty.NotPresent,
     val customData: OptionalProperty<InfoCustomDataV4?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
-    override val audioDataFilename = audio.orNull()?.audioDataFilename?.orNull() ?: "BPMInfo.dat"
-
     override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         // val ver = Version(version.orNull())
@@ -107,7 +105,7 @@ data class MapInfoV4(
         )
 
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + listOfNotNull(audioDataFilename)).toSet()
 
     private fun songFiles() =
         listOfNotNull(coverImageFilename.orNull(), getSongFilename(), songPreviewFilename.orNull())
@@ -124,8 +122,10 @@ data class MapInfoV4(
         PreviewInfo(songPreviewFilename.or(""), a?.previewStartTime.or(0f), a?.previewDuration.or(0f))
     }
 
+    private val audioDataFilename = audio.orNull()?.audioDataFilename?.orNull()
+
     override fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
-        getFile(audioDataFilename)?.inputStream()?.use { stream ->
+        getFile(audioDataFilename ?: "")?.inputStream()?.use { stream ->
             val byteArrayOutputStream = ByteArrayOutputStream()
             stream.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.SONG_LIMIT)
 

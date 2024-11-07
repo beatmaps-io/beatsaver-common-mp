@@ -49,11 +49,6 @@ class InfoTest20 {
 
         assertContentEquals(
             listOf(
-                bpmViolation<NotNull>("_version"),
-                bpmViolation<NotNull>("_songSampleCount"),
-                bpmViolation<NotNull>("_songFrequency"),
-                bpmViolation<NotNull>("_regions"),
-
                 infoViolation<NotNull>("_version"),
                 infoViolation<NotNull>("_songName"),
                 infoViolation<NotNull>("_songSubName"),
@@ -146,24 +141,6 @@ class InfoTest20 {
 
         assertContentEquals(
             listOf(
-                bpmViolation<NotNull>("_regions[0]._startSampleIndex"),
-                bpmViolation<NotNull>("_regions[0]._endSampleIndex"),
-                bpmViolation<NotNull>("_regions[0]._startBeat"),
-                bpmViolation<NotNull>("_regions[0]._endBeat"),
-                bpmViolation<CorrectType>("_regions[1]._startSampleIndex"),
-                bpmViolation<CorrectType>("_regions[1]._endSampleIndex"),
-                bpmViolation<CorrectType>("_regions[1]._startBeat"),
-                bpmViolation<CorrectType>("_regions[1]._endBeat"),
-                bpmViolation<NodePresent>("_regions[2]._startSampleIndex"),
-                bpmViolation<NodePresent>("_regions[2]._endSampleIndex"),
-                bpmViolation<NodePresent>("_regions[2]._startBeat"),
-                bpmViolation<NodePresent>("_regions[2]._endBeat"),
-                bpmViolation<GreaterOrEqual<Int>>("_regions[3]._endSampleIndex"),
-                bpmViolation<GreaterOrEqual<Int>>("_regions[3]._endBeat"),
-                bpmViolation<GreaterOrEqual<Int>>("_regions[4]._startSampleIndex"),
-                bpmViolation<LessOrEqual<Int>>("_regions[4]._endSampleIndex"),
-                bpmViolation<GreaterOrEqual<Int>>("_regions[4]._startBeat"),
-
                 infoViolation<NotBlank>("_songName"),
                 infoViolation<MetadataLength>("_songName"),
                 infoViolation<Between<Float>>("_beatsPerMinute"),
@@ -224,11 +201,6 @@ class InfoTest20 {
 
         assertContentEquals(
             listOf(
-                bpmViolation<NodePresent>("_version"),
-                bpmViolation<NodePresent>("_songSampleCount"),
-                bpmViolation<NodePresent>("_songFrequency"),
-                bpmViolation<NodePresent>("_regions"),
-
                 infoViolation<NodePresent>("_version"),
                 infoViolation<NodePresent>("_songName"),
                 infoViolation<NodePresent>("_songSubName"),
@@ -256,11 +228,6 @@ class InfoTest20 {
 
         assertContentEquals(
             listOf(
-                bpmViolation<CorrectType>("_version"),
-                bpmViolation<CorrectType>("_songSampleCount"),
-                bpmViolation<CorrectType>("_songFrequency"),
-                bpmViolation<CorrectType>("_regions"),
-
                 infoViolation<CorrectType>("_version"),
                 infoViolation<CorrectType>("_songName"),
                 infoViolation<CorrectType>("_songSubName"),

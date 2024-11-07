@@ -47,8 +47,6 @@ data class MapInfo(
     val _customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
     val _difficultyBeatmapSets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
-    override val audioDataFilename = "BPMInfo.dat"
-
     override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         val ver = Version(_version.orNull())
@@ -114,7 +112,7 @@ data class MapInfo(
     override fun getSongFilename() = _songFilename.orNull()
     override fun updateFiles(changes: Map<String, String>) = copy(_songFilename = _songFilename.mapChanged(changes))
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + audioDataFilename).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
 
     private fun songFiles() =
         listOfNotNull(_coverImageFilename.orNull(), getSongFilename())

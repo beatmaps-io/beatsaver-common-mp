@@ -110,7 +110,6 @@ abstract class BaseMapInfo {
             }
         }
 
-    protected abstract val audioDataFilename: String
     protected open fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
         LegacySongLengthInfo(info)
 
