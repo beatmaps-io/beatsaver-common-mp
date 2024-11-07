@@ -6,7 +6,6 @@ import io.beatmaps.common.beatsaber.MetadataLength
 import io.beatmaps.common.beatsaber.MisplacedCustomData
 import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
-import io.beatmaps.common.schema.SchemaCommon.bpmViolation
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
@@ -15,7 +14,6 @@ import org.valiktor.constraints.Equals
 import org.valiktor.constraints.GreaterOrEqual
 import org.valiktor.constraints.In
 import org.valiktor.constraints.Less
-import org.valiktor.constraints.LessOrEqual
 import org.valiktor.constraints.NotBlank
 import org.valiktor.constraints.NotEmpty
 import org.valiktor.constraints.NotNull
