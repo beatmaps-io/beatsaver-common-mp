@@ -4,7 +4,6 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
-import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers

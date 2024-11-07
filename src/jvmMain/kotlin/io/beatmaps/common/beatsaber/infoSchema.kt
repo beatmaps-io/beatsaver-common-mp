@@ -3,14 +3,11 @@
 package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.AdditionalProperties
-import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
-import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
-import io.beatmaps.common.zip.readFromBytes
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
@@ -21,7 +18,6 @@ import org.jaudiotagger.audio.generic.GenericAudioHeader
 import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
-import org.valiktor.DefaultConstraintViolation
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
