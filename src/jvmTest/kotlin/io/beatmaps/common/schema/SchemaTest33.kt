@@ -93,9 +93,9 @@ class SchemaTest33 {
                     assertEquals(1, diff.bombCount())
                     assertEquals(1, diff.arcCount())
                     assertEquals(1, diff.chainCount())
-                    assertEquals(2f, diff.songLength())
+                    assertEquals(16f, diff.songLength())
                     assertEquals(345, diff.maxScore())
-                    assertEquals(2f, diff.mappedNps(sli))
+                    assertEquals(0.25f, diff.mappedNps(sli))
                 }
             )
         )

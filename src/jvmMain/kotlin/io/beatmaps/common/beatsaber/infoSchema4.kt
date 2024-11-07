@@ -19,7 +19,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
+import org.valiktor.DefaultConstraintViolation
 import org.valiktor.constraints.In
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -121,6 +123,30 @@ data class MapInfoV4(
     override fun getPreviewInfo() = audio.orNull().let { a ->
         PreviewInfo(songPreviewFilename.or(""), a?.previewStartTime.or(0f), a?.previewDuration.or(0f))
     }
+
+    override fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
+        getFile(audioDataFilename)?.inputStream()?.use { stream ->
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            stream.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.SONG_LIMIT)
+
+            jsonIgnoreUnknown.parseToJsonElement(readFromBytes(byteArrayOutputStream.toByteArray())).let { jsonElement ->
+                BPMInfoBase.parse(jsonElement)
+            }.let { bpmInfo ->
+                try {
+                    bpmInfo.check().also { it.validate() }
+                } catch (e: ConstraintViolationException) {
+                    constraintViolations += e.constraintViolations.map { cv ->
+                        DefaultConstraintViolation(
+                            "`$audioDataFilename`.${cv.property}",
+                            cv.value,
+                            cv.constraint
+                        )
+                    }
+
+                    null
+                }
+            }
+        } ?: super.songLengthInfo(info, getFile, constraintViolations)
 
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
 }

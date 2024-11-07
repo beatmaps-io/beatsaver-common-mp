@@ -4,6 +4,7 @@ package io.beatmaps.common.beatsaber
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -53,7 +54,7 @@ data class BSDifficultyV3(
     private val maxScoreLazy by lazy { computeMaxMultipliedScoreForBeatmap(this) }
     override fun maxScore() = maxScoreLazy
     override fun mappedNps(sli: SongLengthInfo) =
-        sli.let {
+        sli.withBpmEvents(bpmEvents.orEmpty()).let {
             it.timeToSeconds(firstAndLastLazy.second) - it.timeToSeconds(firstAndLastLazy.first)
         }.let { len ->
             if (len == 0f) 0f else noteCount() / len
