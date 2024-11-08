@@ -12,7 +12,8 @@ enum class SearchOrder(val idx: Int, val targets: List<SortOrderTarget>) {
     Latest(0, SortOrderTarget.all),
     Relevance(1, SortOrderTarget.all),
     Rating(2, listOf(SortOrderTarget.Map)),
-    Curated(3, SortOrderTarget.all);
+    Curated(3, SortOrderTarget.all),
+    Random(4, listOf());
 
     companion object {
         private val map = entries.associateBy(SearchOrder::idx)
