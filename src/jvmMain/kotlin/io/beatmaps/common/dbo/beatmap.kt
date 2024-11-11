@@ -122,6 +122,7 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val sentiment by Beatmap.sentiment
     val reviews by Beatmap.reviews
 
+    val fullSpread by Beatmap.fullSpread
     val declaredAi by Beatmap.declaredAi
 
     var bookmarked: Boolean? = null
