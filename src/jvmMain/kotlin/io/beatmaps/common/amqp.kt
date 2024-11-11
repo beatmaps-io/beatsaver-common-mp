@@ -81,7 +81,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     serializer: KSerializer<T>,
     prefetchCount: Int = 20,
     rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
-) = consumeAck<T>(queue, { message ->
+) = consumeAck(queue, { message ->
     json.decodeFromString(serializer, message)
 }, prefetchCount, rabbitDeliverCallback)
 
