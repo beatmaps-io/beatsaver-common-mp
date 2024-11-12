@@ -1,7 +1,7 @@
 package io.beatmaps.common
 
 enum class SortOrderTarget {
-    Map, Playlist;
+    UserMap, Map, Playlist;
 
     companion object {
         val all = entries
@@ -10,8 +10,8 @@ enum class SortOrderTarget {
 
 enum class SearchOrder(val idx: Int, val targets: List<SortOrderTarget>) {
     Latest(0, SortOrderTarget.all),
-    Relevance(1, SortOrderTarget.all),
-    Rating(2, listOf(SortOrderTarget.Map)),
+    Relevance(1, listOf(SortOrderTarget.Map, SortOrderTarget.Playlist)),
+    Rating(2, listOf(SortOrderTarget.UserMap, SortOrderTarget.Map)),
     Curated(3, SortOrderTarget.all),
     Random(4, listOf());
 
