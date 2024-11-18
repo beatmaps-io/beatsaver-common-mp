@@ -42,7 +42,9 @@ fun MapTagSet.asQuery(): MapTagQuery =
 
 fun String?.toQuery(): MapTagQuery? = this?.split(",")?.map { p ->
     p.split("|").mapNotNull { q ->
-        MapTag.fromSlug(q.removePrefix("!"))?.let { m -> !q.startsWith("!") to m }
+        MapTag.fromSlug(q.removePrefix("!"))
+            ?.let { if (it == MapTag.None) null else it }
+            ?.let { m -> !q.startsWith("!") to m }
     }
 }
 
