@@ -111,8 +111,6 @@ class SchemaTest40 {
                 violation4<NodePresent>("arcsData"),
                 violation4<NodePresent>("chains"),
                 violation4<NodePresent>("chainsData"),
-                violation4<NodePresent>("spawnRotations"),
-                violation4<NodePresent>("spawnRotationsData"),
 
                 violation4L<NodePresent>("basicEvents"),
                 violation4L<NodePresent>("basicEventsData"),

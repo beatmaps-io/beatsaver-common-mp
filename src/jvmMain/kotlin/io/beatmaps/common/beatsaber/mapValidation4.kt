@@ -100,7 +100,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
         validate(BSChainDataV4::sliceCount).correctType().optionalNotNull()
         validate(BSChainDataV4::squishAmount).correctType().optionalNotNull()
     }
-    validate(BSDifficultyV4::spawnRotations).correctType().exists().optionalNotNull().validateForEach { rotation ->
+    validate(BSDifficultyV4::spawnRotations).correctType().optionalNotNull().validateForEach { rotation ->
         validate(BSRotationsV4::beat).correctType().optionalNotNull().let {
             if (info.duration > 0) it.isBetween(0f, maxBeat)
         }
@@ -108,7 +108,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
             rotation.index.orNull() == null || rotation.getData(diff) != null
         }
     }
-    validate(BSDifficultyV4::spawnRotationsData).correctType().exists().optionalNotNull().validateForEach {
+    validate(BSDifficultyV4::spawnRotationsData).correctType().optionalNotNull().validateForEach {
         validate(BSRotationsDataV4::executionTime).correctType().optionalNotNull()
         validate(BSRotationsDataV4::rotation).correctType().optionalNotNull()
     }
