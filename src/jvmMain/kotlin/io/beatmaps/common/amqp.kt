@@ -9,8 +9,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.supervisorScope
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import pl.jutupe.ktor_rabbitmq.RabbitMQ
 import pl.jutupe.ktor_rabbitmq.RabbitMQConfiguration
@@ -20,6 +20,7 @@ import pl.jutupe.ktor_rabbitmq.rabbitConsumer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.logging.Logger
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 import kotlin.reflect.full.starProjectedType
 
@@ -80,7 +81,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     queue: String,
     serializer: KSerializer<T>,
     prefetchCount: Int = 20,
-    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
+    rabbitDeliverCallback: suspend CoroutineContext.(routingKey: String, body: T) -> Unit
 ) = consumeAck(queue, { message ->
     json.decodeFromString(serializer, message)
 }, prefetchCount, rabbitDeliverCallback)
@@ -89,7 +90,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     queue: String,
     clazz: KClass<T>,
     prefetchCount: Int = 20,
-    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
+    rabbitDeliverCallback: suspend CoroutineContext.(routingKey: String, body: T) -> Unit
 ) = consumeAck<T>(queue, { message ->
     jackson.readValue(message, clazz.javaObjectType)
 }, prefetchCount, rabbitDeliverCallback)
@@ -98,7 +99,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
     queue: String,
     serializer: (String) -> T,
     prefetchCount: Int = 20,
-    rabbitDeliverCallback: suspend (routingKey: String, body: T) -> Unit
+    rabbitDeliverCallback: suspend CoroutineContext.(routingKey: String, body: T) -> Unit
 ) {
     val logger = Logger.getLogger("bmio.RabbitMQ.consumeAck")
     getConnection().createChannel().apply {
@@ -111,7 +112,9 @@ fun <T : Any> RabbitMQInstance.consumeAck(
                     runCatching {
                         val mappedEntity = serializer(message.body.toString(Charsets.UTF_8))
 
-                        rabbitDeliverCallback.invoke(message.envelope.routingKey, mappedEntity)
+                        supervisorScope {
+                            rabbitDeliverCallback.invoke(coroutineContext, message.envelope.routingKey, mappedEntity)
+                        }
 
                         basicAck(message.envelope.deliveryTag, false)
                     }.getOrElse {
