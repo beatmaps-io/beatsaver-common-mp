@@ -1,5 +1,8 @@
 package io.beatmaps.common.db
 
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.ArrayColumnType
+import org.jetbrains.exposed.sql.BooleanColumnType
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.CustomFunction
@@ -177,3 +180,7 @@ class DateMinusDays(val dateExp: Expression<Instant>, val d: Int) : Expression<I
 }
 
 fun length(column: Column<*>) = column.function("LENGTH")
+
+fun boolOr(column: Column<Boolean>) = column.function("BOOL_OR")
+fun boolAnd(column: Column<Boolean>) = column.function("BOOL_AND")
+fun arrayAgg(column: Column<EntityID<Int>>) = CustomFunction("ARRAY_AGG", ArrayColumnType(IntegerColumnType()), column)
