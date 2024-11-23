@@ -2,7 +2,6 @@ package io.beatmaps.common.db
 
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ArrayColumnType
-import org.jetbrains.exposed.sql.BooleanColumnType
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.CustomFunction
