@@ -113,8 +113,9 @@ fun Application.installMetrics() {
         .build()
 
     val mods = hashSetOf(
-        "BMBF", "QuestSongDownloader", "BeatSaverVoting", "ModAssistant", "Beatlist", "PlaylistManager", "MorePlaylists", "BSDataPuller", "DiTails",
-        "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop", "SiraUtil", "BeatSyncConsole", "BeatSaverDownloader"
+        "BMBF", "QuestSongDownloader", "BeatSaverVoting", "ModAssistant", "Beatlist", "PlaylistManager", "MorePlaylists", "BSDataPuller",
+        "DiTails", "BeatSaverUpdater", "BetterSongSearch", "Beatsaber", "BeatSaberPlus", "SongRequestManager", "PlaylistDownLoader", "Beatdrop",
+        "SiraUtil", "BeatSyncConsole", "BeatSaverDownloader", "BS-Manager", "QuestPlaylistDownLoader"
     )
 
     // Request timing header
