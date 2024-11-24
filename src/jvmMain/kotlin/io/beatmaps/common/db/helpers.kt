@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.GreaterEqOp
 import org.jetbrains.exposed.sql.IColumnType
 import org.jetbrains.exposed.sql.IntegerColumnType
-import org.jetbrains.exposed.sql.IsNullOp
 import org.jetbrains.exposed.sql.LessEqOp
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
@@ -40,28 +39,20 @@ infix fun ExpressionWithColumnType<BigDecimal>.lessEqF(t: Float) = LessEqOp(this
 class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
 class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
 
-infix fun ExpressionWithColumnType<String>.similar(t: String?): Op<Boolean> {
-    return if (t == null) {
-        IsNullOp(this)
-    } else {
-        SimilarOp(QueryParameter(t, columnType), this)
-    }
-}
-
 infix fun <T> ExpressionWithColumnType<List<T>?>.contains(arry: Array<T>): Op<Boolean> = ArrayContainsOp(this, QueryParameter(arry.toList(), columnType))
 infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
 
 fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
 fun unaccentLiteral(str: String) = unaccent(stringLiteral(str))
-fun unaccent(str: Expression<String>) = CustomFunction<String>("bs_unaccent", TextColumnType(), str)
+fun unaccent(str: Expression<String>) = CustomFunction("bs_unaccent", TextColumnType(), str)
 private val wildcardChar = stringLiteral("%")
 fun <T> wildcard(exp: Expression<T>) = PgConcat(null, wildcardChar, exp, wildcardChar)
 
 class PgConcat(
     /** Returns the delimiter. */
-    val separator: String?,
+    private val separator: String?,
     /** Returns the expressions being concatenated. */
-    vararg val expr: Expression<*>
+    private vararg val expr: Expression<*>
 ) : Function<String>(VarCharColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder): Unit = queryBuilder {
         append("(")
@@ -171,7 +162,7 @@ class DistinctOn<T>(private val expr: Column<T>, private val columns: Array<out 
     }
 }
 
-class DateMinusDays(val dateExp: Expression<Instant>, val d: Int) : Expression<Instant>() {
+class DateMinusDays(private val dateExp: Expression<Instant>, private val d: Int) : Expression<Instant>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +dateExp
         +" - INTERVAL '$d DAYS'"
