@@ -98,6 +98,7 @@ data class MapInfoV4(
     override fun getEnvironments() = environmentNames.orEmpty().map {
         searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
     }
+
     // No global environment
     override fun getEnvironment() = EBeatsaberEnvironment.DefaultEnvironment
 
