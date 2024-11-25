@@ -16,7 +16,9 @@
   },
   "songPreviewFilename": "click.ogg",
   "coverImageFilename": "click.png",
-  "environmentNames": [],
+  "environmentNames": [
+    "DefaultEnvironment"
+  ],
   "colorSchemes": [],
   "difficultyBeatmaps": [
     {

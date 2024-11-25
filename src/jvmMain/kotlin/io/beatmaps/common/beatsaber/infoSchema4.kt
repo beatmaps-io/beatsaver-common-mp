@@ -70,7 +70,7 @@ data class MapInfoV4(
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
 
-        validate(MapInfoV4::environmentNames).correctType().exists().optionalNotNull().validateForEach {
+        validate(MapInfoV4::environmentNames).correctType().exists().optionalNotNull().isNotEmpty().validateForEach {
             if (!EBeatsaberEnvironment.names.contains(it)) {
                 constraintViolations.add(
                     BMConstraintViolation(
@@ -386,7 +386,7 @@ data class DifficultyBeatmapV4(
     override fun enumValue() = searchEnum<EDifficulty>(difficulty.or(""))
     override fun extraFiles() = setOfNotNull(beatmapFilename.orNull(), lightshowDataFilename.orNull())
 
-    private fun charEnum() = searchEnum<ECharacteristic>(characteristic.or(""))
+    fun charEnum() = searchEnum<ECharacteristic>(characteristic.or(""))
 
     companion object {
         val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()

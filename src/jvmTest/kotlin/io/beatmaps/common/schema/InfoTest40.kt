@@ -16,6 +16,7 @@ import org.valiktor.constraints.Less
 import org.valiktor.constraints.LessOrEqual
 import org.valiktor.constraints.Matches
 import org.valiktor.constraints.NotBlank
+import org.valiktor.constraints.NotEmpty
 import org.valiktor.constraints.NotNull
 import kotlin.test.assertContentEquals
 import kotlin.test.assertNotNull
@@ -91,6 +92,40 @@ class InfoTest40 {
 
                 infoViolation<InFiles>("difficultyBeatmaps[0].beatmapDataFilename"),
                 infoViolation<InFiles>("difficultyBeatmaps[0].lightshowDataFilename")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
+    fun missing() {
+        val ex = validateFolder("info/4_0/missing")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf(
+                infoViolation<NodePresent>("song.title"),
+                infoViolation<NodePresent>("song.subTitle"),
+                infoViolation<NodePresent>("song.author"),
+                infoViolation<NodePresent>("audio.songFilename"),
+                infoViolation<NodePresent>("audio.songDuration"),
+                infoViolation<NodePresent>("audio.audioDataFilename"),
+                infoViolation<NodePresent>("audio.bpm"),
+                infoViolation<NodePresent>("audio.lufs"),
+                infoViolation<NodePresent>("audio.previewStartTime"),
+                infoViolation<NodePresent>("audio.previewDuration"),
+                infoViolation<NodePresent>("songPreviewFilename"),
+                infoViolation<NodePresent>("coverImageFilename"),
+                infoViolation<NotEmpty>("environmentNames"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].characteristic"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].difficulty"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].beatmapAuthors.mappers"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].beatmapAuthors.lighters"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].environmentNameIdx"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].beatmapColorSchemeIdx"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].noteJumpMovementSpeed"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].noteJumpStartBeatOffset"),
+                infoViolation<NodePresent>("difficultyBeatmaps[0].beatmapDataFilename")
             ),
             ex.constraintViolations
         )
