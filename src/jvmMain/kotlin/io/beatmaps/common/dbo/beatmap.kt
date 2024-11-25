@@ -75,7 +75,7 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val maxNps = decimal("maxNps", 8, 3)
     val fullSpread = bool("fullSpread")
 
-    val tags = array<String>("tags", VarCharColumnType(255)).nullable()
+    val tags = array("tags", VarCharColumnType(255)).nullable()
 
     val declaredAi = postgresEnumeration<AiDeclarationType>("declaredAi", "aiDeclarationType")
 }
