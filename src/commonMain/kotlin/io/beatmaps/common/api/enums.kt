@@ -167,6 +167,12 @@ enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v
     TheRollingStonesEnvironment("The Rolling Stones", false, true),
     LatticeEnvironment("Lattice", false, true);
 
+    fun color() = when {
+        v3 -> "purple"
+        rotation -> "green"
+        else -> "blue"
+    }
+
     companion object {
         val names = entries.map { it.name }.toSet()
     }
