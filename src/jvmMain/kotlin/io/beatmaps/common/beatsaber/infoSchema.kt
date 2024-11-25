@@ -5,6 +5,7 @@ package io.beatmaps.common.beatsaber
 import io.beatmaps.common.AdditionalProperties
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
@@ -116,7 +117,10 @@ abstract class BaseMapInfo {
     abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
-    abstract fun getEnvironments(): List<String>
+    abstract fun getEnvironments(): List<EBeatsaberEnvironment>
+    protected abstract fun getEnvironment(): EBeatsaberEnvironment
+    fun getEnvironment(index: Int) =
+        getEnvironments().getOrNull(index) ?: getEnvironment()
     abstract fun getBpm(): Float?
     abstract fun getSongName(): String?
     abstract fun getSubName(): String?

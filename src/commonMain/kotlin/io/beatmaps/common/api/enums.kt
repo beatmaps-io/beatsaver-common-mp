@@ -124,3 +124,50 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
         fun fromString(type: String?) = map[type]
     }
 }
+
+enum class EBeatsaberEnvironment(val rotation: Boolean, val v3: Boolean) {
+    DefaultEnvironment(false, false),
+    TriangleEnvironment(false, false),
+    NiceEnvironment(false, false),
+    BigMirrorEnvironment(false, false),
+    KDAEnvironment(false, false),
+    MonstercatEnvironment(false, false),
+    CrabRaveEnvironment(false, false),
+    DragonsEnvironment(false, false),
+    OriginsEnvironment(false, false),
+    PanicEnvironment(false, false),
+    RocketEnvironment(false, false),
+    GreenDayEnvironment(false, false),
+    GreenDayGrenadeEnvironment(false, false),
+    TimbalandEnvironment(false, false),
+    FitBeatEnvironment(false, false),
+    LinkinParkEnvironment(false, false),
+    BTSEnvironment(false, false),
+    KaleidoscopeEnvironment(false, false),
+    InterscopeEnvironment(false, false),
+    SkrillexEnvironment(false, false),
+    BillieEnvironment(false, false),
+    HalloweenEnvironment(false, false),
+    GagaEnvironment(false, false),
+
+    GlassDesertEnvironment(true, false),
+    MultiplayerEnvironment(false, false),
+
+    WeaveEnvironment(false, true),
+    PyroEnvironment(false, true),
+    EDMEnvironment(false, true),
+    TheSecondEnvironment(false, true),
+    LizzoEnvironment(false, true),
+    TheWeekndEnvironment(false, true),
+    RockMixtapeEnvironment(false, true),
+    Dragons2Environment(false, true),
+    Panic2Environment(false, true),
+    QueenEnvironment(false, true),
+    LinkinPark2Environment(false, true),
+    TheRollingStonesEnvironment(false, true),
+    LatticeEnvironment(false, true);
+
+    companion object {
+        val names = entries.map { it.name }.toSet()
+    }
+}

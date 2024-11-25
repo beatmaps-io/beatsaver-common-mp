@@ -5,9 +5,11 @@ package io.beatmaps.common.beatsaber
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
+import io.beatmaps.common.api.searchEnumOrNull
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -84,13 +86,13 @@ data class MapInfo(
             )
             it.validate(this, files)
         }
-        validate(MapInfo::_environmentName).correctType().exists().optionalNotNull()
+        validate(MapInfo::_environmentName).correctType().exists().isIn(EBeatsaberEnvironment.names)
         validate(MapInfo::_allDirectionsEnvironmentName).correctType().let { v ->
             val anyRotationDiffs = it._difficultyBeatmapSets.or(listOf()).any { set ->
                 setOf("360Degree", "90Degree").contains(set.orNull()?._beatmapCharacteristicName?.orNull())
             }
             if (anyRotationDiffs) {
-                v.isIn("GlassDesertEnvironment")
+                v.isIn(EBeatsaberEnvironment.GlassDesertEnvironment.name)
             } else {
                 v.optionalNotNull()
             }
@@ -98,12 +100,27 @@ data class MapInfo(
         validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1
-        validate(MapInfo::_environmentNames).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1)
+        validate(MapInfo::_environmentNames).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1).validateForEach {
+            if (!EBeatsaberEnvironment.names.contains(it)) {
+                constraintViolations.add(
+                    BMConstraintViolation(
+                        propertyInfo = listOf(),
+                        value = it,
+                        constraint = In(EBeatsaberEnvironment.names)
+                    )
+                )
+            }
+        }
         validate(MapInfo::_colorSchemes).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1).validateEach()
     }
 
     override fun getColorSchemes() = _colorSchemes.orEmpty()
-    override fun getEnvironments() = _environmentNames.orEmpty()
+    override fun getEnvironments() = _environmentNames.orEmpty().map {
+        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+    }
+    override fun getEnvironment() =
+        _environmentName.orNull()?.let { searchEnumOrNull<EBeatsaberEnvironment>(it) } ?: EBeatsaberEnvironment.DefaultEnvironment
+
     override fun getBpm() = _beatsPerMinute.orNull()
     override fun getSongName() = _songName.orNull()
     override fun getSubName() = _songSubName.orNull()
@@ -275,6 +292,7 @@ interface DifficultyBeatmapInfo : BSCustomData {
     val noteJumpMovementSpeed: OptionalProperty<Float?>
     val noteJumpStartBeatOffset: OptionalProperty<Float?>
     val beatmapFilename: OptionalProperty<String?>
+    val environmentIndex: OptionalProperty<Int?>
 }
 
 interface DifficultyBeatmapCustomDataBase {
@@ -296,7 +314,8 @@ data class DifficultyBeatmap(
     @SerialName("_noteJumpStartBeatOffset")
     override val noteJumpStartBeatOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    val _environmentNameIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_environmentNameIdx") @ValidationName("_environmentNameIdx")
+    override val environmentIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
     override val customData: OptionalProperty<DifficultyBeatmapCustomData?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
@@ -380,7 +399,7 @@ data class DifficultyBeatmap(
         // V2.1
         validate(DifficultyBeatmap::_beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
             .isLessThan(max(1, info.mapInfo.getColorSchemes().size)).notExistsBefore(ver, Schema2_1)
-        validate(DifficultyBeatmap::_environmentNameIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
+        validate(DifficultyBeatmap::environmentIndex).optionalNotNull().isGreaterThanOrEqualTo(0)
             .isLessThan(max(1, info.mapInfo.getEnvironments().size)).notExistsBefore(ver, Schema2_1)
     }
 

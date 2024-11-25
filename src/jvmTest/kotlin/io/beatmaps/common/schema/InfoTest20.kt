@@ -62,7 +62,7 @@ class InfoTest20 {
                 infoViolation<NotNull>("_customData._contributors[0]._iconPath"),
                 infoViolation<NotNull>("_customData._contributors[1]"),
                 infoViolation<NotNull>("_customData._editors._lastEditedBy"),
-                infoViolation<NotNull>("_environmentName"),
+                infoViolation<In<String>>("_environmentName"),
                 infoViolation<NotNull>("_allDirectionsEnvironmentName"),
                 infoViolation<In<String>>("_difficultyBeatmapSets[0]._beatmapCharacteristicName"),
                 infoViolation<In<String>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty"),
@@ -158,6 +158,7 @@ class InfoTest20 {
                 infoViolation<MisplacedCustomData>("_customData._colorLeft"),
                 infoViolation<MisplacedCustomData>("_customData._colorRight"),
 
+                infoViolation<In<String>>("_environmentName"),
                 infoViolation<In<String>>("_allDirectionsEnvironmentName"),
 
                 infoViolation<In<String>>("_difficultyBeatmapSets[0]._beatmapCharacteristicName"),
@@ -186,6 +187,7 @@ class InfoTest20 {
                 infoViolation<NotEmpty>("_difficultyBeatmapSets[2]._difficultyBeatmaps"),
 
                 infoViolation<NodeNotPresent>("_environmentNames"),
+                infoViolation<In<String>>("_environmentNames[0]"),
                 infoViolation<NodeNotPresent>("_colorSchemes")
             ),
             ex.constraintViolations
