@@ -124,3 +124,50 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
         fun fromString(type: String?) = map[type]
     }
 }
+
+enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v3: Boolean) {
+    DefaultEnvironment("Default", false, false),
+    TriangleEnvironment("Triangle", false, false),
+    NiceEnvironment("Nice", false, false),
+    BigMirrorEnvironment("Big Mirror", false, false),
+    KDAEnvironment("KDA", false, false),
+    MonstercatEnvironment("Monstercat", false, false),
+    CrabRaveEnvironment("Crab Rave", false, false),
+    DragonsEnvironment("Dragons", false, false),
+    OriginsEnvironment("Origins", false, false),
+    PanicEnvironment("Panic", false, false),
+    RocketEnvironment("Rocket", false, false),
+    GreenDayEnvironment("Green Day", false, false),
+    GreenDayGrenadeEnvironment("Green Day Grenade", false, false),
+    TimbalandEnvironment("Timbaland", false, false),
+    FitBeatEnvironment("Fitbeat", false, false),
+    LinkinParkEnvironment("Linkin Park", false, false),
+    BTSEnvironment("BTS", false, false),
+    KaleidoscopeEnvironment("Kaleidoscope", false, false),
+    InterscopeEnvironment("Interscope", false, false),
+    SkrillexEnvironment("Skrillex", false, false),
+    BillieEnvironment("Billie", false, false),
+    HalloweenEnvironment("Halloween", false, false),
+    GagaEnvironment("Gaga", false, false),
+
+    GlassDesertEnvironment("Glass Desert", true, false),
+    MultiplayerEnvironment("Multiplayer", false, false),
+
+    WeaveEnvironment("Weave", false, true),
+    PyroEnvironment("Pyro", false, true),
+    EDMEnvironment("EDM", false, true),
+    TheSecondEnvironment("The Second", false, true),
+    LizzoEnvironment("Lizzo", false, true),
+    TheWeekndEnvironment("The Weeknd", false, true),
+    RockMixtapeEnvironment("Rock Mixtape", false, true),
+    Dragons2Environment("Dragons 2", false, true),
+    Panic2Environment("Panic 2", false, true),
+    QueenEnvironment("Queen", false, true),
+    LinkinPark2Environment("Linkin Park 2", false, true),
+    TheRollingStonesEnvironment("The Rolling Stones", false, true),
+    LatticeEnvironment("Lattice", false, true);
+
+    companion object {
+        val names = entries.map { it.name }.toSet()
+    }
+}

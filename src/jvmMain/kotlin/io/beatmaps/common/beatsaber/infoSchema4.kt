@@ -5,9 +5,11 @@ package io.beatmaps.common.beatsaber
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
+import io.beatmaps.common.api.searchEnumOrNull
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -68,7 +70,17 @@ data class MapInfoV4(
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
 
-        validate(MapInfoV4::environmentNames).correctType().exists().optionalNotNull()
+        validate(MapInfoV4::environmentNames).correctType().exists().optionalNotNull().validateForEach {
+            if (!EBeatsaberEnvironment.names.contains(it)) {
+                constraintViolations.add(
+                    BMConstraintViolation(
+                        propertyInfo = listOf(),
+                        value = it,
+                        constraint = In(EBeatsaberEnvironment.names)
+                    )
+                )
+            }
+        }
         validate(MapInfoV4::colorSchemes).correctType().exists().optionalNotNull().validateEach()
         validate(MapInfoV4::customData).correctType().validateOptional {
             extraFieldsViolation(
@@ -83,7 +95,13 @@ data class MapInfoV4(
         }
     }
     override fun getColorSchemes() = colorSchemes.orEmpty()
-    override fun getEnvironments() = environmentNames.orEmpty()
+    override fun getEnvironments() = environmentNames.orEmpty().map {
+        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+    }
+
+    // No global environment
+    override fun getEnvironment() = EBeatsaberEnvironment.DefaultEnvironment
+
     override fun getBpm() = audio.orNull()?.bpm?.orNull()
     override fun getSongName() = song.orNull()?.title?.orNull()
     override fun getSubName() = song.orNull()?.subTitle?.orNull()
@@ -244,7 +262,8 @@ data class DifficultyBeatmapV4(
     val characteristic: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val difficulty: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val beatmapAuthors: OptionalProperty<BeatmapAuthors?> = OptionalProperty.NotPresent,
-    val environmentNameIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("environmentNameIdx") @ValidationName("environmentNameIdx")
+    override val environmentIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     override val noteJumpMovementSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     override val noteJumpStartBeatOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
@@ -338,7 +357,7 @@ data class DifficultyBeatmapV4(
                 } == false
             }
         validate(DifficultyBeatmapV4::beatmapAuthors).exists().correctType().optionalNotNull().validate()
-        validate(DifficultyBeatmapV4::environmentNameIdx).exists().correctType().optionalNotNull()
+        validate(DifficultyBeatmapV4::environmentIndex).exists().correctType().optionalNotNull()
             .isLessThan(max(1, mapInfo.getEnvironments().size))
         validate(DifficultyBeatmapV4::beatmapColorSchemeIdx).exists().correctType().optionalNotNull()
             .isLessThan(max(1, mapInfo.getColorSchemes().size))

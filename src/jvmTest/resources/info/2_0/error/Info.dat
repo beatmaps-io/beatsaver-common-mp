@@ -12,9 +12,9 @@
   "_previewDuration": -10.0,
   "_songFilename": "missing.ogg",
   "_coverImageFilename": "missing.png",
-  "_environmentName": "LinkinPark2Environment",
-  "_allDirectionsEnvironmentName": "MuliplayerEnvironment",
-  "_environmentNames": [],
+  "_environmentName": "LinkinPark9Environment",
+  "_allDirectionsEnvironmentName": "MultiplayerEnvironment",
+  "_environmentNames": [ "FakeMadeUpEnvironment" ],
   "_colorSchemes": [],
   "_customData": {
     "_difficultyLabel": "Diff Label",

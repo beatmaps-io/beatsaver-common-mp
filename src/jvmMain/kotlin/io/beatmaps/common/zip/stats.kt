@@ -78,6 +78,9 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmapInfo, b
     it[maxScore] = bsdiff.maxScore()
     it[label] = diff.customData.orNull()?.difficultyLabel?.orNull()?.take(255)
 
+    val environmentIndex = diff.environmentIndex.or(-1)
+    it[environment] = map.getEnvironment(environmentIndex)
+
     val requirementsLocal = diff.customData.orNull()?.requirements?.orNull()?.mapNotNull { it.orNull() }
     val suggestionsLocal = diff.customData.orNull()?.suggestions?.orNull()?.mapNotNull { it.orNull() }
 

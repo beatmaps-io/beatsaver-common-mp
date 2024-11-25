@@ -80,6 +80,7 @@ class InfoTest40 {
                 infoViolation<GreaterOrEqual<Float>>("audio.previewDuration"),
                 infoViolation<InFiles>("songPreviewFilename"),
                 infoViolation<InFiles>("coverImageFilename"),
+                infoViolation<In<String>>("environmentNames[0]"),
 
                 infoViolation<Matches>("colorSchemes[0].saberAColor"),
                 infoViolation<Matches>("colorSchemes[0].saberBColor"),

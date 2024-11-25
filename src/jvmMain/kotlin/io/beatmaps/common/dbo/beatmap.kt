@@ -1,6 +1,7 @@
 package io.beatmaps.common.dbo
 
 import io.beatmaps.common.api.AiDeclarationType
+import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
@@ -74,7 +75,7 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val maxNps = decimal("maxNps", 8, 3)
     val fullSpread = bool("fullSpread")
 
-    val tags = array<String>("tags", VarCharColumnType(255)).nullable()
+    val tags = array("tags", VarCharColumnType(255)).nullable()
 
     val declaredAi = postgresEnumeration<AiDeclarationType>("declaredAi", "aiDeclarationType")
 }
@@ -293,6 +294,7 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val information = array("information", VarCharColumnType(255)).nullable()
     val warnings = array("warnings", VarCharColumnType(255)).nullable()
     val label = varchar("label", 255).nullable()
+    val environment = postgresEnumeration<EBeatsaberEnvironment>("environment", "environment").nullable()
 
     val maxScore = integer("maxScore")
     val schemaVersion = varchar("schemaVersion", 10)
@@ -340,4 +342,5 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val blRankedAt by Difficulty.blRankedAt
     val blQualifiedAt by Difficulty.blQualifiedAt
     val label by Difficulty.label
+    val environment by Difficulty.environment
 }
