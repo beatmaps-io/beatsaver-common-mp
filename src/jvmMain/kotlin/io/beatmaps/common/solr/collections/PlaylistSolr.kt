@@ -1,5 +1,6 @@
 package io.beatmaps.common.solr.collections
 
+import io.beatmaps.common.SearchOrder
 import io.beatmaps.common.solr.PercentageMinimumMatchExpression
 import io.beatmaps.common.solr.SolrCollection
 import io.beatmaps.common.solr.SolrHelper
@@ -7,7 +8,6 @@ import io.beatmaps.common.solr.SolrMs
 import io.beatmaps.common.solr.SolrNow
 import io.beatmaps.common.solr.SolrRecip
 import io.beatmaps.common.solr.SolrScore
-import io.beatmaps.common.SearchOrder
 import io.beatmaps.common.solr.parsers.EDisMaxQuery
 import org.apache.solr.client.solrj.SolrQuery
 
