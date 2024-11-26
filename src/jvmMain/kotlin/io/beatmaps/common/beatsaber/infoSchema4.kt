@@ -100,7 +100,8 @@ data class MapInfoV4(
     }
 
     // No global environment
-    override fun getEnvironment() = EBeatsaberEnvironment.DefaultEnvironment
+    override fun getEnvironment(rotation: Boolean) =
+        EBeatsaberEnvironment.DefaultEnvironment
 
     override fun getBpm() = audio.orNull()?.bpm?.orNull()
     override fun getSongName() = song.orNull()?.title?.orNull()
