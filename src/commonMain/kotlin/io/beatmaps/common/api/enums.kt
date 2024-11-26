@@ -45,9 +45,10 @@ inline fun <reified T : Enum<T>> searchEnum(search: String) =
 
 @Serializable(with = ECharacteristicSerializer::class)
 @Suppress("ktlint:standard:enum-entry-name-case")
-enum class ECharacteristic(val color: String) : HumanEnum<ECharacteristic> {
-    Standard("primary"), OneSaber("info"), NoArrows("info"), _90Degree("warning"), _360Degree("warning"), Lightshow("danger"),
-    Lawless("danger"), Legacy("danger");
+enum class ECharacteristic(val color: String, val rotation: Boolean) : HumanEnum<ECharacteristic> {
+    Standard("primary", false), OneSaber("info", false), NoArrows("info", false),
+    _90Degree("warning", true), _360Degree("warning", true), Lightshow("danger", false),
+    Lawless("danger", false), Legacy("danger", false);
 
     override fun human() = toString().removePrefix("_")
     override fun enumName() = human()

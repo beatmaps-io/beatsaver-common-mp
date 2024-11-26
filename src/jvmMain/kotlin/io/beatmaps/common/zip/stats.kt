@@ -1,5 +1,6 @@
 package io.beatmaps.common.zip
 
+import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.beatsaber.BSDiff
 import io.beatmaps.common.beatsaber.BSLights
 import io.beatmaps.common.beatsaber.BaseMapInfo
@@ -41,7 +42,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
         val bsdiff = diff(diff.beatmapFilename.or(""))
         if (bsdiff !is BSLights) throw Exception("Wrong beatmap type")
 
-        stats = sharedInsert(it, diff, bsdiff, bsdiff, map, sli)
+        stats = sharedInsert(it, char.enumValue(), diff, bsdiff, bsdiff, map, sli)
         it[characteristic] = char.enumValue()
         it[difficulty] = diff.enumValue()
     }
@@ -49,7 +50,7 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
     return stats
 }
 
-fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmapInfo, bsdiff: BSDiff, bslights: BSLights?, map: BaseMapInfo, sli: SongLengthInfo): DiffStats {
+fun Difficulty.sharedInsert(it: UpdateBuilder<*>, characteristic: ECharacteristic, diff: DifficultyBeatmapInfo, bsdiff: BSDiff, bslights: BSLights?, map: BaseMapInfo, sli: SongLengthInfo): DiffStats {
     it[njs] = diff.noteJumpMovementSpeed.or(0f)
     it[offset] = diff.noteJumpStartBeatOffset.or(0f)
 
@@ -79,7 +80,7 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, diff: DifficultyBeatmapInfo, b
     it[label] = diff.customData.orNull()?.difficultyLabel?.orNull()?.take(255)
 
     val environmentIndex = diff.environmentIndex.or(-1)
-    it[environment] = map.getEnvironment(environmentIndex)
+    it[environment] = map.getEnvironment(environmentIndex, characteristic.rotation)
 
     val requirementsLocal = diff.customData.orNull()?.requirements?.orNull()?.mapNotNull { it.orNull() }
     val suggestionsLocal = diff.customData.orNull()?.suggestions?.orNull()?.mapNotNull { it.orNull() }

@@ -118,9 +118,9 @@ abstract class BaseMapInfo {
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
     abstract fun getEnvironments(): List<EBeatsaberEnvironment>
-    protected abstract fun getEnvironment(): EBeatsaberEnvironment
-    fun getEnvironment(index: Int?) =
-        index?.let { getEnvironments().getOrNull(index) } ?: getEnvironment()
+    protected abstract fun getEnvironment(rotation: Boolean): EBeatsaberEnvironment
+    fun getEnvironment(index: Int?, rotation: Boolean = false) =
+        index?.let { getEnvironments().getOrNull(index) } ?: getEnvironment(rotation)
     abstract fun getBpm(): Float?
     abstract fun getSongName(): String?
     abstract fun getSubName(): String?
