@@ -2,6 +2,7 @@ package io.beatmaps.common.solr
 
 import io.beatmaps.common.solr.field.SolrField
 import kotlinx.datetime.Instant
+import org.apache.solr.client.solrj.SolrRequest
 import org.apache.solr.client.solrj.response.QueryResponse
 import org.apache.solr.common.SolrInputDocument
 import org.apache.solr.common.params.ModifiableSolrParams
@@ -25,7 +26,7 @@ abstract class SolrCollection {
     private fun <T> registerField(name: String) = SolrField<T>(this, name).also { _fields.add(it) }
 
     fun query(params: ModifiableSolrParams): QueryResponse =
-        SolrHelper.solr.query(collection, params)
+        SolrHelper.solr.query(collection, params, SolrRequest.METHOD.POST)
 
     internal fun add(doc: SolrInputDocument) {
         SolrHelper.solr.add(collection, doc)
