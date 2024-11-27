@@ -10,7 +10,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 object SolrHelper {
-    private val solrHost = System.getenv("SOLR_HOST") ?: "https://solr.beatsaver.com/solr"
+    private val solrHost = System.getenv("SOLR_HOST") ?: "http://localhost:8983/solr"
     private val solrUser = System.getenv("SOLR_USER") ?: "solr"
     private val solrPass = System.getenv("SOLR_PASS") ?: "insecure-password"
     val enabled = System.getenv("SOLR_ENABLED") == "true"
