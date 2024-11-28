@@ -96,7 +96,7 @@ data class MapInfoV4(
     }
     override fun getColorSchemes() = colorSchemes.orEmpty()
     override fun getEnvironments() = environmentNames.orEmpty().map {
-        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+        EBeatsaberEnvironment.fromString(it) ?: EBeatsaberEnvironment.DefaultEnvironment
     }
 
     // No global environment

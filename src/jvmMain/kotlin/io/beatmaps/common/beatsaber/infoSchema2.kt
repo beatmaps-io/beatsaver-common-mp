@@ -116,11 +116,11 @@ data class MapInfo(
 
     override fun getColorSchemes() = _colorSchemes.orEmpty()
     override fun getEnvironments() = _environmentNames.orEmpty().map {
-        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+        EBeatsaberEnvironment.fromString(it) ?: EBeatsaberEnvironment.DefaultEnvironment
     }
     override fun getEnvironment(rotation: Boolean) =
         if (rotation) { _allDirectionsEnvironmentName } else { _environmentName }
-            .orNull()?.let { searchEnumOrNull<EBeatsaberEnvironment>(it) } ?: EBeatsaberEnvironment.DefaultEnvironment
+            .orNull()?.let { EBeatsaberEnvironment.fromString(it) } ?: EBeatsaberEnvironment.DefaultEnvironment
 
     override fun getBpm() = _beatsPerMinute.orNull()
     override fun getSongName() = _songName.orNull()

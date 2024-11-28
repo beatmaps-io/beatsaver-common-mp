@@ -126,7 +126,7 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
     }
 }
 
-enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v3: Boolean, val filterable: Boolean = true): HumanEnum<EBeatsaberEnvironment> {
+enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolean, val v3: Boolean, val filterable: Boolean = true) : HumanEnum<EBeatsaberEnvironment> {
     DefaultEnvironment("Default", false, false),
     TriangleEnvironment("Triangle", false, false),
     NiceEnvironment("Nice", false, false),
