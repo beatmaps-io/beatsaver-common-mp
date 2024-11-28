@@ -169,7 +169,9 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     LatticeEnvironment("Lattice", false, true),
     DaftPunkEnvironment("Daft Punk", false, true),
     HipHopEnvironment("HipHop", false, true),
-    ColliderEnvironment("Collider", false, true);
+    ColliderEnvironment("Collider", false, true),
+    BritneyEnvironment("Britney", false, true),
+    Monstercat2Environment("Monstercat 2", false, true);
 
     fun color() = when {
         v3 -> "purple"
