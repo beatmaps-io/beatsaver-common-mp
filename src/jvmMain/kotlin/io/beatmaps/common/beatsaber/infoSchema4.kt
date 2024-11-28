@@ -9,7 +9,6 @@ import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
-import io.beatmaps.common.api.searchEnumOrNull
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -96,7 +95,7 @@ data class MapInfoV4(
     }
     override fun getColorSchemes() = colorSchemes.orEmpty()
     override fun getEnvironments() = environmentNames.orEmpty().map {
-        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+        EBeatsaberEnvironment.fromString(it) ?: EBeatsaberEnvironment.DefaultEnvironment
     }
 
     // No global environment

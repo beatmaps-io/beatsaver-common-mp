@@ -1,5 +1,7 @@
 package io.beatmaps.common
 
+import io.beatmaps.common.api.EBeatsaberEnvironment
+
 enum class SortOrderTarget {
     UserMap, Map, Playlist;
 
@@ -70,3 +72,9 @@ fun MapTagQuery.toTagSet(): MapTagSet =
         .mapValues { x ->
             x.value.map { it.second }.toSet()
         }
+
+typealias EnvironmentSet = Set<EBeatsaberEnvironment>
+
+fun String?.toEnvironmentSet(): EnvironmentSet = this?.split(",")?.mapNotNull {
+    EBeatsaberEnvironment.fromString(it)
+}?.toSet() ?: emptySet()

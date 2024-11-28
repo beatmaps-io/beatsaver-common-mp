@@ -9,7 +9,6 @@ import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
-import io.beatmaps.common.api.searchEnumOrNull
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -116,11 +115,11 @@ data class MapInfo(
 
     override fun getColorSchemes() = _colorSchemes.orEmpty()
     override fun getEnvironments() = _environmentNames.orEmpty().map {
-        searchEnumOrNull<EBeatsaberEnvironment>(it) ?: EBeatsaberEnvironment.DefaultEnvironment
+        EBeatsaberEnvironment.fromString(it) ?: EBeatsaberEnvironment.DefaultEnvironment
     }
     override fun getEnvironment(rotation: Boolean) =
         if (rotation) { _allDirectionsEnvironmentName } else { _environmentName }
-            .orNull()?.let { searchEnumOrNull<EBeatsaberEnvironment>(it) } ?: EBeatsaberEnvironment.DefaultEnvironment
+            .orNull()?.let { EBeatsaberEnvironment.fromString(it) } ?: EBeatsaberEnvironment.DefaultEnvironment
 
     override fun getBpm() = _beatsPerMinute.orNull()
     override fun getSongName() = _songName.orNull()

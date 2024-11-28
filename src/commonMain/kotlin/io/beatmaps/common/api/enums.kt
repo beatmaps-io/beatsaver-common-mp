@@ -126,7 +126,7 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
     }
 }
 
-enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v3: Boolean) {
+enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolean, val v3: Boolean, val filterable: Boolean = true) : HumanEnum<EBeatsaberEnvironment> {
     DefaultEnvironment("Default", false, false),
     TriangleEnvironment("Triangle", false, false),
     NiceEnvironment("Nice", false, false),
@@ -152,7 +152,7 @@ enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v
     GagaEnvironment("Gaga", false, false),
 
     GlassDesertEnvironment("Glass Desert", true, false),
-    MultiplayerEnvironment("Multiplayer", false, false),
+    MultiplayerEnvironment("Multiplayer", false, false, filterable = false),
 
     WeaveEnvironment("Weave", false, true),
     PyroEnvironment("Pyro", false, true),
@@ -177,7 +177,15 @@ enum class EBeatsaberEnvironment(val short: String, val rotation: Boolean, val v
         else -> "blue"
     }
 
+    fun category() = if (v3) "New" else "Legacy"
+
+    override fun human() = short
+    override fun enumName() = human()
+
     companion object {
         val names = entries.map { it.name }.toSet()
+
+        private val map = entries.associateBy(EBeatsaberEnvironment::name)
+        fun fromString(type: String?) = map[type]
     }
 }
