@@ -196,7 +196,7 @@ fun Application.installMetrics() {
 
 private val extraTags = AttributeKey<MutableMap<String, String>>("extraTags")
 private val reqTime = AttributeKey<Timings>("serverTiming")
-fun <T> ApplicationCall.timeIt(name: String, block: () -> T) = attributes[reqTime].timeIt(name, block)
+suspend fun <T> ApplicationCall?.timeIt(name: String, block: suspend () -> T) = this?.attributes?.get(reqTime)?.timeIt(name, block) ?: block()
 fun ApplicationCall.tag(name: String, value: String) = attributes.getOrNull(extraTags)?.put(name, value)
 
 class Timings {
@@ -209,13 +209,18 @@ class Timings {
         begins[name] = System.nanoTime()
     }
 
-    fun end(name: String) {
-        metrics[name] = ((System.nanoTime() - (begins[name] ?: 0)) / 1000) / 1000f
+    fun end(name: String) =
+        add(name, ((System.nanoTime() - (begins[name] ?: 0)) / 1000) / 1000f)
+
+    fun add(name: String, time: Float) {
+        metrics[name] = time
     }
 
-    fun <T> timeIt(name: String, block: () -> T) =
+    suspend fun <T> timeIt(name: String, block: suspend () -> T) =
         begin(name).let {
-            block().also {
+            try {
+                block()
+            } finally {
                 end(name)
             }
         }
