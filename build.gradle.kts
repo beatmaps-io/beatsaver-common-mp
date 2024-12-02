@@ -88,6 +88,7 @@ kotlin {
                 implementation("pl.jutupe:ktor-rabbitmq:0.5.19")
                 implementation("com.rabbitmq:amqp-client:5.21.0")
                 implementation("org.apache.solr:solr-solrj:9.7.0")
+                implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
                 implementation("org.apache.commons:commons-email:1.5")
 

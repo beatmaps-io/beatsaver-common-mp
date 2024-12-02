@@ -1,8 +1,14 @@
 package io.beatmaps.common.solr
 
+import com.github.michaelbull.retry.policy.constantDelay
+import com.github.michaelbull.retry.policy.continueIf
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.retry
 import io.beatmaps.common.solr.field.SolrField
 import kotlinx.datetime.Instant
 import org.apache.solr.client.solrj.SolrRequest
+import org.apache.solr.client.solrj.SolrServerException
 import org.apache.solr.client.solrj.response.QueryResponse
 import org.apache.solr.common.SolrInputDocument
 import org.apache.solr.common.params.ModifiableSolrParams
@@ -10,6 +16,7 @@ import org.apache.solr.common.params.ModifiableSolrParams
 abstract class SolrCollection {
     private val _fields = mutableListOf<SolrField<*>>()
     abstract val collection: String
+    open val retryPolicy = continueIf<Throwable> { (failure) -> failure is SolrServerException } + constantDelay(10) + stopAtAttempts(2)
 
     // Built in scoring for each result
     val score = pfloat("score")
@@ -25,8 +32,9 @@ abstract class SolrCollection {
 
     private fun <T> registerField(name: String) = SolrField<T>(this, name).also { _fields.add(it) }
 
-    fun query(params: ModifiableSolrParams): QueryResponse =
+    suspend fun query(params: ModifiableSolrParams): QueryResponse = retry(retryPolicy) {
         SolrHelper.solr.query(collection, params, SolrRequest.METHOD.POST)
+    }
 
     internal fun add(doc: SolrInputDocument) {
         SolrHelper.solr.add(collection, doc)

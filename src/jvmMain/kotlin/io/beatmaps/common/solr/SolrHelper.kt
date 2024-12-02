@@ -1,6 +1,8 @@
 package io.beatmaps.common.solr
 
 import io.beatmaps.common.solr.field.SolrField
+import io.beatmaps.common.timeIt
+import io.ktor.server.application.ApplicationCall
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.SolrServerException
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException
@@ -33,10 +35,12 @@ fun SolrQuery.paged(page: Int = 0, pageSize: Int = 20): SolrQuery =
     setFields("id")
         .setStart(page * pageSize).setRows(pageSize)
 
-fun ModifiableSolrParams.getIds(coll: SolrCollection, field: SolrField<Int>? = null) =
+suspend fun ModifiableSolrParams.getIds(coll: SolrCollection, field: SolrField<Int>? = null, call: ApplicationCall? = null) =
     try {
         val fieldName = field?.name ?: "id"
-        val response = coll.query(this)
+        val response = call.timeIt("search") {
+            coll.query(this)
+        }
 
         val mapIds = response.results.mapNotNull { it[fieldName] as? Int }
         val numRecords = response.results.numFound.toInt()
