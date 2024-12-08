@@ -31,7 +31,7 @@ import java.lang.Integer.max
 
 @Serializable
 data class MapInfoV4(
-    val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val song: OptionalProperty<SongInfo?> = OptionalProperty.NotPresent,
     val audio: OptionalProperty<AudioInfo?> = OptionalProperty.NotPresent,
     val songPreviewFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
@@ -146,6 +146,8 @@ data class MapInfoV4(
         getFile(audioDataFilename ?: "")?.inputStream()?.use { stream ->
             val byteArrayOutputStream = ByteArrayOutputStream()
             stream.copyTo(byteArrayOutputStream, sizeLimit = FileLimits.SONG_LIMIT)
+            val bytes = byteArrayOutputStream.toByteArray()
+            info.toHash.write(bytes)
 
             jsonIgnoreUnknown.parseToJsonElement(readFromBytes(byteArrayOutputStream.toByteArray())).let { jsonElement ->
                 BPMInfoBase.parse(jsonElement)
