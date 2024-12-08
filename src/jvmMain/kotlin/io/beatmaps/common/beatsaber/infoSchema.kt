@@ -45,6 +45,8 @@ fun Iterable<ConstraintViolation>.addParent(fileName: String?) = this.map { cons
 }
 
 abstract class BaseMapInfo {
+    abstract val version: OptionalProperty<String?>
+
     protected fun imageInfo(path: IZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
         try {
             ImageIO.createImageInputStream(stream).use { iis ->

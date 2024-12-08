@@ -28,7 +28,8 @@ import java.lang.Integer.max
 
 @Serializable
 data class MapInfo(
-    val _version: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_version") @ValidationName("_version")
+    override val version: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _songName: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _songSubName: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _songAuthorName: OptionalProperty<String?> = OptionalProperty.NotPresent,
@@ -50,9 +51,9 @@ data class MapInfo(
 ) : BaseMapInfo() {
     override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
-        val ver = Version(_version.orNull())
+        val ver = Version(version.orNull())
 
-        validate(MapInfo::_version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
+        validate(MapInfo::version).correctType().exists().optionalNotNull().matches(Regex("\\d+\\.\\d+\\.\\d+"))
         validate(MapInfo::_songName).correctType().exists().optionalNotNull().isNotBlank().validate(MetadataLength) { op ->
             op == null || op.validate { (it?.length ?: 0) + (_levelAuthorName.orNull()?.length ?: 0) <= 100 }
         }

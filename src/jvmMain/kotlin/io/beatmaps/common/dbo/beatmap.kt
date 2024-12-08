@@ -240,6 +240,7 @@ object Versions : IntIdTable("versions", "versionId") {
     val r2 = bool("r2")
     val deletedAt = timestamp("deletedAt").nullable()
     val lastPublishedAt = timestamp("lastPublishedAt").nullable()
+    val schemaVersion = varchar("schemaVersion", 10).nullable()
 }
 
 data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
