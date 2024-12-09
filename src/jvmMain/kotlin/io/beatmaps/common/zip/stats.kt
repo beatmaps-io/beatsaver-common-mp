@@ -22,17 +22,12 @@ import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.lang.Float.min
 import java.math.BigDecimal
 
-data class DiffStats(val chroma: Boolean, val noodle: Boolean, val me: Boolean, val cinema: Boolean, val nps: BigDecimal)
-fun List<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
-
-fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: DifficultyBeatmapSet, map: MapInfo, sli: SongLengthInfo, ver: VersionsDao? = null): DiffStats {
+fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: DifficultyBeatmapSet, map: MapInfo, sli: SongLengthInfo, ver: VersionsDao? = null) {
     val version = ver ?: VersionsDao.wrapRow(
         Versions.selectAll().where {
             Versions.hash eq hash
         }.first()
     )
-
-    var stats = DiffStats(chroma = false, noodle = false, me = false, cinema = false, nps = BigDecimal.ZERO)
 
     Difficulty.insertIgnore {
         it[mapId] = version.mapId
@@ -42,15 +37,13 @@ fun ZipHelper.parseDifficulty(hash: String, diff: DifficultyBeatmap, char: Diffi
         val bsdiff = diff(diff.beatmapFilename.or(""))
         if (bsdiff !is BSLights) throw Exception("Wrong beatmap type")
 
-        stats = sharedInsert(it, char.enumValue(), diff, bsdiff, bsdiff, map, sli)
+        sharedInsert(it, char.enumValue(), diff, bsdiff, bsdiff, map, sli)
         it[characteristic] = char.enumValue()
         it[difficulty] = diff.enumValue()
     }
-
-    return stats
 }
 
-fun Difficulty.sharedInsert(it: UpdateBuilder<*>, characteristic: ECharacteristic, diff: DifficultyBeatmapInfo, bsdiff: BSDiff, bslights: BSLights?, map: BaseMapInfo, sli: SongLengthInfo): DiffStats {
+fun Difficulty.sharedInsert(it: UpdateBuilder<*>, characteristic: ECharacteristic, diff: DifficultyBeatmapInfo, bsdiff: BSDiff, bslights: BSLights?, map: BaseMapInfo, sli: SongLengthInfo) {
     it[njs] = diff.noteJumpMovementSpeed.or(0f)
     it[offset] = diff.noteJumpStartBeatOffset.or(0f)
 
@@ -82,25 +75,10 @@ fun Difficulty.sharedInsert(it: UpdateBuilder<*>, characteristic: ECharacteristi
     val environmentIndex = diff.environmentIndex.or(-1)
     it[environment] = map.getEnvironment(environmentIndex, characteristic.rotation)
 
-    val requirementsLocal = diff.customData.orNull()?.requirements?.orNull()?.mapNotNull { it.orNull() }
-    val suggestionsLocal = diff.customData.orNull()?.suggestions?.orNull()?.mapNotNull { it.orNull() }
+    it[nps] = BigDecimal.valueOf(mappedNps.toDouble()).min(maxAllowedNps)
 
-    return DiffStats(
-        requirementsLocal.containsIgnoreCase("Chroma") || suggestionsLocal.containsIgnoreCase("Chroma"),
-        requirementsLocal.containsIgnoreCase("Noodle Extensions"),
-        requirementsLocal.containsIgnoreCase("Mapping Extensions"),
-        requirementsLocal.containsIgnoreCase("Cinema") || suggestionsLocal.containsIgnoreCase("Cinema"),
-        BigDecimal.valueOf(mappedNps.toDouble()).min(maxAllowedNps)
-    ).also { stats ->
-        it[nps] = stats.nps
-        it[chroma] = stats.chroma
-        it[ne] = stats.noodle
-        it[me] = stats.me
-        it[cinema] = stats.cinema
-
-        it[requirements] = requirementsLocal
-        it[suggestions] = suggestionsLocal
-        it[information] = diff.customData.orNull()?.information?.orNull()?.mapNotNull { it.orNull() }
-        it[warnings] = diff.customData.orNull()?.warnings?.orNull()?.mapNotNull { it.orNull() }
-    }
+    it[requirements] = diff.customData.orNull()?.requirements?.orNull()?.mapNotNull { it.orNull() }
+    it[suggestions] = diff.customData.orNull()?.suggestions?.orNull()?.mapNotNull { it.orNull() }
+    it[information] = diff.customData.orNull()?.information?.orNull()?.mapNotNull { it.orNull() }
+    it[warnings] = diff.customData.orNull()?.warnings?.orNull()?.mapNotNull { it.orNull() }
 }
