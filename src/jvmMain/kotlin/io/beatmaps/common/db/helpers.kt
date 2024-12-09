@@ -36,11 +36,9 @@ fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() 
 infix fun ExpressionWithColumnType<BigDecimal>.greaterEqF(t: Float) = GreaterEqOp(this, floatParam(t))
 infix fun ExpressionWithColumnType<BigDecimal>.lessEqF(t: Float) = LessEqOp(this, floatParam(t))
 
-class SimilarOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "<%")
 class ArrayContainsOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@>")
 
 infix fun <T> ExpressionWithColumnType<List<T>?>.contains(arry: Array<T>): Op<Boolean> = ArrayContainsOp(this, QueryParameter(arry.toList(), columnType))
-infix fun ExpressionWithColumnType<String>.similar(t: ExpressionWithColumnType<String>) = SimilarOp(t, this)
 
 fun unaccent(str: String) = unaccent(QueryParameter(str, TextColumnType()))
 fun unaccentLiteral(str: String) = unaccent(stringLiteral(str))
