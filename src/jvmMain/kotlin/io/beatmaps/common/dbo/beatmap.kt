@@ -58,10 +58,6 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val sentiment = decimal("sentiment", 4, 3)
     val reviews = integer("reviews")
 
-    val chroma = bool("chroma")
-    val noodle = bool("noodle")
-    val me = bool("me")
-    val cinema = bool("cinema")
     val ranked = bool("ranked")
     val qualified = bool("qualified")
     val blRanked = bool("blRanked")
@@ -241,6 +237,13 @@ object Versions : IntIdTable("versions", "versionId") {
     val deletedAt = timestamp("deletedAt").nullable()
     val lastPublishedAt = timestamp("lastPublishedAt").nullable()
     val schemaVersion = varchar("schemaVersion", 10).nullable()
+
+    val bpm = float("bpm")
+    val duration = integer("duration")
+    val songName = text("songName")
+    val songSubName = text("songSubName")
+    val songAuthorName = text("songAuthorName")
+    val levelAuthorName = text("levelAuthorName")
 }
 
 data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -258,6 +261,13 @@ data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
     val r2 by Versions.r2
     val deletedAt by Versions.deletedAt
     val lastPublishedAt by Versions.lastPublishedAt
+
+    val bpm: Float by Beatmap.bpm
+    val duration: Int by Beatmap.duration
+    val songName: String by Beatmap.songName
+    val songSubName: String by Beatmap.songSubName
+    val songAuthorName: String by Beatmap.songAuthorName
+    val levelAuthorName: String by Beatmap.levelAuthorName
 
     val testplays = mutableMapOf<EntityID<Int>, TestplayDao>()
     val difficulties = mutableMapOf<EntityID<Int>, DifficultyDao>()
@@ -280,10 +290,6 @@ object Difficulty : IntIdTable("difficulty", "difficultyId") {
     val characteristic = postgresEnumeration<ECharacteristic>("characteristic", "characteristic")
     val difficulty = postgresEnumeration<EDifficulty>("difficulty", "diff")
     val events = integer("events")
-    val chroma = bool("chroma")
-    val ne = bool("ne")
-    val me = bool("me")
-    val cinema = bool("cinema")
     val pReset = integer("pReset")
     val pWarn = integer("pWarn")
     val pError = integer("pError")
@@ -323,10 +329,6 @@ data class DifficultyDao(val key: EntityID<Int>) : IntEntity(key) {
     val characteristic: ECharacteristic by Difficulty.characteristic
     val difficulty: EDifficulty by Difficulty.difficulty
     val events: Int by Difficulty.events
-    val chroma: Boolean by Difficulty.chroma
-    val ne: Boolean by Difficulty.ne
-    val me: Boolean by Difficulty.me
-    val cinema: Boolean by Difficulty.cinema
     val pReset: Int by Difficulty.pReset
     val pWarn: Int by Difficulty.pWarn
     val pError: Int by Difficulty.pError
