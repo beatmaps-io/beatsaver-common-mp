@@ -32,10 +32,6 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val uploader = reference("uploader", User)
     val bpm = float("bpm")
     val duration = integer("duration")
-    val songName = text("songName")
-    val songSubName = text("songSubName")
-    val songAuthorName = text("songAuthorName")
-    val levelAuthorName = text("levelAuthorName")
     val plays = integer("plays")
     val downloads = integer("downloads")
 
@@ -69,7 +65,6 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
 
     val minNps = decimal("minNps", 8, 3)
     val maxNps = decimal("maxNps", 8, 3)
-    val fullSpread = bool("fullSpread")
 
     val tags = array("tags", VarCharColumnType(255)).nullable()
 
@@ -80,12 +75,6 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<BeatmapDao>(Beatmap)
     val name: String by Beatmap.name
     val description: String by Beatmap.description
-    val bpm: Float by Beatmap.bpm
-    val duration: Int by Beatmap.duration
-    val songName: String by Beatmap.songName
-    val songSubName: String by Beatmap.songSubName
-    val songAuthorName: String by Beatmap.songAuthorName
-    val levelAuthorName: String by Beatmap.levelAuthorName
     val plays: Int by Beatmap.plays
     val downloads: Int by Beatmap.downloads
 
@@ -119,7 +108,6 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val sentiment by Beatmap.sentiment
     val reviews by Beatmap.reviews
 
-    val fullSpread by Beatmap.fullSpread
     val declaredAi by Beatmap.declaredAi
 
     var bookmarked: Boolean? = null
@@ -262,12 +250,12 @@ data class VersionsDao(val key: EntityID<Int>) : IntEntity(key) {
     val deletedAt by Versions.deletedAt
     val lastPublishedAt by Versions.lastPublishedAt
 
-    val bpm: Float by Beatmap.bpm
-    val duration: Int by Beatmap.duration
-    val songName: String by Beatmap.songName
-    val songSubName: String by Beatmap.songSubName
-    val songAuthorName: String by Beatmap.songAuthorName
-    val levelAuthorName: String by Beatmap.levelAuthorName
+    val bpm: Float by Versions.bpm
+    val duration: Int by Versions.duration
+    val songName: String by Versions.songName
+    val songSubName: String by Versions.songSubName
+    val songAuthorName: String by Versions.songAuthorName
+    val levelAuthorName: String by Versions.levelAuthorName
 
     val testplays = mutableMapOf<EntityID<Int>, TestplayDao>()
     val difficulties = mutableMapOf<EntityID<Int>, DifficultyDao>()
