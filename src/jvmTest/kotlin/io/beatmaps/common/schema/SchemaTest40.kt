@@ -3,6 +3,7 @@ package io.beatmaps.common.schema
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.CorrectType
+import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation4
@@ -34,7 +35,9 @@ class SchemaTest40 {
                 violation4<CorrectType>("arcsData"),
                 violation4<CorrectType>("chains"),
                 violation4<CorrectType>("chainsData"),
+                violation4<NodeNotPresent>("spawnRotations"),
                 violation4<CorrectType>("spawnRotations"),
+                violation4<NodeNotPresent>("spawnRotationsData"),
                 violation4<CorrectType>("spawnRotationsData"),
 
                 violation4L<CorrectType>("version"),
