@@ -241,7 +241,7 @@ data class BSNjsEventDataV4(
     @SerialName("d")
     val relativeNoteJumpSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     @SerialName("p")
-    val usePreviousValue: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
+    val usePreviousValue: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("e")
     val type: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSIndexable

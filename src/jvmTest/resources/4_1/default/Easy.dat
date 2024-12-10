@@ -1,0 +1,26 @@
+{
+  "version": "4.1.0",
+  "colorNotes": [],
+  "colorNotesData": [],
+  "bombNotes": [],
+  "bombNotesData": [],
+  "obstacles": [],
+  "obstaclesData": [],
+  "arcs": [],
+  "arcsData": [],
+  "chains": [],
+  "chainsData": [],
+  "njsEvents": [
+    {
+      "b": 10,
+      "i": 0
+    }
+  ],
+  "njsEventsData": [
+    {
+      "d": 1.0,
+      "p": 1,
+      "e": 1
+    }
+  ]
+}

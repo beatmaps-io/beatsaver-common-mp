@@ -80,7 +80,9 @@ data class MapInfoV4(
                 )
             }
         }
-        validate(MapInfoV4::colorSchemes).correctType().exists().optionalNotNull().validateEach()
+        validate(MapInfoV4::colorSchemes).correctType().exists().optionalNotNull().validateForEach {
+            it.validate(this, Version(version.orNull()))
+        }
         validate(MapInfoV4::customData).correctType().validateOptional {
             extraFieldsViolation(
                 constraintViolations,
@@ -211,6 +213,8 @@ data class AudioInfo(
 @Serializable
 data class MapColorSchemeV4(
     val useOverride: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
+    val overrideNotes: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
+    val overrideLights: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
     val colorSchemeName: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val saberAColor: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val saberBColor: OptionalProperty<String?> = OptionalProperty.NotPresent,
@@ -221,17 +225,22 @@ data class MapColorSchemeV4(
     val environmentColor1Boost: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val environmentColorW: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val environmentColorWBoost: OptionalProperty<String?> = OptionalProperty.NotPresent
-) : Validatable<MapColorSchemeV4>, BaseColorScheme {
-    override fun validate(validator: BMValidator<MapColorSchemeV4>) = validator.apply {
-        validate(MapColorSchemeV4::useOverride).correctType().optionalNotNull()
+) : BaseColorScheme {
+    fun validate(validator: BMValidator<MapColorSchemeV4>, ver: Version) = validator.apply {
+        validate(MapColorSchemeV4::useOverride).notExistsAfter(ver, Schema4_0_1).correctType().optionalNotNull()
+        validate(MapColorSchemeV4::overrideNotes).notExistsBefore(ver, Schema4_0_1).correctType().optionalNotNull()
+        validate(MapColorSchemeV4::overrideLights).notExistsBefore(ver, Schema4_0_1).correctType().optionalNotNull()
         validate(MapColorSchemeV4::colorSchemeName).exists().correctType().optionalNotNull()
 
         listOf(
-            MapColorSchemeV4::saberAColor, MapColorSchemeV4::saberBColor, MapColorSchemeV4::environmentColor0, MapColorSchemeV4::environmentColor1, MapColorSchemeV4::obstaclesColor,
-            MapColorSchemeV4::environmentColor0Boost, MapColorSchemeV4::environmentColor1Boost, MapColorSchemeV4::environmentColorW, MapColorSchemeV4::environmentColorWBoost
+            MapColorSchemeV4::saberAColor, MapColorSchemeV4::saberBColor, MapColorSchemeV4::environmentColor0, MapColorSchemeV4::environmentColor1,
+            MapColorSchemeV4::obstaclesColor, MapColorSchemeV4::environmentColor0Boost, MapColorSchemeV4::environmentColor1Boost
         ).forEach { prop ->
             validate(prop).correctType().optionalNotNull().matches(regex)
         }
+
+        validate(MapColorSchemeV4::environmentColorW).notExistsAfter(ver, Schema4_0_1).correctType().optionalNotNull().matches(regex)
+        validate(MapColorSchemeV4::environmentColorWBoost).notExistsAfter(ver, Schema4_0_1).correctType().optionalNotNull().matches(regex)
     }
 
     companion object {

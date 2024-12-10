@@ -1,0 +1,134 @@
+{
+  "version": "4.0.1",
+  "song": {
+    "title": "Magic",
+    "subTitle": "ft. Meredith Bull",
+    "author": "Jaroslav Beck"
+  },
+  "audio": {
+    "songFilename": "click.ogg",
+    "songDuration": 202.0,
+    "audioDataFilename": "BPMInfo.dat",
+    "bpm": 208.0,
+    "lufs": 0.0,
+    "previewStartTime": 0.0,
+    "previewDuration": 0.0
+  },
+  "songPreviewFilename": "click.ogg",
+  "coverImageFilename": "click.png",
+  "environmentNames": [
+    "WeaveEnvironment",
+    "GlassDesertEnvironment"
+  ],
+  "colorSchemes": [
+    {
+      "overrideLights": true,
+      "colorSchemeName": "Weave",
+      "saberAColor": "#C81414FF",
+      "saberBColor": "#288ED2FF",
+      "environmentColor0": "#D91616FF",
+      "environmentColor1": "#30ACFFFF",
+      "obstaclesColor": "#FF3030FF",
+      "environmentColor0Boost": "#D216D9FF",
+      "environmentColor1Boost": "#00FFA5FF"
+    },
+    {
+      "overrideNotes": true,
+      "colorSchemeName": "WeaveNotes",
+      "saberAColor": "#C81414FF",
+      "saberBColor": "#288ED2FF"
+    }
+  ],
+  "difficultyBeatmaps": [
+    {
+      "characteristic": "Standard",
+      "difficulty": "Easy",
+      "beatmapAuthors": {
+        "mappers": [
+          "Freeek"
+        ],
+        "lighters": [
+          "Freeek"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 10.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "Easy.dat",
+      "lightshowDataFilename": "Lights.dat"
+    },
+    {
+      "characteristic": "Standard",
+      "difficulty": "Normal",
+      "beatmapAuthors": {
+        "mappers": [
+          "Freeek"
+        ],
+        "lighters": [
+          "Freeek"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 10.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "Easy.dat",
+      "lightshowDataFilename": "Lights.dat"
+    },
+    {
+      "characteristic": "Standard",
+      "difficulty": "Hard",
+      "beatmapAuthors": {
+        "mappers": [
+          "Freeek"
+        ],
+        "lighters": [
+          "Freeek"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 10.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "Easy.dat",
+      "lightshowDataFilename": "Lights.dat"
+    },
+    {
+      "characteristic": "Standard",
+      "difficulty": "Expert",
+      "beatmapAuthors": {
+        "mappers": [
+          "Freeek"
+        ],
+        "lighters": [
+          "Freeek"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 16.0,
+      "noteJumpStartBeatOffset": 1.0,
+      "beatmapDataFilename": "Easy.dat",
+      "lightshowDataFilename": "Lights.dat"
+    },
+    {
+      "characteristic": "Standard",
+      "difficulty": "ExpertPlus",
+      "beatmapAuthors": {
+        "mappers": [
+          "Freeek"
+        ],
+        "lighters": [
+          "Freeek"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 18.0,
+      "noteJumpStartBeatOffset": 0.5,
+      "beatmapDataFilename": "Easy.dat",
+      "lightshowDataFilename": "Lights.dat"
+    }
+  ]
+}
