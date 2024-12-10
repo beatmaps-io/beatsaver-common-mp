@@ -27,7 +27,7 @@ data class BSDifficultyV4(
     val spawnRotations: OptionalProperty<List<OptionalProperty<BSRotationsV4?>>?> = OptionalProperty.NotPresent,
     val spawnRotationsData: OptionalProperty<List<OptionalProperty<BSRotationsDataV4?>>?> = OptionalProperty.NotPresent,
     val njsEvents: OptionalProperty<List<OptionalProperty<BSNjsEventV4?>>?> = OptionalProperty.NotPresent,
-    val njsEventsData: OptionalProperty<List<OptionalProperty<BSNjsEventDataV4?>>?> = OptionalProperty.NotPresent,
+    val njsEventData: OptionalProperty<List<OptionalProperty<BSNjsEventDataV4?>>?> = OptionalProperty.NotPresent,
     override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
 ) : BSDiff {
     override fun noteCount() = colorNotes.orEmpty().size
@@ -233,7 +233,7 @@ data class BSNjsEventV4(
     @SerialName("i")
     override val index: OptionalProperty<Int?> = OptionalProperty.NotPresent
 ) : BSIndexedV4<BSNjsEventDataV4>(), IBSObject by BSObject(beat) {
-    override val prop = BSDifficultyV4::njsEventsData
+    override val prop = BSDifficultyV4::njsEventData
 }
 
 @Serializable

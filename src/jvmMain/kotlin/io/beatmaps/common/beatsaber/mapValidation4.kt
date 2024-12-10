@@ -120,7 +120,7 @@ fun BMValidator<BSDifficultyV4>.validateV4(info: ExtractedInfo, diff: BSDifficul
             njs.index.orNull() == null || njs.getData(diff) != null
         }
     }
-    validate(BSDifficultyV4::njsEventsData).notExistsBefore(ver, Schema4_1).correctType().optionalNotNull().validateForEach {
+    validate(BSDifficultyV4::njsEventData).notExistsBefore(ver, Schema4_1).correctType().optionalNotNull().validateForEach {
         validate(BSNjsEventDataV4::relativeNoteJumpSpeed).correctType().optionalNotNull()
         validate(BSNjsEventDataV4::usePreviousValue).correctType().optionalNotNull()
         validate(BSNjsEventDataV4::type).correctType().optionalNotNull()

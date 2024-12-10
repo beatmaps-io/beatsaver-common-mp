@@ -24,7 +24,7 @@ class SchemaTest41 {
         assertContentEquals(
             listOf(
                 violation4<CorrectType>("njsEvents"),
-                violation4<CorrectType>("njsEventsData")
+                violation4<CorrectType>("njsEventData")
             ),
             ex.constraintViolations
         )
@@ -56,7 +56,7 @@ class SchemaTest41 {
         assertContentEquals(
             listOf(
                 violation4<NotNull>("njsEvents"),
-                violation4<NotNull>("njsEventsData")
+                violation4<NotNull>("njsEventData")
             ),
             ex.constraintViolations
         )
@@ -76,14 +76,14 @@ class SchemaTest41 {
                 violation4<CorrectType>("njsEvents[3]"),
                 violation4<NotNull>("njsEvents[4]"),
 
-                violation4<CorrectType>("njsEventsData[0].d(relativeNoteJumpSpeed)"),
-                violation4<CorrectType>("njsEventsData[0].p(usePreviousValue)"),
-                violation4<CorrectType>("njsEventsData[0].e(type)"),
-                violation4<NotNull>("njsEventsData[1].d(relativeNoteJumpSpeed)"),
-                violation4<NotNull>("njsEventsData[1].p(usePreviousValue)"),
-                violation4<NotNull>("njsEventsData[1].e(type)"),
-                violation4<CorrectType>("njsEventsData[3]"),
-                violation4<NotNull>("njsEventsData[4]")
+                violation4<CorrectType>("njsEventData[0].d(relativeNoteJumpSpeed)"),
+                violation4<CorrectType>("njsEventData[0].p(usePreviousValue)"),
+                violation4<CorrectType>("njsEventData[0].e(type)"),
+                violation4<NotNull>("njsEventData[1].d(relativeNoteJumpSpeed)"),
+                violation4<NotNull>("njsEventData[1].p(usePreviousValue)"),
+                violation4<NotNull>("njsEventData[1].e(type)"),
+                violation4<CorrectType>("njsEventData[3]"),
+                violation4<NotNull>("njsEventData[4]")
             ),
             ex.constraintViolations
         )
