@@ -1,17 +1,11 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.api.ECharacteristic
-import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.beatsaber.CorrectType
-import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation4
-import io.beatmaps.common.schema.SchemaCommon.violation4L
 import org.junit.Test
-import org.valiktor.constraints.In
 import org.valiktor.constraints.NotNull
 import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 

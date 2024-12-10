@@ -1,7 +1,6 @@
 package io.beatmaps.common.schema
 
 import io.beatmaps.common.beatsaber.NodeNotPresent
-import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
