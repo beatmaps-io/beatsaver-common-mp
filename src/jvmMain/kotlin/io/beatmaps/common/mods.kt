@@ -12,7 +12,7 @@ object ModChecker {
 
     private fun List<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
     private fun checkDiff(diff: DifficultyDao, modName: String, allowAsSuggestion: Boolean = false) =
-        diff.requirements.containsIgnoreCase(modName) || (allowAsSuggestion && diff.suggestions.containsIgnoreCase(CHROMA))
+        diff.requirements.containsIgnoreCase(modName) || (allowAsSuggestion && diff.suggestions.containsIgnoreCase(modName))
 
     fun chroma(diff: DifficultyDao) = checkDiff(diff, CHROMA, true)
     fun me(diff: DifficultyDao) = checkDiff(diff, ME)
