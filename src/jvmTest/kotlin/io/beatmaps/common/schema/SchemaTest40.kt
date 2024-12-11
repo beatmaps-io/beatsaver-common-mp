@@ -71,6 +71,20 @@ class SchemaTest40 {
     }
 
     @Test
+    fun schemaAs4_1() {
+        val ex = validateFolder("4_0/as4_1")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf(
+                violation4<NodeNotPresent>("spawnRotations"),
+                violation4<NodeNotPresent>("spawnRotationsData")
+            ),
+            ex.constraintViolations
+        )
+    }
+
+    @Test
     fun schema() {
         val ex = validateFolder("4_0/default")
         assertNull(ex)
