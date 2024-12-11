@@ -30,7 +30,9 @@
       "environmentColor1": "#30ACFFFF",
       "obstaclesColor": "#FF3030FF",
       "environmentColor0Boost": "#D216D9FF",
-      "environmentColor1Boost": "#00FFA5FF"
+      "environmentColor1Boost": "#00FFA5FF",
+      "environmentColorW": "#D216D9FF",
+      "environmentColorWBoost": "#00FFA5FF"
     },
     {
       "overrideNotes": true,

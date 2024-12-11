@@ -233,14 +233,11 @@ data class MapColorSchemeV4(
         validate(MapColorSchemeV4::colorSchemeName).exists().correctType().optionalNotNull()
 
         listOf(
-            MapColorSchemeV4::saberAColor, MapColorSchemeV4::saberBColor, MapColorSchemeV4::environmentColor0, MapColorSchemeV4::environmentColor1,
-            MapColorSchemeV4::obstaclesColor, MapColorSchemeV4::environmentColor0Boost, MapColorSchemeV4::environmentColor1Boost
+            MapColorSchemeV4::saberAColor, MapColorSchemeV4::saberBColor, MapColorSchemeV4::environmentColor0, MapColorSchemeV4::environmentColor1, MapColorSchemeV4::obstaclesColor,
+            MapColorSchemeV4::environmentColor0Boost, MapColorSchemeV4::environmentColor1Boost, MapColorSchemeV4::environmentColorW, MapColorSchemeV4::environmentColorWBoost
         ).forEach { prop ->
             validate(prop).correctType().optionalNotNull().matches(regex)
         }
-
-        validate(MapColorSchemeV4::environmentColorW).notExistsAfter(ver, Schema4_0_1).correctType().optionalNotNull().matches(regex)
-        validate(MapColorSchemeV4::environmentColorWBoost).notExistsAfter(ver, Schema4_0_1).correctType().optionalNotNull().matches(regex)
     }
 
     companion object {
