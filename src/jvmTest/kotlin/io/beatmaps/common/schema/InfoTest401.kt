@@ -22,9 +22,7 @@ class InfoTest401 {
 
         assertContentEquals(
             listOf(
-                infoViolation<NodeNotPresent>("colorSchemes[0].useOverride"),
-                infoViolation<NodeNotPresent>("colorSchemes[0].environmentColorW"),
-                infoViolation<NodeNotPresent>("colorSchemes[0].environmentColorWBoost")
+                infoViolation<NodeNotPresent>("colorSchemes[0].useOverride")
             ),
             ex.constraintViolations
         )
