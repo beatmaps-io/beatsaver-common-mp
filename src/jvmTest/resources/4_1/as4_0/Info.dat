@@ -1,0 +1,42 @@
+{
+  "version": "4.0.0",
+  "song": {
+    "title": "BasicName",
+    "subTitle": "SubName",
+    "author": "AuthorName"
+  },
+  "audio": {
+    "songFilename": "click.ogg",
+    "songDuration": 64.0,
+    "audioDataFilename": "BPMInfo.dat",
+    "bpm": 120.0,
+    "lufs": 0.0,
+    "previewStartTime": 0.0,
+    "previewDuration": 0.0
+  },
+  "songPreviewFilename": "click.ogg",
+  "coverImageFilename": "click.png",
+  "environmentNames": [
+    "DefaultEnvironment"
+  ],
+  "colorSchemes": [],
+  "difficultyBeatmaps": [
+    {
+      "characteristic": "Standard",
+      "difficulty": "Easy",
+      "beatmapAuthors": {
+        "mappers": [
+          "LevelMapper"
+        ],
+        "lighters": [
+          "LevelLighter"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 0.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "Easy.dat"
+    }
+  ]
+}

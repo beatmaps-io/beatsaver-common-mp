@@ -1,6 +1,7 @@
 package io.beatmaps.common.schema
 
 import io.beatmaps.common.beatsaber.CorrectType
+import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import io.beatmaps.common.schema.SchemaCommon.violation4
 import org.junit.Test
@@ -28,6 +29,20 @@ class SchemaTest41 {
     fun basic() {
         val ex = validateFolder("4_1/basic")
         assertNull(ex)
+    }
+
+    @Test
+    fun schemaAs4_0() {
+        val ex = validateFolder("4_1/as4_0")
+        assertNotNull(ex)
+
+        assertContentEquals(
+            listOf(
+                violation4<NodeNotPresent>("njsEvents"),
+                violation4<NodeNotPresent>("njsEventData")
+            ),
+            ex.constraintViolations
+        )
     }
 
     @Test
