@@ -63,6 +63,9 @@ object User : IntIdTable("uploader", "id") {
     val curationAlerts = bool("curationAlerts")
     val reviewAlerts = bool("reviewAlerts")
     val followAlerts = bool("followAlerts")
+
+    val updatedAt = timestamp("updatedAt")
+    val statsUpdatedAt = timestamp("statsUpdatedAt")
 }
 
 data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
