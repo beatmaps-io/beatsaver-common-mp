@@ -15,6 +15,8 @@ data class SolrField<T>(private val collection: SolrCollection, val name: String
     infix fun greater(value: T) = greaterThan(this, "$value")
     infix fun eq(value: T) = eq(this, "$value")
     fun any() = eq(this, "*")
+
+    fun optional(): SolrField<T?> = SolrField(collection, name)
 }
 
 private fun betweenInc(field: SolrField<*>, from: String, to: String) =

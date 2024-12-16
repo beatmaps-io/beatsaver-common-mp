@@ -16,6 +16,7 @@ import org.apache.solr.common.params.ModifiableSolrParams
 abstract class SolrCollection {
     private val _fields = mutableListOf<SolrField<*>>()
     abstract val collection: String
+    abstract val id: SolrField<Int>
     open val retryPolicy = continueIf<Throwable> { (failure) -> failure is SolrServerException } + constantDelay(10) + stopAtAttempts(2)
 
     // Built in scoring for each result

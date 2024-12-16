@@ -12,7 +12,7 @@ import io.beatmaps.common.solr.parsers.EDisMaxQuery
 import org.apache.solr.client.solrj.SolrQuery
 
 object PlaylistSolr : SolrCollection() {
-    val id = pint("id")
+    override val id = pint("id")
     val sId = string("sId")
     val ownerId = pint("ownerId")
     val verified = boolean("verified")

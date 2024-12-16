@@ -1,0 +1,24 @@
+package io.beatmaps.common.api
+
+enum class UserSearchSort {
+    RELEVANCE,
+    BPM,
+    DURATION,
+    UPVOTES,
+    DOWNVOTES,
+    RATIO,
+    MAPS,
+    RANKED_MAPS,
+    FIRST_UPLOAD,
+    LAST_UPLOAD,
+    MAP_AGE;
+}
+
+enum class ApiOrder(val aria: String) {
+    DESC("descending"), ASC("ascending");
+
+    fun invert() = when (this) {
+        DESC -> ASC
+        ASC -> DESC
+    }
+}
