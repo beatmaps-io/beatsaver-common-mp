@@ -111,6 +111,8 @@ enum class EPlaylistType(val anonymousAllowed: Boolean, val orderable: Boolean) 
     companion object {
         private val map = entries.associateBy(EPlaylistType::name)
         fun fromString(type: String?) = map[type]
+
+        val publicTypes = entries.filter { it.anonymousAllowed }
     }
 }
 
