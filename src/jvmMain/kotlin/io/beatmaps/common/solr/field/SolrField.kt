@@ -8,6 +8,7 @@ data class SolrField<T>(private val collection: SolrCollection, val name: String
 
     fun betweenInc(from: T, to: T) = betweenInc(this, "$from", "$to")
     fun betweenExc(from: T, to: T) = betweenExc(this, "$from", "$to")
+    fun betweenNullableInc(from: T?, to: T?) = betweenNullableInc(this, from?.let { "$it" }, to?.let { "$it" })
 
     infix fun lessEq(value: T) = lessThanEq(this, "$value")
     infix fun greaterEq(value: T) = greaterThanEq(this, "$value")
@@ -17,7 +18,19 @@ data class SolrField<T>(private val collection: SolrCollection, val name: String
     fun any() = eq(this, "*")
 
     fun optional(): SolrField<T?> = SolrField(collection, name)
+    fun <T> coerce() = SolrField<T>(collection, name)
 }
+
+private fun betweenNullableInc(field: SolrField<*>, a: String?, b: String?) =
+    if (a != null && b != null) {
+        betweenInc(field, a, b)
+    } else if (a != null) {
+        greaterThanEq(field, a)
+    } else if (b != null) {
+        lessThanEq(field, b)
+    } else {
+        null
+    }
 
 private fun betweenInc(field: SolrField<*>, from: String, to: String) =
     SimpleFilter(field.name, "[$from TO $to]")
@@ -42,6 +55,7 @@ private fun eq(field: SolrField<*>, value: String) =
 
 fun <T> SolrField<List<T>>.betweenInc(from: T, to: T) = betweenInc(this, "$from", "$to")
 fun <T> SolrField<List<T>>.betweenExc(from: T, to: T) = betweenExc(this, "$from", "$to")
+fun <T> SolrField<List<T>>.betweenNullableInc(from: T?, to: T?) = betweenNullableInc(this, from?.let { "$it" }, to?.let { "$it" })
 
 infix fun <T> SolrField<List<T>>.lessEq(value: T) = lessThanEq(this, "$value")
 infix fun <T> SolrField<List<T>>.greaterEq(value: T) = greaterThanEq(this, "$value")

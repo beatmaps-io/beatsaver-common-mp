@@ -12,6 +12,14 @@ enum class UserSearchSort {
     FIRST_UPLOAD,
     LAST_UPLOAD,
     MAP_AGE;
+
+    companion object {
+        fun fromString(str: String?) = try {
+            UserSearchSort.valueOf(str ?: "")
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
 
 enum class ApiOrder(val aria: String) {
@@ -20,5 +28,13 @@ enum class ApiOrder(val aria: String) {
     fun invert() = when (this) {
         DESC -> ASC
         ASC -> DESC
+    }
+
+    companion object {
+        fun fromString(str: String?) = try {
+            ApiOrder.valueOf(str ?: "")
+        } catch (e: Exception) {
+            null
+        }
     }
 }

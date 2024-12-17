@@ -28,19 +28,19 @@ class SolrScale<T : Number>(private val field: SolrField<*>, private val min: T,
     override fun toText() = "scale(${field.toText()},$min,$max)"
 }
 
-class SolrDiv<T: Number>(private vararg val args: SolrFunction<T>) : SolrFunction<Float>() {
+class SolrDiv<T : Number>(private vararg val args: SolrFunction<T>) : SolrFunction<Float>() {
     override fun toText() = "div(${args.joinToString(",") { it.toText() }})"
 }
 
-class SolrSum<T: Number>(private vararg val args: SolrFunction<T>) : SolrFunction<T>() {
+class SolrSum<T : Number>(private vararg val args: SolrFunction<T>) : SolrFunction<T>() {
     override fun toText() = "sum(${args.joinToString(",") { it.toText() }})"
 }
 
-class SolrConstant<T: Number>(private val a: T) : SolrFunction<T>() {
+class SolrConstant<T : Number>(private val a: T) : SolrFunction<T>() {
     override fun toText() = "$a"
 }
 
-fun <T: Number> T.solr() = SolrConstant(this)
+fun <T : Number> T.solr() = SolrConstant(this)
 
 class SolrMs(private val a: SolrFunction<Instant>? = null, private val b: SolrFunction<Instant>? = null) : SolrFunction<Long>() {
     override fun toText() = listOfNotNull(a, b).joinToString(",", "ms(", ")") { it.toText() }

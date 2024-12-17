@@ -7,6 +7,7 @@ import io.beatmaps.common.solr.SolrCollection
 import io.beatmaps.common.solr.SolrDiv
 import io.beatmaps.common.solr.SolrScale
 import io.beatmaps.common.solr.SolrSum
+import io.beatmaps.common.solr.field.apply
 import io.beatmaps.common.solr.parsers.EDisMaxQuery
 import io.beatmaps.common.solr.solr
 import org.apache.solr.client.solrj.SolrQuery
@@ -48,7 +49,7 @@ object UserSolr : SolrCollection() {
         descriptionEn to 0.5
     )
 
-    private val boostFunction = SolrScale(totalMaps, 0f, 1f)
+    private val boostFunction = SolrScale(totalMaps, 0.5f, 1f)
 
     fun newQuery() =
         EDisMaxQuery()
@@ -59,26 +60,27 @@ object UserSolr : SolrCollection() {
                 PercentageMinimumMatchExpression(-0.5f)
             )
 
-    private val ratio = SolrDiv(totalUpvotes, SolrSum(totalUpvotes, totalDownvotes, 1.solr()))
+    private val ratio = SolrDiv(totalUpvotes.coerce(), SolrSum(totalUpvotes.coerce(), totalDownvotes.coerce(), 0.001f.solr()))
 
     fun addSortArgs(q: SolrQuery, sort: UserSearchSort, order: ApiOrder): SolrQuery {
-        val field = when(sort) {
-            UserSearchSort.RELEVANCE -> score
-            UserSearchSort.BPM -> avgBpm
-            UserSearchSort.DURATION -> avgDuration
-            UserSearchSort.UPVOTES -> totalUpvotes
-            UserSearchSort.DOWNVOTES -> totalDownvotes
-            UserSearchSort.RATIO -> ratio
-            UserSearchSort.MAPS -> totalMaps
-            UserSearchSort.RANKED_MAPS -> rankedMaps
-            UserSearchSort.FIRST_UPLOAD -> firstUpload
-            UserSearchSort.LAST_UPLOAD -> lastUpload
-            UserSearchSort.MAP_AGE -> mapAge
+        val (field, filter) = when (sort) {
+            UserSearchSort.RELEVANCE -> score to null
+            UserSearchSort.BPM -> avgBpm to (avgBpm greater 0f)
+            UserSearchSort.DURATION -> avgDuration to (avgDuration greater 0f)
+            UserSearchSort.UPVOTES -> totalUpvotes to (totalUpvotes greater 0)
+            UserSearchSort.DOWNVOTES -> totalDownvotes to (totalDownvotes greater 0)
+            UserSearchSort.RATIO -> ratio to (totalUpvotes greater 0)
+            UserSearchSort.MAPS -> totalMaps to (totalMaps greater 0)
+            UserSearchSort.RANKED_MAPS -> rankedMaps to (rankedMaps greater 0)
+            UserSearchSort.FIRST_UPLOAD -> firstUpload to firstUpload.any()
+            UserSearchSort.LAST_UPLOAD -> lastUpload to lastUpload.any()
+            UserSearchSort.MAP_AGE -> mapAge to (mapAge greater 0)
         }
-        val solrOrder = when(order) {
+        val solrOrder = when (order) {
             ApiOrder.DESC -> SolrQuery.ORDER.desc
             ApiOrder.ASC -> SolrQuery.ORDER.asc
         }
+        filter?.let { q.apply(it) }
         return q.setSorts(listOf(field.sort(solrOrder)))
     }
 
