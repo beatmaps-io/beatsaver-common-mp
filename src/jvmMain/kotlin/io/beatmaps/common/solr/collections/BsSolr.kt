@@ -12,7 +12,7 @@ object BsSolr : SolrCollection() {
     val created = pdate("created")
     val deleted = pdate("deleted")
     val description = string("description")
-    val id = pint("id")
+    override val id = pint("id")
     val mapId = string("mapId")
     val mapper = string("mapper")
     val mapperIds = pints("mapperIds")

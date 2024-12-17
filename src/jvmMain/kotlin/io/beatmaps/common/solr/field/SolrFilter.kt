@@ -24,5 +24,9 @@ data class CompoundFilter(val filter: String) : SolrFilter {
     override fun not() = CompoundFilter("NOT ($filter)")
 }
 
+@JvmName("applyOptional")
+fun SolrQuery.apply(filter: SolrFilter?): SolrQuery =
+    if (filter == null) this else apply(filter)
+
 fun SolrQuery.apply(filter: SolrFilter): SolrQuery =
     addFilterQuery(filter.toText())

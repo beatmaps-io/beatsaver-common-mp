@@ -10,7 +10,7 @@ class SolrDocumentBuilder(private val inputDoc: SolrInputDocument) {
         inputDoc.setField(field.name, value?.toString())
 
     operator fun <T> set(field: SolrField<T>, value: T?) =
-        inputDoc.setField(field.name, value)
+        inputDoc.setField(field.name, if (value is Instant) value.toString() else value)
 
     operator fun <T, U : EntityID<T>?> set(field: SolrField<T>, value: U) =
         inputDoc.setField(field.name, value?.value)
