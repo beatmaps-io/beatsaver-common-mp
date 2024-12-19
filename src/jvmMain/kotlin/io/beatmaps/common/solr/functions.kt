@@ -1,6 +1,8 @@
 package io.beatmaps.common.solr
 
+import io.beatmaps.common.solr.field.FRangeFilter
 import io.beatmaps.common.solr.field.SolrField
+import io.beatmaps.common.solr.field.SolrFilter
 import kotlinx.datetime.Instant
 import org.apache.solr.client.solrj.SolrQuery
 
@@ -64,6 +66,11 @@ abstract class SolrFunction<T> {
     fun sort(order: SolrQuery.ORDER) = SolrQuery.SortClause(toText(), order)
     fun asc() = sort(SolrQuery.ORDER.asc)
     fun desc() = sort(SolrQuery.ORDER.desc)
+
+    open infix fun greater(value: T): SolrFilter = FRangeFilter(this, value, inclusiveLower = false)
+    open infix fun greaterEq(value: T): SolrFilter = FRangeFilter(this, value)
+    open infix fun less(value: T): SolrFilter = FRangeFilter(this, upper = value, inclusiveUpper = false)
+    open infix fun lessEq(value: T): SolrFilter = FRangeFilter(this, upper = value)
 }
 
 object SolrScore : SolrFunction<Float>() {
