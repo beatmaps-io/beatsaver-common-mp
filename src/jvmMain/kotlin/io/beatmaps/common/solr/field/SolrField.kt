@@ -15,6 +15,7 @@ data class SolrField<T>(private val collection: SolrCollection, val name: String
     infix fun less(value: T) = lessThan(this, "$value")
     infix fun greater(value: T) = greaterThan(this, "$value")
     infix fun eq(value: T) = eq(this, "$value")
+    infix fun inList(values: List<T>) = inList(this, values.map { "$it" })
     fun any() = eq(this, "*")
 
     fun optional(): SolrField<T?> = SolrField(collection, name)
@@ -50,6 +51,14 @@ private fun lessThan(field: SolrField<*>, value: String) =
 private fun greaterThan(field: SolrField<*>, value: String) =
     SimpleFilter(field.name, "{$value TO *}")
 
+@JvmName("privateInList")
+private fun inList(field: SolrField<*>, values: List<String>) =
+    if (values.isEmpty()) {
+        null
+    } else {
+        SimpleFilter(field.name, values.joinToString(" OR ", "(", ")") { if (it.contains(' ')) "\"$it\"" else it })
+    }
+
 private fun eq(field: SolrField<*>, value: String) =
     SimpleFilter(field.name, value, true)
 
@@ -62,3 +71,4 @@ infix fun <T> SolrField<List<T>>.greaterEq(value: T) = greaterThanEq(this, "$val
 infix fun <T> SolrField<List<T>>.less(value: T) = lessThan(this, "$value")
 infix fun <T> SolrField<List<T>>.greater(value: T) = greaterThan(this, "$value")
 infix fun <T> SolrField<List<T>>.eq(value: T) = eq(this, "$value")
+infix fun <T> SolrField<List<T>>.inList(values: List<T>) = inList(this, values.map { "$it" })

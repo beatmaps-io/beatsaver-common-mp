@@ -35,6 +35,12 @@ object BsSolr : SolrCollection() {
     val bpm = pfloat("bpm")
     val duration = pint("duration")
     val environment = strings("environment")
+    val characteristics = strings("characteristics")
+    val upvotes = pint("upvotes")
+    val downvotes = pint("downvotes")
+    val votes = pint("votes")
+    val blStars = pfloats("blStars")
+    val ssStars = pfloats("ssStars")
 
     // Copy fields
     val authorEn = string("author_en")
