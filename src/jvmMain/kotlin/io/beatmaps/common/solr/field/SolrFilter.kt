@@ -13,6 +13,8 @@ interface ComposableSolrFilter : SolrFilter {
     fun not(): ComposableSolrFilter
 }
 
+fun List<ComposableSolrFilter>.anyOf() = reduceOrNull { a, b -> a or b }
+
 data class FRangeFilter<T>(val func: SolrFunction<T>, val lower: T? = null, val upper: T? = null, val inclusiveLower: Boolean? = null, val inclusiveUpper: Boolean? = null) : SolrFilter {
     private val props = mapOf(
         "u" to upper,
