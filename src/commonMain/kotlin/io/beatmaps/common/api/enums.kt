@@ -128,6 +128,14 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
     }
 }
 
+/**
+ * Instructions for checking the official environments list:
+ * - Open Official Editor and Load Any Map
+ * - Open RUE
+ * - Search Components for "DifficultyBeatmapView" -> Select Component
+ * - Filter fields for "_environmentsListModel"
+ * - Use "_normalEnvironmentSerializedNames", optionally check "_normalEnvironmentNames"
+ */
 enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolean, val v3: Boolean, val filterable: Boolean = true) : HumanEnum<EBeatsaberEnvironment> {
     DefaultEnvironment("Default", false, false),
     TriangleEnvironment("Triangle", false, false),
@@ -173,7 +181,8 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     HipHopEnvironment("HipHop", false, true),
     ColliderEnvironment("Collider", false, true),
     BritneyEnvironment("Britney", false, true),
-    Monstercat2Environment("Monstercat 2", false, true);
+    Monstercat2Environment("Monstercat 2", false, true),
+    MetallicaEnvironment("Metallica", false, true);
 
     fun color() = when {
         v3 -> "purple"
