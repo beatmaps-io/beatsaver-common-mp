@@ -1,6 +1,5 @@
 package io.beatmaps.common.schema
 
-import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.InFiles
 import io.beatmaps.common.beatsaber.MetadataLength
