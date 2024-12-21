@@ -1,5 +1,6 @@
 package io.beatmaps.common.schema
 
+import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.beatsaber.CorrectType
 import io.beatmaps.common.beatsaber.InFiles
 import io.beatmaps.common.beatsaber.MetadataLength
@@ -68,6 +69,8 @@ class InfoTest20 {
                 infoViolation<In<String>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty"),
                 infoViolation<In<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._noteJumpMovementSpeed"),
+                infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._noteJumpStartBeatOffset"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._difficultyLabel"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOffset"),
                 infoViolation<NotNull>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._customData._editorOldOffset"),
@@ -176,6 +179,8 @@ class InfoTest20 {
                 infoViolation<In<String>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficulty"),
                 infoViolation<In<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._difficultyRank"),
                 infoViolation<InFiles>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapFilename"),
+                infoViolation<CorrectType>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._noteJumpMovementSpeed"),
+                infoViolation<CorrectType>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._noteJumpStartBeatOffset"),
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
                 infoViolation<NodeNotPresent>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._beatmapColorSchemeIdx"),
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),

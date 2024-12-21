@@ -306,15 +306,18 @@ interface DifficultyBeatmapCustomDataBase {
 
 @Serializable
 data class DifficultyBeatmap(
-    val _difficulty: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val _difficultyRank: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_difficulty") @ValidationName("_difficulty")
+    val difficulty: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_difficultyRank") @ValidationName("_difficultyRank")
+    val difficultyRank: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_beatmapFilename") @ValidationName("_beatmapFilename")
     override val beatmapFilename: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    @SerialName("_noteJumpMovementSpeed")
+    @SerialName("_noteJumpMovementSpeed") @ValidationName("_noteJumpMovementSpeed")
     override val noteJumpMovementSpeed: OptionalProperty<Float?> = OptionalProperty.NotPresent,
-    @SerialName("_noteJumpStartBeatOffset")
+    @SerialName("_noteJumpStartBeatOffset") @ValidationName("_noteJumpStartBeatOffset")
     override val noteJumpStartBeatOffset: OptionalProperty<Float?> = OptionalProperty.NotPresent,
-    val _beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
+    @SerialName("_beatmapColorSchemeIdx") @ValidationName("_beatmapColorSchemeIdx")
+    val beatmapColorSchemeIdx: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_environmentNameIdx") @ValidationName("_environmentNameIdx")
     override val environmentIndex: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
@@ -373,17 +376,17 @@ data class DifficultyBeatmap(
         )
 
         val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()
-        validate(DifficultyBeatmap::_difficulty).exists()
+        validate(DifficultyBeatmap::difficulty).exists()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
-            .validate(UniqueDiff(_difficulty.orNull())) {
+            .validate(UniqueDiff(difficulty.orNull())) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
-                    it != this@DifficultyBeatmap && it._difficulty == this@DifficultyBeatmap._difficulty
+                    it != this@DifficultyBeatmap && it.difficulty == this@DifficultyBeatmap.difficulty
                 } == false
             }
-        validate(DifficultyBeatmap::_difficultyRank).exists().isIn(EDifficulty.entries.map { it.idx })
-            .validate(UniqueDiff(EDifficulty.fromInt(_difficultyRank.or(0))?.name ?: "Unknown")) {
+        validate(DifficultyBeatmap::difficultyRank).exists().isIn(EDifficulty.entries.map { it.idx })
+            .validate(UniqueDiff(EDifficulty.fromInt(difficultyRank.or(0))?.name ?: "Unknown")) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
-                    it != this@DifficultyBeatmap && it._difficultyRank == this@DifficultyBeatmap._difficultyRank
+                    it != this@DifficultyBeatmap && it.difficultyRank == this@DifficultyBeatmap.difficultyRank
                 } == false
             }
         validate(DifficultyBeatmap::beatmapFilename).exists().optionalNotNull()
@@ -395,16 +398,18 @@ data class DifficultyBeatmap(
                 }
             }
 
+        validate(DifficultyBeatmap::noteJumpMovementSpeed).correctType().optionalNotNull()
+        validate(DifficultyBeatmap::noteJumpStartBeatOffset).correctType().optionalNotNull()
         validate(DifficultyBeatmap::customData).optionalNotNull().correctType().validate()
 
         // V2.1
-        validate(DifficultyBeatmap::_beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
+        validate(DifficultyBeatmap::beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
             .isLessThan(max(1, info.mapInfo.getColorSchemes().size)).notExistsBefore(ver, Schema2_1)
         validate(DifficultyBeatmap::environmentIndex).optionalNotNull().isGreaterThanOrEqualTo(0)
             .isLessThan(max(1, info.mapInfo.getEnvironments().size)).notExistsBefore(ver, Schema2_1)
     }
 
-    override fun enumValue() = EDifficulty.fromInt(_difficultyRank.or(0)) ?: searchEnum(_difficulty.or(""))
+    override fun enumValue() = EDifficulty.fromInt(difficultyRank.or(0)) ?: searchEnum(difficulty.or(""))
     override fun extraFiles() = setOfNotNull(beatmapFilename.orNull())
 }
 
