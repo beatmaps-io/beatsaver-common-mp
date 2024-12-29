@@ -1,3 +1,5 @@
+@file:Suppress("internal", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package io.beatmaps.common.db
 
 import org.jetbrains.exposed.dao.id.EntityID
@@ -18,6 +20,7 @@ import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
 import java.sql.ResultSet
+import kotlin.internal.LowPriorityInOverloadResolution
 
 class UpdateReturningStatement(
     private val table: Table,
@@ -28,6 +31,7 @@ class UpdateReturningStatement(
 
     private val values: MutableMap<Column<*>, Any?> = LinkedHashMap()
 
+    @LowPriorityInOverloadResolution
     operator fun <S> set(column: Column<S>, value: S) {
         when {
             values.containsKey(column) -> error("$column is already initialized")
@@ -43,7 +47,13 @@ class UpdateReturningStatement(
     }
 
     @JvmName("setWithEntityIdValue")
-    operator fun <S : Comparable<S>, ID : EntityID<S>, E : S?> set(column: Column<ID>, value: E) {
+    operator fun <S : Comparable<E>, E : Any, ID : EntityID<S>> set(column: Column<ID>, value: S) {
+        require(!values.containsKey(column)) { "$column is already initialized" }
+        values[column] = value
+    }
+
+    @JvmName("setWithNullableEntityIdValue")
+    operator fun <S : Comparable<S>, ID : EntityID<S>?> set(column: Column<ID>, value: S?) {
         require(!values.containsKey(column)) { "$column is already initialized" }
         values[column] = value
     }

@@ -65,16 +65,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     }
 }
 
-fun ColumnSet.joinOwner() = join(User, JoinType.INNER, onColumn = Playlist.owner, otherColumn = User.id)
 fun ColumnSet.joinPlaylistCurator() = join(curatorAlias, JoinType.LEFT, onColumn = Playlist.curator, otherColumn = curatorAlias[User.id])
-
-fun Iterable<ResultRow>.handleOwner() = this.map { row ->
-    if (row.hasValue(User.id)) {
-        UserDao.wrapRow(row)
-    }
-
-    row
-}
 
 fun Iterable<ResultRow>.handleCurator() = this.map { row ->
     if (row.hasValue(curatorAlias[User.id]) && row[Playlist.curator] != null) {

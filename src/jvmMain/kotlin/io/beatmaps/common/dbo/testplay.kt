@@ -4,7 +4,6 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 
@@ -17,8 +16,6 @@ object Testplay : IntIdTable("dev.testplay", "testplayId") {
 
     val createdAt = timestamp("createdAt")
     val feedbackAt = timestamp("feedbackAt").nullable()
-
-    fun joinUploader() = join(User, JoinType.INNER, onColumn = userId, otherColumn = User.id)
 }
 
 data class TestplayDao(val key: EntityID<Int>) : IntEntity(key) {
