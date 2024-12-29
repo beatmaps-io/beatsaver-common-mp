@@ -4,9 +4,11 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ColumnSet
 import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.TextColumnType
 import org.jetbrains.exposed.sql.alias
@@ -100,6 +102,19 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val curationAlerts by User.curationAlerts
     val reviewAlerts by User.reviewAlerts
     val followAlerts by User.followAlerts
+}
+
+fun ColumnSet.joinUser(column: Column<EntityID<Int>>, type: JoinType = JoinType.INNER, alias: Alias<User>? = null) = join(alias ?: User, type, column, alias?.let { it[User.id] } ?: User.id)
+fun Iterable<ResultRow>.handleUser(alias: Alias<User>? = null) = this.map { row ->
+    if (row.hasValue(User.id)) {
+        UserDao.wrapRow(row)
+    }
+
+    if (alias != null && row.hasValue(alias[User.id])) {
+        UserDao.wrapRow(row, alias)
+    }
+
+    row
 }
 
 fun ColumnSet.joinPatreon() = join(Patreon, JoinType.LEFT, onColumn = User.patreonId, otherColumn = Patreon.id)

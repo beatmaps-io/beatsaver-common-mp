@@ -117,7 +117,8 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     fun enrichTestplays() = this.also {
         val v = versions.filter { it.value.state != EMapState.Published }
         if (v.isNotEmpty()) {
-            val testplayResults = Testplay.joinUploader()
+            val testplayResults = Testplay
+                .joinUser(Testplay.userId)
                 .selectAll()
                 .where {
                     Testplay.versionId inList v.map { it.key.value }.toList()
