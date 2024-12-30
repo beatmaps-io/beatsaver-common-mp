@@ -65,7 +65,7 @@ object Playlist : IntIdTable("playlist", "playlistId") {
     }
 }
 
-fun ColumnSet.joinPlaylistCurator() = join(curatorAlias, JoinType.LEFT, onColumn = Playlist.curator, otherColumn = curatorAlias[User.id])
+fun ColumnSet.joinPlaylistCurator() = joinUser(Playlist.curator, alias = curatorAlias)
 
 fun Iterable<ResultRow>.handleCurator() = this.map { row ->
     if (row.hasValue(curatorAlias[User.id]) && row[Playlist.curator] != null) {

@@ -30,9 +30,19 @@ abstract class MapReportDataBase : IIssueData {
     override val typeEnum = EIssueType.MapReport
 }
 
+abstract class PlaylistReportDataBase : IIssueData {
+    abstract val playlistId: Int
+    override val typeEnum = EIssueType.PlaylistReport
+}
+
 abstract class UserReportDataBase : IIssueData {
     abstract val userId: Int
     override val typeEnum = EIssueType.UserReport
+}
+
+abstract class ReviewReportDataBase : IIssueData {
+    abstract val reviewId: Int
+    override val typeEnum = EIssueType.ReviewReport
 }
 
 // Classes for db serialization. Should contain no extra fields or logic
@@ -44,5 +54,13 @@ sealed interface IDbIssueData : IIssueData
 data class MapReportData(override val mapId: String) : IDbIssueData, MapReportDataBase()
 
 @Serializable
+@SerialName("PlaylistReport")
+data class PlaylistReportData(override val playlistId: Int) : IDbIssueData, PlaylistReportDataBase()
+
+@Serializable
 @SerialName("UserReport")
 data class UserReportData(override val userId: Int) : IDbIssueData, UserReportDataBase()
+
+@Serializable
+@SerialName("ReviewReport")
+data class ReviewReportData(override val reviewId: Int) : IDbIssueData, ReviewReportDataBase()

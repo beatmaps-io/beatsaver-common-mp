@@ -105,6 +105,8 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
 }
 
 fun ColumnSet.joinUser(column: Column<EntityID<Int>>, type: JoinType = JoinType.INNER, alias: Alias<User>? = null) = join(alias ?: User, type, column, alias?.let { it[User.id] } ?: User.id)
+@JvmName("joinUserNullable")
+fun ColumnSet.joinUser(column: Column<EntityID<Int>?>, type: JoinType = JoinType.LEFT, alias: Alias<User>? = null) = join(alias ?: User, type, column, alias?.let { it[User.id] } ?: User.id)
 fun Iterable<ResultRow>.handleUser(alias: Alias<User>? = null) = this.map { row ->
     if (row.hasValue(User.id)) {
         UserDao.wrapRow(row)
