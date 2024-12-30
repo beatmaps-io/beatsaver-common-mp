@@ -19,30 +19,30 @@ enum class EIssueType(private val _human: String) : HumanEnum<EIssueType> {
     }
 }
 
+// Base interface / classes
 interface IIssueData {
     val typeEnum: EIssueType
 }
 
-@Serializable
-sealed interface IDbIssueData : IIssueData
-
-interface IMapReportData {
-    val mapId: String
-}
-
-@Serializable
-@SerialName("MapReport")
-data class MapReportData(override val mapId: String) : IDbIssueData, IMapReportData {
+abstract class MapReportDataBase : IIssueData {
+    abstract val mapId: String
     fun id() = mapId.toIntOrNull(16)
     override val typeEnum = EIssueType.MapReport
 }
 
-interface IUserReportData {
-    val userId: Int
+abstract class UserReportDataBase : IIssueData {
+    abstract val userId: Int
+    override val typeEnum = EIssueType.UserReport
 }
+
+// Classes for db serialization. Should contain no extra fields or logic
+@Serializable
+sealed interface IDbIssueData : IIssueData
+
+@Serializable
+@SerialName("MapReport")
+data class MapReportData(override val mapId: String) : IDbIssueData, MapReportDataBase()
 
 @Serializable
 @SerialName("UserReport")
-data class UserReportData(override val userId: Int) : IDbIssueData, IUserReportData {
-    override val typeEnum = EIssueType.UserReport
-}
+data class UserReportData(override val userId: Int) : IDbIssueData, UserReportDataBase()
