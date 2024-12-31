@@ -53,9 +53,14 @@ class UpdateReturningStatement(
     }
 
     @JvmName("setWithNullableEntityIdValue")
+    @Suppress("UNCHECKED_CAST")
     operator fun <S : Comparable<S>, ID : EntityID<S>?> set(column: Column<ID>, value: S?) {
         require(!values.containsKey(column)) { "$column is already initialized" }
-        values[column] = value
+        require(column.columnType.nullable || value != null) {
+            "Trying to set null to not nullable column $column"
+        }
+        val entityId: EntityID<S>? = value?.let { EntityID(it, (column.foreignKey?.targetTable ?: column.table) as IdTable<S>) }
+        values[column] = entityId
     }
 
     operator fun <T, S : T, E : Expression<S>> set(column: Column<T>, value: E) {
