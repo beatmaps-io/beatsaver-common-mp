@@ -45,6 +45,7 @@ data class IssueCommentDao(val key: EntityID<Int>) : IntEntity(key) {
     companion object : IntEntityClass<IssueCommentDao>(IssueComment)
     val issue by IssueDao referencedOn IssueComment.issueId
     val user by UserDao referencedOn IssueComment.userId
+    val userId by IssueComment.userId
     val public by IssueComment.public
     val text by IssueComment.text
     val createdAt by IssueComment.createdAt
