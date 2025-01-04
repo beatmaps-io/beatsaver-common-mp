@@ -21,6 +21,8 @@ object Alert : IntIdTable("alert", "alertId") {
     val sentAt = timestamp("sentAt")
 
     fun insert(alertHead: String, alertBody: String, alertType: EAlertType, recipientIds: List<Int>) {
+        if (recipientIds.isEmpty()) return
+
         val newAlert = insert {
             it[head] = alertHead
             it[body] = alertBody
