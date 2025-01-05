@@ -17,7 +17,7 @@ enum class EIssueType(private val _human: String, val curatorAllowed: Boolean = 
         private val map = entries.associateBy(EIssueType::name)
         fun fromName(name: String?) = map[name]
 
-        val curatorTypes =  entries.filter(EIssueType::curatorAllowed)
+        val curatorTypes = entries.filter(EIssueType::curatorAllowed)
     }
 }
 
