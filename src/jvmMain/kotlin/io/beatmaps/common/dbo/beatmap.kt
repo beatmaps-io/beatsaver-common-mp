@@ -69,6 +69,7 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
     val tags = array("tags", VarCharColumnType(255)).nullable()
 
     val declaredAi = postgresEnumeration<AiDeclarationType>("declaredAi", "aiDeclarationType")
+    val nsfw = bool("nsfw")
 }
 
 data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
@@ -109,6 +110,7 @@ data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
     val reviews by Beatmap.reviews
 
     val declaredAi by Beatmap.declaredAi
+    val nsfw by Beatmap.nsfw
 
     var bookmarked: Boolean? = null
 
