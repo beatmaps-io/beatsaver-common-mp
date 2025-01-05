@@ -3,12 +3,12 @@ package io.beatmaps.common.api
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-enum class EIssueType(private val _human: String) : HumanEnum<EIssueType> {
+enum class EIssueType(private val _human: String, val curatorAllowed: Boolean = false) : HumanEnum<EIssueType> {
     MapperApplication("Verified Mapper Application"),
     MapReport("Map Report"),
     UserReport("User Report"),
     PlaylistReport("Playlist Report"),
-    ReviewReport("Review Report");
+    ReviewReport("Review Report", true);
 
     override fun enumName() = name
     override fun human() = _human
@@ -16,6 +16,8 @@ enum class EIssueType(private val _human: String) : HumanEnum<EIssueType> {
     companion object {
         private val map = entries.associateBy(EIssueType::name)
         fun fromName(name: String?) = map[name]
+
+        val curatorTypes =  entries.filter(EIssueType::curatorAllowed)
     }
 }
 
