@@ -12,6 +12,10 @@ sealed interface IModLogOpAction
 data class InfoEditData(val oldTitle: String, val oldDescription: String, val newTitle: String, val newDescription: String, val oldTags: List<MapTag>? = null, val newTags: List<MapTag>? = null) : IModLogOpAction
 
 @Serializable
+@SerialName("FlagsEdit")
+data class FlagsEditData(val ai: Boolean? = null, val nsfw: Boolean? = null) : IModLogOpAction
+
+@Serializable
 @SerialName("Deleted")
 data class DeletedData(val reason: String) : IModLogOpAction
 
@@ -56,7 +60,7 @@ data class ReplyDeleteData(val reason: String, val text: String? = null) : IModL
 data class RevokeSessionsData(val all: Boolean, val reason: String? = null) : IModLogOpAction
 
 enum class ModLogOpType(val actionClass: KClass<*>) {
-    InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
+    InfoEdit(InfoEditData::class), FlagsEdit(FlagsEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
     Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
     ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class);
 
