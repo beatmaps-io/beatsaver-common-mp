@@ -47,7 +47,7 @@ data class ModLogDao(val key: EntityID<Int>) : IntEntity(key) {
     private val type by ModLog.type
     private val action by ModLog.action
 
-    fun realType() = ModLogOpType.values()[type]
+    fun realType() = ModLogOpType.entries[type]
     fun realAction() = try {
         json.decodeFromString(action)
     } catch (e: Exception) {
