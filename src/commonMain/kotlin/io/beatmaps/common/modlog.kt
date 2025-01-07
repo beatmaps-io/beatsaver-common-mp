@@ -60,9 +60,10 @@ data class ReplyDeleteData(val reason: String, val text: String? = null) : IModL
 data class RevokeSessionsData(val all: Boolean, val reason: String? = null) : IModLogOpAction
 
 enum class ModLogOpType(val actionClass: KClass<*>) {
-    InfoEdit(InfoEditData::class), FlagsEdit(FlagsEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
+    InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
     Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
-    ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class);
+    ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class),
+    FlagsEdit(FlagsEditData::class);
 
     companion object {
         private val map = entries.associateBy(ModLogOpType::actionClass)
