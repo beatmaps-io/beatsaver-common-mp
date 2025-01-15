@@ -65,6 +65,7 @@ object User : IntIdTable("uploader", "id") {
     val curationAlerts = bool("curationAlerts")
     val reviewAlerts = bool("reviewAlerts")
     val followAlerts = bool("followAlerts")
+    val blurnsfw = bool("blurnsfw")
 
     val updatedAt = timestamp("updatedAt")
     val statsUpdatedAt = timestamp("statsUpdatedAt")
@@ -96,6 +97,7 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val suspendedAt by User.suspendedAt
     val bookmarksId by User.bookmarksId
     val emailChangedAt by User.emailChangedAt
+    val blurnsfw by User.blurnsfw
 
     val patreon by PatreonDao optionalReferencedOn User.patreonId
 
