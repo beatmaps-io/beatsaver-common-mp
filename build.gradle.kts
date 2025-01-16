@@ -1,8 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    kotlin("multiplatform") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20"
+    kotlin("multiplatform") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("maven-publish")
 }
@@ -22,12 +23,10 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(16))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "16"
-        }
+        compilerOptions.jvmTarget = JvmTarget.JVM_21
         testRuns["test"].executionTask.configure {
             useJUnit()
         }
