@@ -14,7 +14,7 @@ actual class Version actual constructor(val version: String?) : Comparable<Versi
     actual val minor = numbers.getOrElse(1) { 0 }
     actual val patch = numbers.getOrElse(2) { 0 }
 
-    override fun compareTo(other: Version?): Int {
+    actual override fun compareTo(other: Version?): Int {
         if (other == null) return 1
 
         return numbers.zip(other.numbers)

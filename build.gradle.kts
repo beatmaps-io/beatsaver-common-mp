@@ -1,8 +1,8 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    kotlin("multiplatform") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.20"
+    kotlin("multiplatform") version "2.0.20"
+    kotlin("plugin.serialization") version "2.0.20"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("maven-publish")
 }
@@ -18,6 +18,9 @@ repositories {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(16))
     }

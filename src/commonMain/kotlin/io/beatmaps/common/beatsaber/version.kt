@@ -4,4 +4,6 @@ expect class Version(version: String?) : Comparable<Version?> {
     val major: Int
     val minor: Int
     val patch: Int
+
+    override operator fun compareTo(other: Version?): Int
 }
