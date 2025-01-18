@@ -22,8 +22,8 @@ enum class UserSearchSort {
     }
 }
 
-enum class ApiOrder(val aria: String) {
-    DESC("descending"), ASC("ascending");
+enum class ApiOrder {
+    DESC, ASC;
 
     fun invert() = when (this) {
         DESC -> ASC
