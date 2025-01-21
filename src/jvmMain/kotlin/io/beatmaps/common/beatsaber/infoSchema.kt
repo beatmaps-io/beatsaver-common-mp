@@ -19,6 +19,7 @@ import org.jaudiotagger.audio.generic.GenericAudioHeader
 import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
+import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -61,6 +62,7 @@ abstract class BaseMapInfo {
                     Thumbnails
                         .of(image)
                         .size(256, 256)
+                        .imageType(BufferedImage.TYPE_INT_RGB)
                         .outputFormat("JPEG")
                         .outputQuality(0.8)
                         .toOutputStream(newImageStream)
