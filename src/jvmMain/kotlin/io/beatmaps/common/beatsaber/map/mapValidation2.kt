@@ -1,5 +1,19 @@
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
+import io.beatmaps.common.beatsaber.BMValidator
+import io.beatmaps.common.beatsaber.CutDirection
+import io.beatmaps.common.beatsaber.correctType
+import io.beatmaps.common.beatsaber.custom.CustomJsonEventV2
+import io.beatmaps.common.beatsaber.exists
+import io.beatmaps.common.beatsaber.isBetween
+import io.beatmaps.common.beatsaber.isIn
+import io.beatmaps.common.beatsaber.matches
+import io.beatmaps.common.beatsaber.optionalNotNull
+import io.beatmaps.common.beatsaber.validateEach
+import io.beatmaps.common.beatsaber.validateForEach
+import io.beatmaps.common.beatsaber.validateOptional
+import io.beatmaps.common.beatsaber.validateWith
+import io.beatmaps.common.beatsaber.vivify.Vivify.validateVivify
 import io.beatmaps.common.zip.ExtractedInfo
 
 fun BMValidator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
@@ -27,8 +41,13 @@ fun BMValidator<BSDifficulty>.validate(info: ExtractedInfo, maxBeat: Float) {
         }
     }
     validate(BSDifficulty::customData).correctType().optionalNotNull().validateOptional {
-        validate(BSCustomDataV2::_time).correctType().optionalNotNull()
+        validate(BSCustomDataV2::time).correctType().optionalNotNull()
         validate(BSCustomDataV2::_BPMChanges).correctType().optionalNotNull().validateWith(::validateBPMChange)
+        validate(BSCustomDataV2::customEvents).correctType().optionalNotNull().validateForEach {
+            info.vivifyAssets?.let { assets ->
+                validate(CustomJsonEventV2::data).validateVivify(assets)
+            }
+        }
     }
     validate(BSDifficulty::_BPMChanges).correctType().optionalNotNull().validateWith(::validateBPMChange)
 }

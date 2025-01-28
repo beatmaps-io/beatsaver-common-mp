@@ -1,6 +1,6 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
@@ -32,7 +32,7 @@ data class BSLightingV4(
     val fxEventBoxes: OptionalProperty<List<OptionalProperty<BSFxEventBoxV4?>>?> = OptionalProperty.NotPresent,
     val floatFxEvents: OptionalProperty<List<OptionalProperty<BSFxEventV4?>>?> = OptionalProperty.NotPresent,
     val useNormalEventsAsCompatibleEvents: OptionalProperty<Boolean?> = OptionalProperty.NotPresent,
-    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    override val customData: OptionalProperty<BSDifficultyV4CustomData?> = OptionalProperty.NotPresent
 ) : BSLights {
     override fun eventCount() = basicEvents.orEmpty().size +
         colorBoostEvents.orEmpty().size + eventBoxGroups.orEmpty().sumOf { it.eventBoxes.orEmpty().size }

@@ -1,8 +1,8 @@
 package io.beatmaps.common
 
-import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSDifficulty
-import io.beatmaps.common.beatsaber.BSNote
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSDifficulty
+import io.beatmaps.common.beatsaber.map.BSNote
 
 enum class CutDirection {
     Up, Down, Left, Right,
@@ -120,17 +120,6 @@ fun getNotes(obj: BSDifficulty) =
     }.filter {
         Types.fromInt(it.type) != null
     }
-
-fun Float.padTime() = this.toInt().padTime()
-fun Int.padTime() = this.toString().padStart(2, '0')
-
-fun Float.formatTime() = this.toInt().formatTime()
-fun Int.formatTime() =
-    if (this > 3600) {
-        "${this / 3600}:${((this / 60) % 60).padTime()}"
-    } else {
-        "${this / 60}"
-    }.let { it + ":${(this % 60).padTime()}" }
 
 /**
  * prints a fancy error message to the screen, supports both notes and raw text

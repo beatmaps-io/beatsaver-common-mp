@@ -1,6 +1,27 @@
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalProperty
+import io.beatmaps.common.beatsaber.BMValidator
+import io.beatmaps.common.beatsaber.CutDirection
+import io.beatmaps.common.beatsaber.Schema3_1
+import io.beatmaps.common.beatsaber.Schema3_2
+import io.beatmaps.common.beatsaber.Schema3_3
+import io.beatmaps.common.beatsaber.Version
+import io.beatmaps.common.beatsaber.correctType
+import io.beatmaps.common.beatsaber.custom.CustomJsonEventV3
+import io.beatmaps.common.beatsaber.exists
+import io.beatmaps.common.beatsaber.existsBefore
+import io.beatmaps.common.beatsaber.existsBetween
+import io.beatmaps.common.beatsaber.isBetween
+import io.beatmaps.common.beatsaber.isIn
+import io.beatmaps.common.beatsaber.matches
+import io.beatmaps.common.beatsaber.notExistsBefore
+import io.beatmaps.common.beatsaber.onlyExistsAfter
+import io.beatmaps.common.beatsaber.optionalNotNull
+import io.beatmaps.common.beatsaber.validateEach
+import io.beatmaps.common.beatsaber.validateForEach
+import io.beatmaps.common.beatsaber.validateOptional
+import io.beatmaps.common.beatsaber.vivify.Vivify.validateVivify
 import io.beatmaps.common.zip.ExtractedInfo
 import kotlin.reflect.KProperty1
 
@@ -183,6 +204,14 @@ fun BMValidator<BSDifficultyV3>.validateV3(info: ExtractedInfo, diff: BSDifficul
     }
     validate(BSDifficultyV3::basicEventTypesWithKeywords).correctType().exists().optionalNotNull()
     validate(BSDifficultyV3::useNormalEventsAsCompatibleEvents).correctType().existsBefore(ver, Schema3_3).optionalNotNull()
+
+    validate(BSDifficultyV3::customData).correctType().optionalNotNull().validateOptional {
+        validate(BSDifficultyV3CustomData::customEvents).correctType().optionalNotNull().validateForEach {
+            info.vivifyAssets?.let { assets ->
+                validate(CustomJsonEventV3::data).validateVivify(assets)
+            }
+        }
+    }
 }
 
 fun <T : GroupableEventBox> BMValidator<T>.validateEventBox(indexFilter: KProperty1<T, OptionalProperty<BSIndexFilter?>>, ver: Version) {

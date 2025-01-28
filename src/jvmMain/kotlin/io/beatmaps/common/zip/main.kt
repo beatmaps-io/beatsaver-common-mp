@@ -2,13 +2,13 @@ package io.beatmaps.common.zip
 
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.api.ECharacteristic
-import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSLights
-import io.beatmaps.common.beatsaber.BaseMapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
-import io.beatmaps.common.beatsaber.PreviewInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
-import io.beatmaps.common.beatsaber.check
+import io.beatmaps.common.beatsaber.info.BaseMapInfo
+import io.beatmaps.common.beatsaber.info.DifficultyBeatmapInfo
+import io.beatmaps.common.beatsaber.info.PreviewInfo
+import io.beatmaps.common.beatsaber.info.check
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSLights
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import net.lingala.zip4j.ZipFile
@@ -39,7 +39,9 @@ data class ExtractedInfo(
     var duration: Float = 0f,
     var thumbnail: ByteArrayOutputStream? = null,
     var preview: ByteArrayOutputStream? = null,
-    var songLengthInfo: SongLengthInfo? = null
+    var songLengthInfo: SongLengthInfo? = null,
+    var vivifyAssets: Set<String>? = null,
+    var vivifySize: Long = 0
 )
 
 interface IMapScorer {
@@ -53,10 +55,12 @@ open class ZipHelperException(val msg: String) : RuntimeException()
 interface IZipPath {
     fun inputStream(): InputStream
     val fileName: String?
+    val compressedSize: Long
 }
 
 class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) : IZipPath {
     override fun inputStream(): InputStream = fs.getInputStream(header)
+    override val compressedSize = header?.compressedSize ?: -1
     private val outputStream = ByteArrayOutputStream()
     fun outputStream() = object : OutputStream() {
         override fun write(b: Int) {

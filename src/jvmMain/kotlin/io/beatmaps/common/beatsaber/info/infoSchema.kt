@@ -1,11 +1,21 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.info
 
 import io.beatmaps.common.AdditionalProperties
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.api.EBeatsaberEnvironment
+import io.beatmaps.common.beatsaber.BMConstraintViolation
+import io.beatmaps.common.beatsaber.BMPropertyInfo
+import io.beatmaps.common.beatsaber.MisplacedCustomData
+import io.beatmaps.common.beatsaber.MultipleVersionsConstraint
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.addParent
+import io.beatmaps.common.beatsaber.custom.BSCustomData
+import io.beatmaps.common.beatsaber.custom.InfoCustomData
+import io.beatmaps.common.beatsaber.map.ParseResult
+import io.beatmaps.common.beatsaber.map.parseBS
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
@@ -45,7 +55,7 @@ fun Iterable<ConstraintViolation>.addParent(fileName: String?) = this.map { cons
     constraint.addParent(BMPropertyInfo("`$fileName`"))
 }
 
-abstract class BaseMapInfo {
+abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
     abstract val version: OptionalProperty<String?>
 
     protected fun imageInfo(path: IZipPath?, info: ExtractedInfo) = path?.inputStream().use { stream ->
@@ -118,7 +128,7 @@ abstract class BaseMapInfo {
     protected open fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
         LegacySongLengthInfo(info)
 
-    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
+    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, maxVivify: Long, getFile: (String) -> IZipPath?): BaseMapInfo
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
     abstract fun getEnvironments(): List<EBeatsaberEnvironment>

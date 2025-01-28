@@ -33,6 +33,7 @@ data class SearchParamsPlaylist(
     val fullSpread: Boolean? = null,
     val me: Boolean? = null,
     val cinema: Boolean? = null,
+    val vivify: Boolean? = null,
     val tags: MapTagSet = mapOf(),
     val mappers: List<Int> = listOf(),
     val environments: EnvironmentSet = emptySet()

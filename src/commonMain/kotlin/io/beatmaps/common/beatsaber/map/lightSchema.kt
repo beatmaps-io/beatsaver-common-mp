@@ -1,15 +1,17 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.beatsaber.custom.BSCustomData
+import io.beatmaps.common.beatsaber.custom.BSMapCustomData
 import io.beatmaps.common.jsonIgnoreUnknown
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 
-sealed interface BSLights : BSCustomData, BSVersioned {
+sealed interface BSLights : BSCustomData<BSMapCustomData>, BSVersioned {
     fun eventCount(): Int
 
     companion object {

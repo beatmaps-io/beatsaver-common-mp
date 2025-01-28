@@ -119,6 +119,10 @@ kotlin {
                 implementation("net.lingala.zip4j:zip4j:2.11.6-SNAPSHOT")
 
                 implementation("org.valiktor:valiktor-core:0.12.0")
+
+                // Asset bundles
+                implementation("io.beatmaps:kabt-base:1.0.6")
+                implementation("io.beatmaps:kabt:1.0.6")
             }
         }
     }

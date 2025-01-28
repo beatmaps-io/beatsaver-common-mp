@@ -1,4 +1,6 @@
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.score
+
+import io.beatmaps.common.beatsaber.map.BSDifficultyV4
 
 fun generateNoteItems(data: BSDifficultyV4): List<MaxScoreCounterElement> {
     val notes = data.colorNotes.orNull()?.mapNotNull { s -> s.orNull() } ?: listOf()
