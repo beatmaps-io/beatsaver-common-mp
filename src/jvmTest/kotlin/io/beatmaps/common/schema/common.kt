@@ -15,7 +15,6 @@ import io.beatmaps.common.zip.readFromBytes
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
-import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -33,33 +32,31 @@ object SchemaCommon {
         try {
             val mapInfo = BaseMapInfo.parse(jsonElement).check()
 
-            ByteArrayOutputStream().use { toHash ->
-                val extractedInfo = ExtractedInfo(files, toHash, mapInfo, 0)
-                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
-                    if (files.contains(it)) {
-                        object : IZipPath {
-                            override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
-                                javaClass.getResourceAsStream("/$fn/$it")
-                            }
-
-                            override val fileName = it
-                            override val compressedSize = 0L
+            val extractedInfo = ExtractedInfo(files, mapInfo, 0)
+            mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
+                if (files.contains(it)) {
+                    object : IZipPath {
+                        override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
+                            javaClass.getResourceAsStream("/$fn/$it")
                         }
-                    } else {
-                        null
+
+                        override val fileName = it
+                        override val compressedSize = 0L
                     }
+                } else {
+                    null
                 }
-                diffValidators.forEach {
-                    val char = extractedInfo.diffs.filter { d -> d.key == it.characteristic }
-                    val charLights = extractedInfo.lights.filter { d -> d.key == it.characteristic }
-                    assert(char.size == 1 && charLights.size == 1) { "Missing or multiple characteristics for validator" }
+            }
+            diffValidators.forEach {
+                val char = extractedInfo.diffs.filter { d -> d.key == it.characteristic }
+                val charLights = extractedInfo.lights.filter { d -> d.key == it.characteristic }
+                assert(char.size == 1 && charLights.size == 1) { "Missing or multiple characteristics for validator" }
 
-                    val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
-                    val diffLights = charLights.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
-                    assert(diff.size == 1 && diffLights.size == 1) { "Missing or multiple difficulty for validator" }
+                val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                val diffLights = charLights.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                assert(diff.size == 1 && diffLights.size == 1) { "Missing or multiple difficulty for validator" }
 
-                    it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
-                }
+                it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
             }
 
             // Check encoded version matches original
