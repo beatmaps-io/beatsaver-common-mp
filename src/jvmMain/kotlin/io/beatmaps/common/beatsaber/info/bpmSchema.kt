@@ -1,9 +1,24 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.info
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.beatsaber.BMValidator
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.correctType
+import io.beatmaps.common.beatsaber.exists
+import io.beatmaps.common.beatsaber.isGreaterThanOrEqualTo
+import io.beatmaps.common.beatsaber.isLessThanOrEqualTo
+import io.beatmaps.common.beatsaber.isPositiveOrZero
+import io.beatmaps.common.beatsaber.map.BSBpmChange
+import io.beatmaps.common.beatsaber.map.ValidationName
+import io.beatmaps.common.beatsaber.map.orEmpty
+import io.beatmaps.common.beatsaber.map.parseBS
+import io.beatmaps.common.beatsaber.matches
+import io.beatmaps.common.beatsaber.optionalNotNull
+import io.beatmaps.common.beatsaber.validate
+import io.beatmaps.common.beatsaber.validateForEach
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
 import io.beatmaps.common.zip.ExtractedInfo

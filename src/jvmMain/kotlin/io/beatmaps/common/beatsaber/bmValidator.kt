@@ -1,5 +1,6 @@
 package io.beatmaps.common.beatsaber
 
+import io.beatmaps.common.beatsaber.map.ValidationName
 import kotlinx.serialization.SerialName
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation

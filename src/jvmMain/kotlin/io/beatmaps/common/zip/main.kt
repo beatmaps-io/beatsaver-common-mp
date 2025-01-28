@@ -2,13 +2,13 @@ package io.beatmaps.common.zip
 
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.api.ECharacteristic
-import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSLights
-import io.beatmaps.common.beatsaber.BaseMapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
-import io.beatmaps.common.beatsaber.PreviewInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
-import io.beatmaps.common.beatsaber.check
+import io.beatmaps.common.beatsaber.info.BaseMapInfo
+import io.beatmaps.common.beatsaber.info.DifficultyBeatmapInfo
+import io.beatmaps.common.beatsaber.info.PreviewInfo
+import io.beatmaps.common.beatsaber.info.check
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSLights
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import net.lingala.zip4j.ZipFile
@@ -23,24 +23,36 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.math.BigInteger
 import java.nio.file.Files
+import java.security.MessageDigest
 import java.util.ServiceLoader
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 
 data class ExtractedInfo(
-    val allowedFiles: List<String>,
-    val toHash: ByteArrayOutputStream,
-    var mapInfo: BaseMapInfo,
+    val allowedFiles: List<String> = listOf(),
+    val mapInfo: BaseMapInfo,
     val score: Short,
     val diffs: MutableMap<ECharacteristic, MutableMap<DifficultyBeatmapInfo, BSDiff>> = mutableMapOf(),
     val lights: MutableMap<ECharacteristic, MutableMap<DifficultyBeatmapInfo, BSLights>> = mutableMapOf(),
     var duration: Float = 0f,
-    var thumbnail: ByteArrayOutputStream? = null,
-    var preview: ByteArrayOutputStream? = null,
-    var songLengthInfo: SongLengthInfo? = null
-)
+    val toHash: ByteArrayOutputStream = ByteArrayOutputStream(),
+    val thumbnail: ByteArrayOutputStream = ByteArrayOutputStream(),
+    val preview: ByteArrayOutputStream = ByteArrayOutputStream(),
+    var songLengthInfo: SongLengthInfo? = null,
+    val maxVivify: Long = 0,
+    var vivifyAssets: Set<String>? = null,
+    var vivifySize: Long = 0,
+    val uncompressedSize: Long = 0,
+    val md: MessageDigest = MessageDigest.getInstance("SHA1")
+) {
+    val digest by lazy {
+        val fx = "%0" + md.digestLength * 2 + "x"
+        String.format(fx, BigInteger(1, md.digest()))
+    }
+}
 
 interface IMapScorer {
     fun scoreMap(infoFile: BaseMapInfo, audio: File, block: (String) -> BSDiff): Short
@@ -53,10 +65,12 @@ open class ZipHelperException(val msg: String) : RuntimeException()
 interface IZipPath {
     fun inputStream(): InputStream
     val fileName: String?
+    val compressedSize: Long
 }
 
 class ZipPath(private val fs: ZipFile, private val originalPath: String, val header: FileHeader?) : IZipPath {
     override fun inputStream(): InputStream = fs.getInputStream(header)
+    override val compressedSize = header?.compressedSize ?: -1
     private val outputStream = ByteArrayOutputStream()
     fun outputStream() = object : OutputStream() {
         override fun write(b: Int) {
@@ -111,13 +125,15 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
         }
     }
 
-    fun generatePreview() =
+    fun generatePreview(outputStream: OutputStream) =
         AudioSystem.getAudioInputStream(previewAudioFile).use { oggStream ->
             convertToPCM(
                 oggStream,
                 previewInfo.start,
                 10.2f
-            ).use(::encodeToMp3)
+            ).use {
+                encodeToMp3(it, outputStream)
+            }
         }
 
     override fun scoreMap(): Short =
@@ -139,11 +155,10 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
         return AudioInputStream(conv, pcmFormat, framesOfAudioToCopy)
     }
 
-    private fun encodeToMp3(audioInputStream: AudioInputStream): ByteArray {
+    private fun encodeToMp3(audioInputStream: AudioInputStream, mp3: OutputStream) {
         val format = audioInputStream.format
 
         val encoder = LameEncoder(format, 128, MPEGMode.STEREO, Lame.QUALITY_HIGH, false)
-        val mp3 = ByteArrayOutputStream()
         val inputBuffer = ByteArray(encoder.pcmBufferSize)
         val outputBuffer = ByteArray(encoder.pcmBufferSize)
 
@@ -155,7 +170,6 @@ class ZipHelperWithAudio(fs: ZipFile, filesOriginalCase: Set<String>, directorie
         }
 
         encoder.close()
-        return mp3.toByteArray()
     }
 
     override fun close() {

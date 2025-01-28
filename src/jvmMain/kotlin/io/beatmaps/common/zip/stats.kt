@@ -1,14 +1,14 @@
 package io.beatmaps.common.zip
 
 import io.beatmaps.common.api.ECharacteristic
-import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSLights
-import io.beatmaps.common.beatsaber.BaseMapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmap
-import io.beatmaps.common.beatsaber.DifficultyBeatmapInfo
-import io.beatmaps.common.beatsaber.DifficultyBeatmapSet
-import io.beatmaps.common.beatsaber.MapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.info.BaseMapInfo
+import io.beatmaps.common.beatsaber.info.DifficultyBeatmap
+import io.beatmaps.common.beatsaber.info.DifficultyBeatmapInfo
+import io.beatmaps.common.beatsaber.info.DifficultyBeatmapSet
+import io.beatmaps.common.beatsaber.info.MapInfo
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSLights
 import io.beatmaps.common.checkParity
 import io.beatmaps.common.dbo.Difficulty
 import io.beatmaps.common.dbo.Versions

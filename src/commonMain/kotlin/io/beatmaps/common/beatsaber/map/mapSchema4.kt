@@ -1,14 +1,16 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.custom.BSMapCustomData
+import io.beatmaps.common.beatsaber.score.computeMaxMultipliedScoreForBeatmap
 import io.beatmaps.common.or
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.json.JsonObject
 import kotlin.reflect.KProperty1
 
 @Serializable
@@ -28,7 +30,7 @@ data class BSDifficultyV4(
     val spawnRotationsData: OptionalProperty<List<OptionalProperty<BSRotationsDataV4?>>?> = OptionalProperty.NotPresent,
     val njsEvents: OptionalProperty<List<OptionalProperty<BSNjsEventV4?>>?> = OptionalProperty.NotPresent,
     val njsEventData: OptionalProperty<List<OptionalProperty<BSNjsEventDataV4?>>?> = OptionalProperty.NotPresent,
-    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
+    override val customData: OptionalProperty<BSDifficultyV4CustomData?> = OptionalProperty.NotPresent
 ) : BSDiff {
     override fun noteCount() = colorNotes.orEmpty().size
     override fun bombCount() = bombNotes.orEmpty().size
@@ -56,6 +58,11 @@ data class BSDifficultyV4(
             if (len == 0f) 0f else noteCount() / len
         }
 }
+
+@Serializable
+data class BSDifficultyV4CustomData(
+    override val time: OptionalProperty<Float?>
+) : BSMapCustomData
 
 typealias BSIndexedV4<T> = BSIndexedGeneric<BSDifficultyV4, T>
 

@@ -1,4 +1,4 @@
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.score
 
 data class ScoreMultiplierCounter(
     val multiplier: Int = 1,

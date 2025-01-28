@@ -1,6 +1,6 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.info
 
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
@@ -9,6 +9,52 @@ import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
+import io.beatmaps.common.beatsaber.AudioFormat
+import io.beatmaps.common.beatsaber.BMConstraintViolation
+import io.beatmaps.common.beatsaber.BMValidator
+import io.beatmaps.common.beatsaber.ImageFormat
+import io.beatmaps.common.beatsaber.ImageSize
+import io.beatmaps.common.beatsaber.ImageSquare
+import io.beatmaps.common.beatsaber.InFiles
+import io.beatmaps.common.beatsaber.MetadataLength
+import io.beatmaps.common.beatsaber.Schema2_1
+import io.beatmaps.common.beatsaber.UniqueDiff
+import io.beatmaps.common.beatsaber.Validatable
+import io.beatmaps.common.beatsaber.Version
+import io.beatmaps.common.beatsaber.correctType
+import io.beatmaps.common.beatsaber.custom.BSCustomData
+import io.beatmaps.common.beatsaber.custom.DifficultyBeatmapCustomDataBase
+import io.beatmaps.common.beatsaber.custom.IContributor
+import io.beatmaps.common.beatsaber.custom.InfoCustomData
+import io.beatmaps.common.beatsaber.exists
+import io.beatmaps.common.beatsaber.isBetween
+import io.beatmaps.common.beatsaber.isGreaterThanOrEqualTo
+import io.beatmaps.common.beatsaber.isIn
+import io.beatmaps.common.beatsaber.isLessThan
+import io.beatmaps.common.beatsaber.isNotBlank
+import io.beatmaps.common.beatsaber.isNotEmpty
+import io.beatmaps.common.beatsaber.isPositiveOrZero
+import io.beatmaps.common.beatsaber.isZero
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSDifficulty
+import io.beatmaps.common.beatsaber.map.BSDifficultyV3
+import io.beatmaps.common.beatsaber.map.BSDifficultyV4
+import io.beatmaps.common.beatsaber.map.BSLights
+import io.beatmaps.common.beatsaber.map.ValidationName
+import io.beatmaps.common.beatsaber.map.mapChanged
+import io.beatmaps.common.beatsaber.map.orEmpty
+import io.beatmaps.common.beatsaber.map.validate
+import io.beatmaps.common.beatsaber.map.validateV3
+import io.beatmaps.common.beatsaber.map.validateV4
+import io.beatmaps.common.beatsaber.matches
+import io.beatmaps.common.beatsaber.notExistsBefore
+import io.beatmaps.common.beatsaber.optionalNotNull
+import io.beatmaps.common.beatsaber.validate
+import io.beatmaps.common.beatsaber.validateEach
+import io.beatmaps.common.beatsaber.validateForEach
+import io.beatmaps.common.beatsaber.validateOptional
+import io.beatmaps.common.beatsaber.vivify.Vivify
+import io.beatmaps.common.beatsaber.vivify.Vivify.validateVivify
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -46,7 +92,8 @@ data class MapInfo(
     val _allDirectionsEnvironmentName: OptionalProperty<String?> = OptionalProperty.NotPresent,
     val _environmentNames: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
     val _colorSchemes: OptionalProperty<List<OptionalProperty<MapColorScheme?>>?> = OptionalProperty.NotPresent,
-    val _customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
+    @SerialName("_customData") @ValidationName("_customData")
+    override val customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
     val _difficultyBeatmapSets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
     override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
@@ -68,7 +115,7 @@ data class MapInfo(
         validate(MapInfo::_previewDuration).correctType().exists().isPositiveOrZero()
         validate(MapInfo::_songFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(audio, info) }
+            .validate(AudioFormat) { it == null || audioValid(audio, info) == AudioType.OGG }
         val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
@@ -79,7 +126,7 @@ data class MapInfo(
             }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
-        validate(MapInfo::_customData).correctType().optionalNotNull().validateOptional {
+        validate(MapInfo::customData).correctType().optionalNotNull().validateOptional {
             extraFieldsViolation(
                 constraintViolations,
                 it.additionalInformation.keys
@@ -97,6 +144,8 @@ data class MapInfo(
                 v.optionalNotNull()
             }
         }
+        // Must be validated before beatmaps so data is available
+        validate(MapInfo::customData).validateVivify(info, getFile)
         validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1
@@ -130,13 +179,13 @@ data class MapInfo(
     override fun getSongFilename() = _songFilename.orNull()
     override fun updateFiles(changes: Map<String, String>) = copy(_songFilename = _songFilename.mapChanged(changes))
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + vivifyFiles()).toSet()
 
     private fun songFiles() =
         listOfNotNull(_coverImageFilename.orNull(), getSongFilename())
 
     private fun contributorsExtraFiles() =
-        _customData.orNull()?._contributors.orEmpty().mapNotNull { it._iconPath.orNull() }
+        customData.orNull()?.contributors.orEmpty().mapNotNull { it.iconPath.orNull() }
 
     private fun beatmapExtraFiles() =
         _difficultyBeatmapSets.orEmpty().flatMap { setNotNull ->
@@ -145,18 +194,22 @@ data class MapInfo(
             )
         }
 
+    private fun vivifyFiles() = Vivify.getFiles(this)
+
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
     override fun getPreviewInfo() = PreviewInfo(_songFilename.or(""), _previewStartTime.or(0f), _previewDuration.or(0f))
 }
 
 @Serializable
 data class MapCustomData(
-    val _contributors: OptionalProperty<List<OptionalProperty<Contributor?>>?> = OptionalProperty.NotPresent,
+    @SerialName("_contributors") @ValidationName("_contributors")
+    override val contributors: OptionalProperty<List<OptionalProperty<Contributor?>>?> = OptionalProperty.NotPresent,
     val _editors: OptionalProperty<MapEditors?> = OptionalProperty.NotPresent,
+    val _assetBundle: OptionalProperty<Map<String, UInt>> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : JAdditionalProperties() {
+) : InfoCustomData, JAdditionalProperties() {
     fun validate(validator: BMValidator<MapCustomData>, files: Set<String>) = validator.apply {
-        validate(MapCustomData::_contributors).correctType().optionalNotNull().validateForEach {
+        validate(MapCustomData::contributors).correctType().optionalNotNull().validateForEach {
             it.validate(this, files)
         }
         validate(MapCustomData::_editors).correctType().optionalNotNull().validate()
@@ -246,17 +299,20 @@ data class MapEditorVersion(
 
 @Serializable
 data class Contributor(
-    val _role: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val _name: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val _iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
-) {
+    @SerialName("_role") @ValidationName("_role")
+    override val role: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_name") @ValidationName("_name")
+    override val name: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    @SerialName("_iconPath") @ValidationName("_iconPath")
+    override val iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
+) : IContributor {
     fun validate(
         validator: BMValidator<Contributor>,
         files: Set<String>
     ) = validator.apply {
-        validate(Contributor::_role).correctType().optionalNotNull()
-        validate(Contributor::_name).correctType().optionalNotNull()
-        validate(Contributor::_iconPath).correctType().optionalNotNull()
+        validate(Contributor::role).correctType().optionalNotNull()
+        validate(Contributor::name).correctType().optionalNotNull()
+        validate(Contributor::iconPath).correctType().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q.isNullOrEmpty() || files.contains(q.lowercase()) } }
     }
 }
@@ -286,7 +342,7 @@ data class DifficultyBeatmapSet(
     fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName.or(""))
 }
 
-interface DifficultyBeatmapInfo : BSCustomData {
+interface DifficultyBeatmapInfo : BSCustomData<DifficultyBeatmapCustomDataBase> {
     fun enumValue(): EDifficulty
     fun extraFiles(): Set<String>
     override val customData: OptionalProperty<DifficultyBeatmapCustomDataBase?>
@@ -294,14 +350,6 @@ interface DifficultyBeatmapInfo : BSCustomData {
     val noteJumpStartBeatOffset: OptionalProperty<Float?>
     val beatmapFilename: OptionalProperty<String?>
     val environmentIndex: OptionalProperty<Int?>
-}
-
-interface DifficultyBeatmapCustomDataBase {
-    val difficultyLabel: OptionalProperty<String?>
-    val information: OptionalProperty<List<OptionalProperty<String?>>?>
-    val warnings: OptionalProperty<List<OptionalProperty<String?>>?>
-    val suggestions: OptionalProperty<List<OptionalProperty<String?>>?>
-    val requirements: OptionalProperty<List<OptionalProperty<String?>>?>
 }
 
 @Serializable

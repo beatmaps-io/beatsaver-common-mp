@@ -2,12 +2,12 @@ package io.beatmaps.common.schema
 
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
-import io.beatmaps.common.beatsaber.BSDiff
-import io.beatmaps.common.beatsaber.BSLights
-import io.beatmaps.common.beatsaber.BaseMapInfo
 import io.beatmaps.common.beatsaber.SongLengthInfo
-import io.beatmaps.common.beatsaber.check
-import io.beatmaps.common.beatsaber.toJson
+import io.beatmaps.common.beatsaber.info.BaseMapInfo
+import io.beatmaps.common.beatsaber.info.check
+import io.beatmaps.common.beatsaber.info.toJson
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSLights
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
@@ -43,6 +43,7 @@ object SchemaCommon {
                             }
 
                             override val fileName = it
+                            override val compressedSize = 0L
                         }
                     } else {
                         null

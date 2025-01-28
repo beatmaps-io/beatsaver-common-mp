@@ -1,5 +1,6 @@
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.score
 
+import io.beatmaps.common.beatsaber.map.BSDifficultyV3
 import io.beatmaps.common.or
 
 fun generateNoteItems(data: BSDifficultyV3): List<MaxScoreCounterElement> {

@@ -1,13 +1,19 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.custom.BSCustomData
+import io.beatmaps.common.beatsaber.custom.BSMapCustomData
+import io.beatmaps.common.beatsaber.custom.BSNoteCustomData
+import io.beatmaps.common.beatsaber.custom.BSObstacleCustomData
+import io.beatmaps.common.beatsaber.custom.CustomJsonEventV2
+import io.beatmaps.common.beatsaber.custom.CustomJsonEvents
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class BSDifficulty(
@@ -79,13 +85,19 @@ data class BSNote(
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     val _cutDirection: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
-    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, IBSObject by BSObject(beat) {
+    override val customData: OptionalProperty<BSObjectCustomDataV2?> = OptionalProperty.NotPresent
+) : BSCustomData<BSNoteCustomData>, IBSObject by BSObject(beat) {
     val lineIndex by orMinValue { _lineIndex }
     val lineLayer by orMinValue { _lineLayer }
     val type by orMinValue { _type }
     val cutDirection by orMinValue { _cutDirection }
 }
+
+@Serializable
+data class BSObjectCustomDataV2(
+    @SerialName("_fake") @ValidationName("_fake")
+    override val fake: OptionalProperty<Boolean?>
+) : BSNoteCustomData, BSObstacleCustomData
 
 @Serializable
 data class BSObstacle(
@@ -96,24 +108,24 @@ data class BSObstacle(
     val _duration: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _width: OptionalProperty<Int?> = OptionalProperty.NotPresent,
     @SerialName("_customData") @ValidationName("_customData")
-    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, IBSObject by BSObject(beat)
+    override val customData: OptionalProperty<BSObjectCustomDataV2?> = OptionalProperty.NotPresent
+) : BSCustomData<BSObstacleCustomData>, IBSObject by BSObject(beat)
 
 @Serializable
 data class BSEvent(
     @SerialName("_time") @ValidationName("_time")
     override val beat: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val _type: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent,
-    @SerialName("_customData") @ValidationName("_customData")
-    override val customData: OptionalProperty<JsonObject?> = OptionalProperty.NotPresent
-) : BSCustomData, IBSObject by BSObject(beat)
+    val _value: OptionalProperty<Int?> = OptionalProperty.NotPresent
+) : IBSObject by BSObject(beat)
 
 @Serializable
 data class BSCustomDataV2(
     val _BPMChanges: OptionalProperty<List<OptionalProperty<BPMChange?>>?> = OptionalProperty.NotPresent,
-    val _time: OptionalProperty<Float?> = OptionalProperty.NotPresent
-)
+    @SerialName("_time") @ValidationName("_time")
+    override val time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
+    override val customEvents: OptionalProperty<List<OptionalProperty<CustomJsonEventV2?>>?> = OptionalProperty.NotPresent
+) : BSMapCustomData, CustomJsonEvents
 
 @Serializable
 data class BPMChange(

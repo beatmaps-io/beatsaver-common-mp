@@ -9,6 +9,7 @@ object ModChecker {
     private const val NOODLE = "Noodle Extensions"
     private const val ME = "Mapping Extensions"
     private const val CINEMA = "Cinema"
+    private const val VIVIFY = "Vivify"
 
     private fun List<String>?.containsIgnoreCase(element: String) = this?.any { e -> e.equals(element, true) } ?: false
     private fun checkDiff(diff: DifficultyDao, modName: String, allowAsSuggestion: Boolean = false) =
@@ -18,6 +19,7 @@ object ModChecker {
     fun me(diff: DifficultyDao) = checkDiff(diff, ME)
     fun ne(diff: DifficultyDao) = checkDiff(diff, NOODLE)
     fun cinema(diff: DifficultyDao) = checkDiff(diff, CINEMA, true)
+    fun vivify(diff: DifficultyDao) = checkDiff(diff, VIVIFY)
 
     private fun solrQuery(modName: String, allowAsSuggestion: Boolean = false) =
         (BsSolr.requirements eq modName).let {
@@ -32,4 +34,5 @@ object ModChecker {
     fun me() = solrQuery(ME)
     fun ne() = solrQuery(NOODLE)
     fun cinema() = solrQuery(CINEMA, true)
+    fun vivify() = solrQuery(VIVIFY)
 }

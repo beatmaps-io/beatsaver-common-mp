@@ -1,6 +1,6 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.info
 
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.OptionalProperty
@@ -9,6 +9,51 @@ import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.searchEnum
+import io.beatmaps.common.beatsaber.AudioFormat
+import io.beatmaps.common.beatsaber.BMConstraintViolation
+import io.beatmaps.common.beatsaber.BMPropertyInfo
+import io.beatmaps.common.beatsaber.BMValidator
+import io.beatmaps.common.beatsaber.ImageFormat
+import io.beatmaps.common.beatsaber.ImageSize
+import io.beatmaps.common.beatsaber.ImageSquare
+import io.beatmaps.common.beatsaber.InFiles
+import io.beatmaps.common.beatsaber.MetadataLength
+import io.beatmaps.common.beatsaber.Schema4_0_1
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.UniqueDiff
+import io.beatmaps.common.beatsaber.Validatable
+import io.beatmaps.common.beatsaber.Version
+import io.beatmaps.common.beatsaber.addParent
+import io.beatmaps.common.beatsaber.correctType
+import io.beatmaps.common.beatsaber.custom.DifficultyBeatmapCustomDataBase
+import io.beatmaps.common.beatsaber.custom.IContributor
+import io.beatmaps.common.beatsaber.custom.InfoCustomData
+import io.beatmaps.common.beatsaber.exists
+import io.beatmaps.common.beatsaber.isBetween
+import io.beatmaps.common.beatsaber.isLessThan
+import io.beatmaps.common.beatsaber.isNotBlank
+import io.beatmaps.common.beatsaber.isNotEmpty
+import io.beatmaps.common.beatsaber.isPositiveOrZero
+import io.beatmaps.common.beatsaber.map.BSDiff
+import io.beatmaps.common.beatsaber.map.BSDifficulty
+import io.beatmaps.common.beatsaber.map.BSDifficultyV3
+import io.beatmaps.common.beatsaber.map.BSDifficultyV4
+import io.beatmaps.common.beatsaber.map.BSLightingV4
+import io.beatmaps.common.beatsaber.map.BSLights
+import io.beatmaps.common.beatsaber.map.ValidationName
+import io.beatmaps.common.beatsaber.map.mapChanged
+import io.beatmaps.common.beatsaber.map.orEmpty
+import io.beatmaps.common.beatsaber.map.validate
+import io.beatmaps.common.beatsaber.map.validateV3
+import io.beatmaps.common.beatsaber.map.validateV4
+import io.beatmaps.common.beatsaber.matches
+import io.beatmaps.common.beatsaber.notExistsAfter
+import io.beatmaps.common.beatsaber.notExistsBefore
+import io.beatmaps.common.beatsaber.optionalNotNull
+import io.beatmaps.common.beatsaber.validate
+import io.beatmaps.common.beatsaber.validateEach
+import io.beatmaps.common.beatsaber.validateForEach
+import io.beatmaps.common.beatsaber.validateOptional
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
@@ -39,7 +84,7 @@ data class MapInfoV4(
     val environmentNames: OptionalProperty<List<OptionalProperty<String?>>?> = OptionalProperty.NotPresent,
     val colorSchemes: OptionalProperty<List<OptionalProperty<MapColorSchemeV4?>>?> = OptionalProperty.NotPresent,
     val difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmapV4?>>?> = OptionalProperty.NotPresent,
-    val customData: OptionalProperty<InfoCustomDataV4?> = OptionalProperty.NotPresent
+    override val customData: OptionalProperty<InfoCustomDataV4?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
     override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
@@ -56,7 +101,7 @@ data class MapInfoV4(
         }
         validate(MapInfoV4::songPreviewFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(preview) }
+            .validate(AudioFormat) { it == null || audioValid(preview) == AudioType.OGG }
 
         val imageInfo = coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfoV4::coverImageFilename).correctType().exists().optionalNotNull()
@@ -196,10 +241,10 @@ data class AudioInfo(
     val previewStartTime: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val previewDuration: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: BMValidator<AudioInfo>, files: Set<String>, audioValid: (String?) -> Boolean) = validator.apply {
+    fun validate(validator: BMValidator<AudioInfo>, files: Set<String>, audioValid: (String?) -> AudioType) = validator.apply {
         validate(AudioInfo::songFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(it.orNull()) }
+            .validate(AudioFormat) { it == null || audioValid(it.orNull()) == AudioType.OGG }
         validate(AudioInfo::songDuration).correctType().exists().optionalNotNull()
         validate(AudioInfo::audioDataFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
@@ -414,9 +459,9 @@ data class BeatmapAuthors(
 
 @Serializable
 data class InfoCustomDataV4(
-    val contributors: OptionalProperty<List<OptionalProperty<ContributorV4?>>?> = OptionalProperty.NotPresent,
+    override val contributors: OptionalProperty<List<OptionalProperty<ContributorV4?>>?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
-) : JAdditionalProperties() {
+) : InfoCustomData, JAdditionalProperties() {
     fun validate(validator: BMValidator<InfoCustomDataV4>, files: Set<String>) = validator.apply {
         validate(InfoCustomDataV4::contributors).correctType().optionalNotNull().validateForEach {
             it.validate(this, files)
@@ -426,10 +471,10 @@ data class InfoCustomDataV4(
 
 @Serializable
 data class ContributorV4(
-    val role: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val name: OptionalProperty<String?> = OptionalProperty.NotPresent,
-    val iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
-) {
+    override val role: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    override val name: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    override val iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
+) : IContributor {
     fun validate(
         validator: BMValidator<ContributorV4>,
         files: Set<String>

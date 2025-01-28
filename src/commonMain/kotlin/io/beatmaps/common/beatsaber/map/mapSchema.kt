@@ -1,37 +1,29 @@
 @file:UseSerializers(OptionalPropertySerializer::class)
 
-package io.beatmaps.common.beatsaber
+package io.beatmaps.common.beatsaber.map
 
 import io.beatmaps.common.OptionalProperty
 import io.beatmaps.common.OptionalPropertySerializer
+import io.beatmaps.common.beatsaber.SongLengthInfo
+import io.beatmaps.common.beatsaber.Version
+import io.beatmaps.common.beatsaber.custom.BSCustomData
+import io.beatmaps.common.beatsaber.custom.BSMapCustomData
+import io.beatmaps.common.beatsaber.custom.BSObjectCustomData
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.properties.ReadOnlyProperty
 
-interface BSCustomData {
-    val customData: OptionalProperty<Any?>
-
-    fun getCustomData() = customData.let { cd ->
-        when {
-            cd is OptionalProperty.Present && cd.value is JsonObject -> cd.value
-            else -> mapOf<String, String>()
-        }
-    }
-}
-
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 annotation class ValidationName(val value: String)
 
-fun <T : BSCustomData> List<T>.withoutFake() = this.filter { obj -> (obj.getCustomData()["_fake"] as? JsonPrimitive)?.booleanOrNull != true }
+fun <U : BSObjectCustomData, T : BSCustomData<U>> List<T>.withoutFake() = this.filter { obj -> !obj.customData.orNull()?.fake.or(false) }
 
 fun <T> orNegativeInfinity(block: (T) -> OptionalProperty<Float?>): ReadOnlyProperty<T, Float> =
     ReadOnlyProperty { thisRef, _ -> block(thisRef).or(Float.NEGATIVE_INFINITY) }
@@ -64,7 +56,7 @@ fun <T> JsonObject.parseBS(newBlock: (Version) -> T, oldBlock: () -> T): ParseRe
     }
 }
 
-sealed interface BSDiff : BSCustomData, BSVersioned {
+sealed interface BSDiff : BSCustomData<BSMapCustomData>, BSVersioned {
     fun noteCount(): Int
     fun bombCount(): Int
     fun arcCount(): Int

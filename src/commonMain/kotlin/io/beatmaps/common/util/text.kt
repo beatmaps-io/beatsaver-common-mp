@@ -37,3 +37,14 @@ object TextHelper {
             "${text.take(newEnd)}..."
         }
 }
+
+fun Float.padTime() = this.toInt().padTime()
+fun Int.padTime() = this.toString().padStart(2, '0')
+
+fun Float.formatTime() = this.toInt().formatTime()
+fun Int.formatTime() =
+    if (this > 3600) {
+        "${this / 3600}:${((this / 60) % 60).padTime()}"
+    } else {
+        "${this / 60}"
+    }.let { it + ":${(this % 60).padTime()}" }
