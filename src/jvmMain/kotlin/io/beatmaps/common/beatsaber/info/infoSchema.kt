@@ -68,15 +68,13 @@ abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
                     reader.input = iis
                     val image = reader.read(0)
 
-                    val newImageStream = ByteArrayOutputStream()
                     Thumbnails
                         .of(image)
                         .size(256, 256)
                         .imageType(BufferedImage.TYPE_INT_RGB)
                         .outputFormat("JPEG")
                         .outputQuality(0.8)
-                        .toOutputStream(newImageStream)
-                    info.thumbnail = newImageStream
+                        .toOutputStream(info.thumbnail)
 
                     ImageInfo(format.lowercase(), image.width, image.height)
                 } else {
@@ -128,7 +126,7 @@ abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
     protected open fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
         LegacySongLengthInfo(info)
 
-    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, maxVivify: Long, getFile: (String) -> IZipPath?): BaseMapInfo
+    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
     abstract fun getEnvironments(): List<EBeatsaberEnvironment>

@@ -3,6 +3,7 @@ package io.beatmaps.common.beatsaber.vivify
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.beatsaber.BMValidator
 import io.beatmaps.common.beatsaber.custom.CustomJsonEvent
+import io.beatmaps.common.beatsaber.info.BaseMapInfo
 import io.beatmaps.common.beatsaber.info.MapInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.zip.ExtractedInfo
@@ -57,23 +58,29 @@ object Vivify {
 
     val allowedBundles = setOf("_windows2019", "_windows2021", "_android2021")
 
-    fun BMValidator<MapInfo>.BMProperty<*>.validateVivify(info: ExtractedInfo, maxSize: Long, getFile: (String) -> IZipPath?) {
-        val vivifyFiles = obj.customData.orNull()?._assetBundle?.orNull()?.map { abInfo ->
-            validate(VivifyName(abInfo.key, allowedBundles)) {
-                allowedBundles.contains(abInfo.key)
+    private fun getFileInfo(info: MapInfo) =
+        info.customData.orNull()?._assetBundle?.orNull()?.map { abInfo ->
+            val bundleKey = abInfo.key.removePrefix("_").replaceFirstChar { c -> c.uppercaseChar() }
+            Triple(abInfo.key, "bundle$bundleKey.vivify", abInfo.value)
+        } ?: emptyList()
+
+    fun getFiles(info: MapInfo) = getFileInfo(info).map { it.second }
+
+    fun BMValidator<MapInfo>.BMProperty<*>.validateVivify(info: ExtractedInfo, getFile: (String) -> IZipPath?) {
+        val vivifyFiles = getFileInfo(obj).map { (key, filename, crc) ->
+            validate(VivifyName(key, allowedBundles)) {
+                allowedBundles.contains(key)
             }
 
-            val bundleKey = abInfo.key.removePrefix("_").replaceFirstChar { c -> c.uppercaseChar() }
-            val filename = "bundle$bundleKey.vivify"
             getFile(filename)?.let { f ->
                 val file = createTemp(f)
                 try {
-                    getAssets(file.path, abInfo.value).copy(filename = filename, compressedSize = f.compressedSize)
+                    getAssets(file.path, crc).copy(filename = filename, compressedSize = f.compressedSize)
                 } finally {
                     file.delete()
                 }
             } ?: VivifyFile.FAIL
-        } ?: emptyList()
+        }
 
         val parsedFiles = vivifyFiles.filter { it.parsed }
         parsedFiles.firstNotNullOfOrNull { it.assets }?.let {
@@ -85,8 +92,8 @@ object Vivify {
             validate(VivifyCrc(file.filename)) {
                 file.crcMatch
             }
-            validate(VivifySize(file.filename, file.compressedSize, maxSize)) {
-                file.compressedSize < maxSize
+            validate(VivifySize(file.filename, file.compressedSize, info.maxVivify)) {
+                file.compressedSize < info.maxVivify
             }
         }
         validate(AssetsRead) {

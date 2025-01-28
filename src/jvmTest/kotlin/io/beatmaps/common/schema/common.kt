@@ -35,7 +35,7 @@ object SchemaCommon {
 
             ByteArrayOutputStream().use { toHash ->
                 val extractedInfo = ExtractedInfo(files, toHash, mapInfo, 0)
-                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio, 0L) {
+                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
                     if (files.contains(it)) {
                         object : IZipPath {
                             override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->

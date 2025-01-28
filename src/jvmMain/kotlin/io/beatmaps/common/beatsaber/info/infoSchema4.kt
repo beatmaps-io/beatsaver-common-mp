@@ -86,7 +86,7 @@ data class MapInfoV4(
     val difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmapV4?>>?> = OptionalProperty.NotPresent,
     override val customData: OptionalProperty<InfoCustomDataV4?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
-    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, maxVivify: Long, getFile: (String) -> IZipPath?) = validate(this) {
+    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         // val ver = Version(version.orNull())
 

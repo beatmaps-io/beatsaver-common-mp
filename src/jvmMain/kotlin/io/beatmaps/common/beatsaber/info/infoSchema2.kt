@@ -53,6 +53,7 @@ import io.beatmaps.common.beatsaber.validate
 import io.beatmaps.common.beatsaber.validateEach
 import io.beatmaps.common.beatsaber.validateForEach
 import io.beatmaps.common.beatsaber.validateOptional
+import io.beatmaps.common.beatsaber.vivify.Vivify
 import io.beatmaps.common.beatsaber.vivify.Vivify.validateVivify
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
@@ -95,7 +96,7 @@ data class MapInfo(
     override val customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
     val _difficultyBeatmapSets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
-    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, maxVivify: Long, getFile: (String) -> IZipPath?) = validate(this) {
+    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         val ver = Version(version.orNull())
 
@@ -144,7 +145,7 @@ data class MapInfo(
             }
         }
         // Must be validated before beatmaps so data is available
-        validate(MapInfo::customData).validateVivify(info, maxVivify, getFile)
+        validate(MapInfo::customData).validateVivify(info, getFile)
         validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1
@@ -178,7 +179,7 @@ data class MapInfo(
     override fun getSongFilename() = _songFilename.orNull()
     override fun updateFiles(changes: Map<String, String>) = copy(_songFilename = _songFilename.mapChanged(changes))
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles()).toSet()
+        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + vivifyFiles()).toSet()
 
     private fun songFiles() =
         listOfNotNull(_coverImageFilename.orNull(), getSongFilename())
@@ -192,6 +193,8 @@ data class MapInfo(
                 setNotNull._difficultyBeatmaps.orEmpty().flatMap { it.extraFiles() }
             )
         }
+
+    private fun vivifyFiles() = Vivify.getFiles(this)
 
     override fun toJsonElement() = jsonIgnoreUnknown.encodeToJsonElement(this)
     override fun getPreviewInfo() = PreviewInfo(_songFilename.or(""), _previewStartTime.or(0f), _previewDuration.or(0f))
