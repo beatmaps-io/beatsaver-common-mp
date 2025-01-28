@@ -101,7 +101,7 @@ data class MapInfoV4(
         }
         validate(MapInfoV4::songPreviewFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(preview) }
+            .validate(AudioFormat) { it == null || audioValid(preview) == AudioType.OGG }
 
         val imageInfo = coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfoV4::coverImageFilename).correctType().exists().optionalNotNull()
@@ -241,10 +241,10 @@ data class AudioInfo(
     val previewStartTime: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     val previewDuration: OptionalProperty<Float?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: BMValidator<AudioInfo>, files: Set<String>, audioValid: (String?) -> Boolean) = validator.apply {
+    fun validate(validator: BMValidator<AudioInfo>, files: Set<String>, audioValid: (String?) -> AudioType) = validator.apply {
         validate(AudioInfo::songFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(it.orNull()) }
+            .validate(AudioFormat) { it == null || audioValid(it.orNull()) == AudioType.OGG }
         validate(AudioInfo::songDuration).correctType().exists().optionalNotNull()
         validate(AudioInfo::audioDataFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }

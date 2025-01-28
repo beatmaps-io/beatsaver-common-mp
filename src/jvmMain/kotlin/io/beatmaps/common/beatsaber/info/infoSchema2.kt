@@ -115,7 +115,7 @@ data class MapInfo(
         validate(MapInfo::_previewDuration).correctType().exists().isPositiveOrZero()
         validate(MapInfo::_songFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(audio, info) }
+            .validate(AudioFormat) { it == null || audioValid(audio, info) == AudioType.OGG }
         val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }

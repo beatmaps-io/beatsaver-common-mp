@@ -30,7 +30,6 @@ import org.jaudiotagger.audio.ogg.OggFileReader
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
@@ -38,6 +37,10 @@ import javax.sound.sampled.AudioSystem
 
 abstract class JAdditionalProperties : AdditionalProperties {
     override val properties = javaClass.declaredFields.filter { it.type == OptionalProperty::class.java }.map { it.name }.toSet()
+}
+
+enum class AudioType {
+    OGG, WAV, OTHER, INVALID
 }
 
 data class ImageInfo(val format: String, val width: Int, val height: Int)
@@ -94,20 +97,20 @@ abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
         }
 
     protected fun audioValid(audio: File, block: (Float) -> Unit = {}) =
-        internalAudioValid(audio).let { duration ->
+        internalAudioValid(audio).let { (type, duration) ->
             if (duration != null) {
                 block(duration)
 
-                duration > 0
+                if (duration > 0) type else AudioType.INVALID
             } else {
-                false
+                type
             }
         }
 
-    private fun internalAudioValid(audio: File): Float? =
+    private fun internalAudioValid(audio: File): Pair<AudioType, Float?> =
         try {
             val header = OggFileReader().read(audio).audioHeader
-            if (header is GenericAudioHeader) {
+            AudioType.OGG to if (header is GenericAudioHeader) {
                 header.preciseLength
             } else {
                 // May have been rounded down
@@ -115,11 +118,11 @@ abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
             }
         } catch (e: Exception) {
             try {
-                AudioSystem.getAudioInputStream(audio).use { wavInfo ->
+                AudioType.WAV to AudioSystem.getAudioInputStream(audio).use { wavInfo ->
                     ((wavInfo.frameLength + 0.0) / wavInfo.format.sampleRate).toFloat()
                 }
             } catch (e: Exception) {
-                null
+                AudioType.OTHER to null
             }
         }
 
