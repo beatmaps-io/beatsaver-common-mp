@@ -3,7 +3,6 @@ package io.beatmaps.common.beatsaber.vivify
 import io.beatmaps.common.FileLimits
 import io.beatmaps.common.beatsaber.BMValidator
 import io.beatmaps.common.beatsaber.custom.CustomJsonEvent
-import io.beatmaps.common.beatsaber.info.BaseMapInfo
 import io.beatmaps.common.beatsaber.info.MapInfo
 import io.beatmaps.common.copyTo
 import io.beatmaps.common.zip.ExtractedInfo
