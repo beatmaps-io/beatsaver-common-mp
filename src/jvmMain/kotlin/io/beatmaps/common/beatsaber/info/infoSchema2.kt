@@ -325,7 +325,7 @@ data class DifficultyBeatmapSet(
     fun validate(validator: BMValidator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
         val allowedCharacteristics = ECharacteristic.entries.let {
             if (ver < Schema2_1) it.minus(ECharacteristic.Legacy) else it
-        }.map { it.name.removePrefix("_") }.toSet()
+        }.map { it.human() }.toSet()
 
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().isIn(allowedCharacteristics)
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).exists().optionalNotNull().isNotEmpty().validateForEach {
@@ -422,7 +422,7 @@ data class DifficultyBeatmap(
             additionalInformation.keys
         )
 
-        val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()
+        val allowedDiffNames = EDifficulty.entries.map { it.human() }.toSet()
         validate(DifficultyBeatmap::difficulty).exists()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(difficulty.orNull())) {
