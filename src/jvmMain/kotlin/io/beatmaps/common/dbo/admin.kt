@@ -3,7 +3,6 @@ package io.beatmaps.common.dbo
 import io.beatmaps.common.IModLogOpAction
 import io.beatmaps.common.ModLogOpType
 import io.beatmaps.common.json
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.dao.IntEntity

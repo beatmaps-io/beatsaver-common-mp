@@ -1,4 +1,4 @@
-package io.beatmaps.common
+package io.beatmaps.common.amqp
 
 import kotlinx.serialization.Serializable
 

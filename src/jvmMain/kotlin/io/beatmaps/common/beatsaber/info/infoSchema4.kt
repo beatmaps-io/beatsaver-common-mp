@@ -8,7 +8,6 @@ import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
-import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.beatsaber.AudioFormat
 import io.beatmaps.common.beatsaber.BMConstraintViolation
 import io.beatmaps.common.beatsaber.BMPropertyInfo
@@ -54,9 +53,9 @@ import io.beatmaps.common.beatsaber.validate
 import io.beatmaps.common.beatsaber.validateEach
 import io.beatmaps.common.beatsaber.validateForEach
 import io.beatmaps.common.beatsaber.validateOptional
-import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
+import io.beatmaps.common.util.copyTo
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
@@ -436,10 +435,10 @@ data class DifficultyBeatmapV4(
             }
     }
 
-    override fun enumValue() = searchEnum<EDifficulty>(difficulty.or(""))
+    override fun enumValue() = EDifficulty.fromName(difficulty.or(""))
     override fun extraFiles() = setOfNotNull(beatmapFilename.orNull(), lightshowDataFilename.orNull())
 
-    fun charEnum() = searchEnum<ECharacteristic>(characteristic.or(""))
+    fun charEnum() = ECharacteristic.fromName(characteristic.or(""))
 
     companion object {
         val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()
