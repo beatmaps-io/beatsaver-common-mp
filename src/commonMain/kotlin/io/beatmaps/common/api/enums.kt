@@ -45,7 +45,7 @@ enum class EDifficulty(val idx: Int, private val _human: String, val color: Stri
         private val map = entries.associateBy(EDifficulty::idx)
         fun fromInt(type: Int) = map[type]
 
-        private val nameMap = entries.associateBy { it.human() }
+        private val nameMap = entries.associateBy { it.name }
         fun fromName(name: String) = nameMap[name] ?: throw IllegalArgumentException("No difficulty for $name")
     }
 }
