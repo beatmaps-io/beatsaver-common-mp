@@ -92,17 +92,17 @@ open class AdditionalPropertiesTransformer<T : AdditionalProperties>(
     override fun transformDeserialize(element: JsonElement) =
         if (element is JsonObject) {
             val additionalInformation = JsonObject(element.minus(properties))
-            JsonObject(element.plus(key to additionalInformation))
+            JsonObject(element.plus(KEY to additionalInformation))
         } else {
             element
         }
 
     override fun transformSerialize(element: JsonElement) =
-        ((element as? JsonObject)?.get(key) as? JsonObject)?.let { additionalInformation ->
-            JsonObject(element.minus(key).plus(additionalInformation.toList().toTypedArray()))
+        ((element as? JsonObject)?.get(KEY) as? JsonObject)?.let { additionalInformation ->
+            JsonObject(element.minus(KEY).plus(additionalInformation.toList().toTypedArray()))
         } ?: element
 
     companion object {
-        const val key = "additionalInformation"
+        const val KEY = "additionalInformation"
     }
 }

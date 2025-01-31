@@ -10,7 +10,6 @@ enum class EIssueType(private val _human: String, val curatorAllowed: Boolean = 
     PlaylistReport("Playlist Report"),
     ReviewReport("Review Report", true);
 
-    override fun enumName() = name
     override fun human() = _human
 
     companion object {

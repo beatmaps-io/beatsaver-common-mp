@@ -1,5 +1,6 @@
-package io.beatmaps.common
+package io.beatmaps.common.util
 
+import io.beatmaps.common.MapTagQuery
 import io.beatmaps.common.db.contains
 import io.beatmaps.common.dbo.Beatmap
 import org.jetbrains.exposed.sql.AndOp

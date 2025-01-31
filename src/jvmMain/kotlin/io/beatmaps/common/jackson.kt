@@ -33,7 +33,6 @@ class KotlinTimeModule : SimpleModule() {
     init {
         addSerializer(Instant::class.java, InstantSerializer.INSTANCE)
         addSerializer(Float::class.java, FloatSerializer.INSTANCE)
-        addSerializer(HumanEnum::class.java, HumanEnumSerializer.INSTANCE)
         addSerializer(MapTag::class.java, MapTagsSerializer.INSTANCE)
         addDeserializer(MapTag::class.java, MapTagsDeserializer.INSTANCE)
         addDeserializer(LocalDate::class.java, LocalDateDeserializer.INSTANCE)
@@ -72,16 +71,6 @@ class FloatSerializer : StdSerializer<Float>(Float::class.java) {
         } else {
             gen.writeNumber(value)
         }
-    }
-}
-
-class HumanEnumSerializer : StdSerializer<HumanEnum<*>>(HumanEnum::class.java) {
-    companion object {
-        val INSTANCE: HumanEnumSerializer = HumanEnumSerializer()
-    }
-
-    override fun serialize(value: HumanEnum<*>, gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeString(value.enumName())
     }
 }
 

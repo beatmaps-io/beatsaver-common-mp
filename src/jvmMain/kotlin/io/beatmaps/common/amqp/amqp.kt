@@ -1,10 +1,12 @@
-package io.beatmaps.common
+package io.beatmaps.common.amqp
 
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.DeliverCallback
+import io.beatmaps.common.jackson
+import io.beatmaps.common.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.asCoroutineDispatcher

@@ -8,7 +8,6 @@ import io.beatmaps.common.OptionalPropertySerializer
 import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
-import io.beatmaps.common.api.searchEnum
 import io.beatmaps.common.beatsaber.AudioFormat
 import io.beatmaps.common.beatsaber.BMConstraintViolation
 import io.beatmaps.common.beatsaber.BMValidator
@@ -55,9 +54,9 @@ import io.beatmaps.common.beatsaber.validateForEach
 import io.beatmaps.common.beatsaber.validateOptional
 import io.beatmaps.common.beatsaber.vivify.Vivify
 import io.beatmaps.common.beatsaber.vivify.Vivify.validateVivify
-import io.beatmaps.common.copyTo
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.or
+import io.beatmaps.common.util.copyTo
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
@@ -339,7 +338,7 @@ data class DifficultyBeatmapSet(
 
     private fun self() = this
 
-    fun enumValue() = searchEnum<ECharacteristic>(_beatmapCharacteristicName.or(""))
+    fun enumValue() = ECharacteristic.fromName(_beatmapCharacteristicName.or(""))
 }
 
 interface DifficultyBeatmapInfo : BSCustomData<DifficultyBeatmapCustomDataBase> {
@@ -457,7 +456,7 @@ data class DifficultyBeatmap(
             .isLessThan(max(1, info.mapInfo.getEnvironments().size)).notExistsBefore(ver, Schema2_1)
     }
 
-    override fun enumValue() = EDifficulty.fromInt(difficultyRank.or(0)) ?: searchEnum(difficulty.or(""))
+    override fun enumValue() = EDifficulty.fromInt(difficultyRank.or(0)) ?: EDifficulty.fromName(difficulty.or(""))
     override fun extraFiles() = setOfNotNull(beatmapFilename.orNull())
 }
 

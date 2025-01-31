@@ -1,72 +1,52 @@
 package io.beatmaps.common.api
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 interface HumanEnum<E> where E : Enum<E>, E : HumanEnum<E> {
     fun human(): String
-    fun enumName(): String
 }
 
 enum class AiDeclarationType(val markAsBot: Boolean = true, val override: Boolean = false) {
     Admin, Uploader, SageScore(override = true), None(false, true)
 }
 
-object ECharacteristicSerializer : KHumanEnumSerializer<ECharacteristic>(enumValues())
-object EDifficultySerializer : KHumanEnumSerializer<EDifficulty>(enumValues())
-open class KHumanEnumSerializer<E>(private val members: Array<E>) : KSerializer<E> where E : Enum<E>, E : HumanEnum<E> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ECharacteristic", PrimitiveKind.STRING)
-    override fun serialize(encoder: Encoder, value: E) = encoder.encodeString(value.enumName())
-    override fun deserialize(decoder: Decoder): E {
-        val search = decoder.decodeString()
-        for (each in members) {
-            if (each.name.removePrefix("_").compareTo(search.replace(" ", ""), ignoreCase = true) == 0) {
-                return each
-            }
-        }
-        throw IllegalArgumentException("No enum constant for search $search")
+@Serializable
+enum class ECharacteristic(private val ename: String, val color: String, val rotation: Boolean) : HumanEnum<ECharacteristic> {
+    Standard("Standard", "primary", false),
+    OneSaber("OneSaber", "info", false),
+    NoArrows("NoArrows", "info", false),
+    @SerialName("90Degree") Rotation90Degree("90Degree", "warning", true),
+    @SerialName("360Degree") Rotation360Degree("360Degree", "warning", true),
+    Lightshow("Lightshow", "danger", false),
+    Lawless("Lawless", "danger", false),
+    Legacy("Legacy", "danger", false);
+
+    override fun human() = ename
+
+    companion object {
+        private val map = entries.associateBy { it.ename }
+        fun fromName(name: String) = fromNameOrNull(name) ?: throw IllegalArgumentException("No characteristic for $name")
+        fun fromNameOrNull(name: String) = map[name]
     }
 }
 
-inline fun <reified T : Enum<T>> searchEnumOrNull(search: String) =
-    search.replace(" ", "").let { sanitized ->
-        enumValues<T>().firstOrNull { each ->
-            each.name.removePrefix("_").compareTo(sanitized, ignoreCase = true) == 0
-        }
-    }
-
-inline fun <reified T : Enum<T>> searchEnum(search: String) =
-    searchEnumOrNull<T>(search) ?: throw IllegalArgumentException("No enum constant for search $search")
-
-@Serializable(with = ECharacteristicSerializer::class)
-@Suppress("ktlint:standard:enum-entry-name-case")
-enum class ECharacteristic(val color: String, val rotation: Boolean) : HumanEnum<ECharacteristic> {
-    Standard("primary", false), OneSaber("info", false), NoArrows("info", false),
-    _90Degree("warning", true), _360Degree("warning", true), Lightshow("danger", false),
-    Lawless("danger", false), Legacy("danger", false);
-
-    override fun human() = toString().removePrefix("_")
-    override fun enumName() = human()
-
-    companion object
-}
-
-@Serializable(with = EDifficultySerializer::class)
+@Serializable
 enum class EDifficulty(val idx: Int, private val _human: String, val color: String) : HumanEnum<EDifficulty> {
-    Easy(1, "Easy", "green"), Normal(3, "Normal", "blue"), Hard(5, "Hard", "hard"),
-    Expert(7, "Expert", "expert"), ExpertPlus(9, "Expert+", "purple");
+    Easy(1, "Easy", "green"),
+    Normal(3, "Normal", "blue"),
+    Hard(5, "Hard", "hard"),
+    Expert(7, "Expert", "expert"),
+    ExpertPlus(9, "Expert+", "purple");
 
     override fun human() = _human
-    override fun enumName() = name
 
     companion object {
         private val map = entries.associateBy(EDifficulty::idx)
         fun fromInt(type: Int) = map[type]
+
+        private val nameMap = entries.associateBy { it.human() }
+        fun fromName(name: String) = nameMap[name] ?: throw IllegalArgumentException("No difficulty for $name")
     }
 }
 
@@ -137,6 +117,7 @@ enum class RankedFilter(val blRanked: Boolean = false, val ssRanked: Boolean = f
  * - Filter fields for "_environmentsListModel"
  * - Use "_normalEnvironmentSerializedNames", optionally check "_normalEnvironmentNames"
  */
+@Serializable
 enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolean, val v3: Boolean, val filterable: Boolean = true) : HumanEnum<EBeatsaberEnvironment> {
     DefaultEnvironment("Default", false, false),
     TriangleEnvironment("Triangle", false, false),
@@ -194,7 +175,6 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     fun category() = if (v3) "New" else "Legacy"
 
     override fun human() = short
-    override fun enumName() = human()
 
     companion object {
         val names = entries.map { it.name }.toSet()

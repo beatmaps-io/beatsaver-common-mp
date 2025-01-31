@@ -2,7 +2,9 @@ package io.beatmaps.common.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.beatmaps.common.api.searchEnum
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.serializerOrNull
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
@@ -49,14 +51,18 @@ class BMPGDialect : PostgreSQLDialect() {
 inline fun <reified T : Enum<T>> Table.postgresEnumeration(
     columnName: String,
     postgresEnumName: String
-) = customEnumeration(
-    columnName, postgresEnumName,
-    { value -> searchEnum<T>(value as String) }, { PGEnum(postgresEnumName, it) }
-)
+): Column<T> {
+    val descriptor = T::class.serializerOrNull()?.descriptor
+    val lookup = enumValues<T>().associateBy { descriptor?.getElementName(it.ordinal) }
+    return customEnumeration(
+        columnName, postgresEnumName,
+        { value -> lookup[value as String] ?: throw IllegalArgumentException("$columnName has value ($value) not found in $postgresEnumName") }, { PGEnum(postgresEnumName, it, descriptor) }
+    )
+}
 
-class PGEnum<T : Enum<T>>(enumTypeName: String, enumValue: T?) : PGobject() {
+class PGEnum<T : Enum<T>>(enumTypeName: String, enumValue: T?, descriptor: SerialDescriptor?) : PGobject() {
     init {
-        value = enumValue?.name?.removePrefix("_")
+        value = enumValue?.ordinal?.let { ord -> descriptor?.getElementName(ord) }
         type = enumTypeName
     }
 }

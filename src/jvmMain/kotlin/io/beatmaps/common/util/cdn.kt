@@ -1,4 +1,4 @@
-package io.beatmaps.common
+package io.beatmaps.common.util
 
 import io.ktor.http.HttpHeaders
 import io.ktor.http.content.versions
