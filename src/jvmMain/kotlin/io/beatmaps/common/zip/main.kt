@@ -12,4 +12,3 @@ interface IMapScorerProvider {
 }
 class RarException : ZipHelperException("")
 open class ZipHelperException(val msg: String) : RuntimeException()
-

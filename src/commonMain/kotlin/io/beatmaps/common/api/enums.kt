@@ -16,8 +16,13 @@ enum class ECharacteristic(private val ename: String, val color: String, val rot
     Standard("Standard", "primary", false),
     OneSaber("OneSaber", "info", false),
     NoArrows("NoArrows", "info", false),
-    @SerialName("90Degree") Rotation90Degree("90Degree", "warning", true),
-    @SerialName("360Degree") Rotation360Degree("360Degree", "warning", true),
+
+    @SerialName("90Degree")
+    Rotation90Degree("90Degree", "warning", true),
+
+    @SerialName("360Degree")
+    Rotation360Degree("360Degree", "warning", true),
+
     Lightshow("Lightshow", "danger", false),
     Lawless("Lawless", "danger", false),
     Legacy("Legacy", "danger", false);

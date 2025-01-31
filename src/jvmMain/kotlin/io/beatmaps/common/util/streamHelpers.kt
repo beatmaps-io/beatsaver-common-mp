@@ -6,7 +6,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.zip.CRC32
 
 class CopyException(msg: String) : Exception(msg)
 
