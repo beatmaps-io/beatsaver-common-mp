@@ -48,11 +48,11 @@ class ZipHelperWithAudio(fs: ZipFile) : ZipHelper(fs) {
         }
     }
 
-    fun generatePreview(outputStream: OutputStream) =
+    fun generatePreview(outputStream: OutputStream, duration: Float) =
         AudioSystem.getAudioInputStream(previewAudioFile).use { oggStream ->
             convertToPCM(
                 oggStream,
-                previewInfo.start,
+                if (previewInfo.start > duration) 0f else previewInfo.start,
                 10.2f
             ).use {
                 encodeToMp3(it, outputStream)
