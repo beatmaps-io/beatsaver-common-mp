@@ -422,7 +422,7 @@ data class DifficultyBeatmap(
             additionalInformation.keys
         )
 
-        val allowedDiffNames = EDifficulty.entries.map { it.human() }.toSet()
+        val allowedDiffNames = EDifficulty.entries.map { it.name }.toSet()
         validate(DifficultyBeatmap::difficulty).exists()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(difficulty.orNull())) {
