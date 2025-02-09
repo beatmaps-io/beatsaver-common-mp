@@ -66,7 +66,7 @@ data class BSDifficultyV3(
 
 @Serializable
 data class BSDifficultyV3CustomData(
-    override val time: OptionalProperty<Float?>,
+    override val time: OptionalProperty<Float?> = OptionalProperty.NotPresent,
     override val customEvents: OptionalProperty<List<OptionalProperty<CustomJsonEventV3?>>?> = OptionalProperty.NotPresent
 ) : BSMapCustomData, CustomJsonEvents
 
