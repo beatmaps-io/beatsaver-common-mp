@@ -24,7 +24,7 @@ data class ExtractedInfo(
     val maxVivify: Long = 0,
     var vivifyAssets: Set<String>? = null,
     var vivifySize: Long = 0,
-    val uncompressedSize: Long = 0,
+    val compressedSize: Long = 0,
     val md: MessageDigest = MessageDigest.getInstance("SHA1")
 ) {
     val digest by lazy {
