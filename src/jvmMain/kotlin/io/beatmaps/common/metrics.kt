@@ -5,6 +5,7 @@ import com.maxmind.geoip2.DatabaseReader
 import com.maxmind.geoip2.exception.GeoIp2Exception
 import com.maxmind.geoip2.model.AbstractCountryResponse
 import com.maxmind.geoip2.model.CityResponse
+import io.beatmaps.common.amqp.hostname
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.ApplicationCallPipeline
@@ -151,7 +152,7 @@ fun Application.installMetrics() {
         return
     }
 
-    appMicrometerRegistry.config().commonTags("host", System.getenv("HOSTNAME") ?: "unknown")
+    appMicrometerRegistry.config().commonTags("host", hostname ?: "unknown")
 
     install(MicrometerMetrics) {
         registry = appMicrometerRegistry

@@ -6,8 +6,6 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.ContentType
-import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.serialization.kotlinx.json.json
 
 private fun setupClient(block: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {}) = HttpClient(Apache) {
@@ -23,12 +21,6 @@ private fun setupClient(block: HttpClientConfig<ApacheEngineConfig>.() -> Unit =
     }
 }
 
-val client = setupClient {
-    install(ContentNegotiation) {
-        val converter = JacksonConverter(jackson)
-        register(ContentType.Application.Json, converter)
-    }
-}
 val jsonClient = setupClient {
     install(ContentNegotiation) {
         json(jsonIgnoreUnknown)

@@ -59,11 +59,19 @@ data class ReplyDeleteData(val reason: String, val text: String? = null) : IModL
 @SerialName("RevokeSessions")
 data class RevokeSessionsData(val all: Boolean, val reason: String? = null) : IModLogOpAction
 
+@Serializable
+@SerialName("UnCurate")
+data class UnCurateMapData(val reason: String? = null) : IModLogOpAction
+
+@Serializable
+@SerialName("UnCuratePlaylist")
+data class UnCuratePlaylistData(val playlistId: Int, val reason: String? = null) : IModLogOpAction
+
 enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
     Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
     ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class),
-    FlagsEdit(FlagsEditData::class);
+    FlagsEdit(FlagsEditData::class), UnCurateMap(UnCurateMapData::class), UnCuratePlaylist(UnCuratePlaylistData::class);
 
     companion object {
         private val map = entries.associateBy(ModLogOpType::actionClass)
