@@ -28,7 +28,7 @@ import kotlin.reflect.full.starProjectedType
 
 val es: ExecutorService = Executors.newFixedThreadPool(4)
 
-val hostname: String = System.getenv("HOSTNAME") ?: ""
+val hostname: String? = System.getenv("HOSTNAME")
 val rabbitHost: String = System.getenv("RABBITMQ_HOST") ?: ""
 val rabbitPort: String = System.getenv("RABBITMQ_PORT") ?: "5672"
 val rabbitUser: String = System.getenv("RABBITMQ_USER") ?: "guest"
