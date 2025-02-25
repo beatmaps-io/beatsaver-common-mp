@@ -1,174 +1,211 @@
-/*
-* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
-* File has been changed to tag requests via micrometer which is broken under normal use
-*/
-
 package io.beatmaps.common
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.ApplicationCallPipeline
-import io.ktor.server.application.BaseApplicationPlugin
-import io.ktor.server.application.call
-import io.ktor.server.http.content.resolveResource
-import io.ktor.server.response.ApplicationSendPipeline
-import io.ktor.server.response.respond
+import io.ktor.server.application.ApplicationPlugin
+import io.ktor.server.application.Hook
+import io.ktor.server.application.createApplicationPlugin
+import io.ktor.server.application.hooks.CallFailed
+import io.ktor.server.application.hooks.ResponseBodyReadyForSend
+import io.ktor.server.application.isHandled
+import io.ktor.server.logging.mdcProvider
+import io.ktor.server.request.uri
 import io.ktor.util.AttributeKey
-import io.ktor.util.pipeline.PipelineContext
-import kotlinx.coroutines.coroutineScope
+import io.ktor.util.logging.KtorSimpleLogger
+import io.ktor.util.pipeline.PipelinePhase
+import io.ktor.util.reflect.instanceOf
+import kotlin.reflect.KClass
 
-/**
- * Status pages feature that handles exceptions and status codes. Useful to configure default error pages.
- */
-class StatusPagesCustom(config: Configuration) {
-    private val exceptions = HashMap(config.exceptions)
-    private val statuses = HashMap(config.statuses)
+private val LOGGER = KtorSimpleLogger("io.beatmaps.common.StatusPagesCustom")
 
-    /**
-     * Status pages feature config
-     */
-    class Configuration {
-        /**
-         * Exception handlers map by exception class
-         */
-        val exceptions: MutableMap<Class<*>, suspend PipelineContext<*, ApplicationCall>.(Throwable) -> Unit> =
-            mutableMapOf()
+typealias HandlerFunction = suspend (call: ApplicationCall, cause: Throwable) -> Unit
 
-        /**
-         * Status handlers by status code
-         */
-        val statuses: MutableMap<HttpStatusCode, suspend PipelineContext<*, ApplicationCall>.(HttpStatusCode) -> Unit> =
-            mutableMapOf()
+val StatusPagesCustom: ApplicationPlugin<StatusPagesCustomConfig> = createApplicationPlugin(
+    "StatusPagesCustom",
+    ::StatusPagesCustomConfig
+) {
+    val statusPageMarker = AttributeKey<Unit>("StatusPagesTriggered")
 
-        /**
-         * Register exception [handler] for exception type [T] and it's children
-         */
-        inline fun <reified T : Throwable> exception(
-            noinline handler: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit
-        ): Unit =
-            exception(T::class.java, handler)
+    val exceptions = HashMap(pluginConfig.exceptions)
+    val statuses = HashMap(pluginConfig.statuses)
+    val unhandled = pluginConfig.unhandled
 
-        /**
-         * Register exception [handler] for exception class [klass] and it's children
-         */
-        fun <T : Throwable> exception(
-            klass: Class<T>,
-            handler: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit
-        ) {
-            @Suppress("UNCHECKED_CAST")
-            val cast =
-                handler as suspend PipelineContext<*, ApplicationCall>.(Throwable) -> Unit
+    fun findHandlerByValue(cause: Throwable): HandlerFunction? {
+        val keys = exceptions.keys.filter { cause.instanceOf(it) }
+        if (keys.isEmpty()) return null
 
-            exceptions[klass] = cast
+        if (keys.size == 1) {
+            return exceptions[keys.single()]
         }
 
-        /**
-         * Register status [handler] for [status] code
-         */
-        fun status(
-            vararg status: HttpStatusCode,
-            handler: suspend PipelineContext<*, ApplicationCall>.(HttpStatusCode) -> Unit
-        ) {
-            status.forEach {
-                statuses[it] = handler
-            }
-        }
+        val key = selectNearestParentClass(cause, keys)
+        return exceptions[key]
     }
 
-    private suspend fun interceptResponse(context: PipelineContext<*, ApplicationCall>, message: Any) {
-        val call = context.call
-        if (call.attributes.contains(key)) return
+    on(ResponseBodyReadyForSend) { call, content ->
+        if (call.attributes.contains(statusPageMarker)) return@on
 
-        val status = when (message) {
-            is OutgoingContent -> message.status
-            is HttpStatusCode -> message
-            else -> null
+        val status = content.status ?: call.response.status()
+        if (status == null) {
+            LOGGER.trace("No status code found for call: ${call.request.uri}")
+            return@on
         }
-        if (status != null) {
-            val handler = statuses[status]
-            if (handler != null) {
-                call.attributes.put(key, this@StatusPagesCustom)
-                context.handler(status)
-                finishIfResponseSent(context)
-            }
-        }
-    }
 
-    private fun finishIfResponseSent(context: PipelineContext<*, ApplicationCall>) {
-        if (context.call.response.status() != null) {
-            context.finish()
+        val handler = statuses[status]
+        if (handler == null) {
+            LOGGER.trace("No handler found for status code {} for call: {}", status, call.request.uri)
+            return@on
         }
-    }
 
-    private suspend fun interceptCall(context: PipelineContext<Unit, ApplicationCall>) {
+        call.attributes.put(statusPageMarker, Unit)
         try {
-            coroutineScope {
-                context.proceed()
-            }
-        } catch (exception: Throwable) {
-            context.call.tag("throwable", exception::class.qualifiedName ?: "n/a")
-
-            val handler = findHandlerByType(exception.javaClass)
-            if (handler != null && context.call.response.status() == null) {
-                context.handler(exception)
-                finishIfResponseSent(context)
-            } else {
-                throw exception
-            }
+            LOGGER.trace("Executing {} for status code {} for call: {}", handler, status, call.request.uri)
+            handler(call, content, status)
+        } catch (cause: Throwable) {
+            LOGGER.trace("Exception {} while executing {} for status code {} for call: {}", cause, handler, status, call.request.uri)
+            call.attributes.remove(statusPageMarker)
+            throw cause
         }
     }
 
-    private fun findHandlerByType(clazz: Class<*>): HandlerFunction? {
-        exceptions[clazz]?.let { return it }
-        clazz.superclass?.let {
-            findHandlerByType(it)?.let { found -> return found }
+    on(CallFailed) { call, cause ->
+        if (call.attributes.contains(statusPageMarker)) return@on
+
+        LOGGER.trace("Call ${call.request.uri} failed with cause $cause")
+
+        val handler = findHandlerByValue(cause)
+        if (handler == null) {
+            LOGGER.trace("No handler found for exception: {} for call {}", cause, call.request.uri)
+            throw cause
         }
-        clazz.interfaces.forEach {
-            findHandlerByType(it)?.let { found -> return found }
+
+        call.attributes.put(statusPageMarker, Unit)
+        call.application.mdcProvider.withMDCBlock(call) {
+            LOGGER.trace("Executing {} for exception {} for call {}", handler, cause, call.request.uri)
+            handler(call, cause)
         }
-        return null
+    }
+
+    on(BeforeFallback) { call ->
+        if (call.isHandled) return@on
+        unhandled(call)
+    }
+}
+
+class StatusPagesCustomConfig {
+    /**
+     * Provides access to exception handlers of the exception class.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.exceptions)
+     */
+    val exceptions: MutableMap<KClass<*>, HandlerFunction> = mutableMapOf()
+
+    /**
+     * Provides access to status handlers based on a status code.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.statuses)
+     */
+    val statuses: MutableMap<
+        HttpStatusCode,
+        suspend (call: ApplicationCall, content: OutgoingContent, code: HttpStatusCode) -> Unit
+        > =
+        mutableMapOf()
+
+    internal var unhandled: suspend (ApplicationCall) -> Unit = {}
+
+    /**
+     * Register an exception [handler] for the exception type [T] and its children.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.exception)
+     */
+    inline fun <reified T : Throwable> exception(
+        noinline handler: suspend (call: ApplicationCall, cause: T) -> Unit
+    ): Unit = exception(T::class, handler)
+
+    /**
+     * Register an exception [handler] for the exception class [klass] and its children.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.exception)
+     */
+    fun <T : Throwable> exception(
+        klass: KClass<T>,
+        handler: suspend (call: ApplicationCall, T) -> Unit
+    ) {
+        @Suppress("UNCHECKED_CAST")
+        val cast = handler as suspend (ApplicationCall, Throwable) -> Unit
+
+        exceptions[klass] = cast
     }
 
     /**
-     * Feature installation object
+     * Register a status [handler] for the [status] code.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.status)
      */
-    companion object Feature : BaseApplicationPlugin<ApplicationCallPipeline, Configuration, StatusPagesCustom> {
-        override val key: AttributeKey<StatusPagesCustom> = AttributeKey("Status Pages")
-
-        override fun install(pipeline: ApplicationCallPipeline, configure: Configuration.() -> Unit): StatusPagesCustom {
-            val configuration = Configuration().apply(configure)
-            val feature = StatusPagesCustom(configuration)
-            if (feature.statuses.isNotEmpty()) {
-                pipeline.sendPipeline.intercept(ApplicationSendPipeline.After) { message ->
-                    feature.interceptResponse(this, message)
-                }
-            }
-            if (feature.exceptions.isNotEmpty()) {
-                pipeline.intercept(ApplicationCallPipeline.Monitoring) {
-                    feature.interceptCall(this)
-                }
-            }
-            return feature
+    fun status(
+        vararg status: HttpStatusCode,
+        handler: suspend (ApplicationCall, HttpStatusCode) -> Unit
+    ) {
+        status.forEach {
+            statuses[it] = { call, _, code -> handler(call, code) }
         }
     }
-}
 
-/**
- * Register a status page file(s) using [filePattern] for multiple status [code] list
- * @param code vararg list of status codes handled by this configuration
- * @param filePattern path to status file with optional `#` character(s) that will be replaced with numeric status code
- */
-fun StatusPagesCustom.Configuration.statusFile(vararg code: HttpStatusCode, filePattern: String) {
-    status(*code) { status ->
-        val path = filePattern.replace("#", status.value.toString())
-        val message = call.resolveResource(path)
-        if (message == null) {
-            call.respond(HttpStatusCode.InternalServerError)
-        } else {
-            call.response.status(status)
-            call.respond(message)
+    /**
+     * Register a [handler] for the unhandled calls.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.unhandled)
+     */
+    fun unhandled(handler: suspend (ApplicationCall) -> Unit) {
+        unhandled = handler
+    }
+
+    /**
+     * Register a status [handler] for the [status] code.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.status)
+     */
+    @JvmName("statusWithContext")
+    fun status(
+        vararg status: HttpStatusCode,
+        handler: suspend StatusContext.(HttpStatusCode) -> Unit
+    ) {
+        status.forEach {
+            statuses[it] = { call, content, code -> handler(StatusContext(call, content), code) }
         }
     }
+
+    /**
+     * A context for [status] config method.
+     *
+     * [Report a problem](https://ktor.io/feedback/?fqname=io.ktor.server.plugins.statuspages.StatusPagesConfig.StatusContext)
+     */
+    class StatusContext(
+        val call: ApplicationCall,
+        val content: OutgoingContent
+    )
 }
-private typealias HandlerFunction = suspend PipelineContext<Unit, ApplicationCall>.(Throwable) -> Unit
+
+internal fun selectNearestParentClass(cause: Throwable, keys: List<KClass<*>>): KClass<*>? =
+    keys.minByOrNull { distance(cause.javaClass, it.java) }
+
+private fun distance(child: Class<*>, parent: Class<*>): Int {
+    var result = 0
+    var current = child
+    while (current != parent) {
+        current = current.superclass
+        result++
+    }
+
+    return result
+}
+
+internal object BeforeFallback : Hook<suspend (ApplicationCall) -> Unit> {
+    override fun install(pipeline: ApplicationCallPipeline, handler: suspend (ApplicationCall) -> Unit) {
+        val phase = PipelinePhase("BeforeFallback")
+        pipeline.insertPhaseBefore(ApplicationCallPipeline.Fallback, phase)
+        pipeline.intercept(phase) { handler(context) }
+    }
+}

@@ -2,13 +2,11 @@ package io.beatmaps.common.util
 
 import io.ktor.http.HttpHeaders
 import io.ktor.http.content.versions
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.http.content.LastModifiedVersion
 import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.response.header
 import io.ktor.server.response.respondFile
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.net.URI
@@ -43,7 +41,7 @@ fun encodeURLPathComponent(path: String?): String =
         ""
     }
 
-suspend fun PipelineContext<*, ApplicationCall>.returnFile(file: File?, filename: String? = null) {
+suspend fun RoutingContext.returnFile(file: File?, filename: String? = null) {
     if (file != null && file.exists()) {
         filename?.let {
             val encoded = encodeURLPathComponent(it)

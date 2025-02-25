@@ -1,9 +1,7 @@
 package io.beatmaps.common.amqp
 
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
@@ -83,5 +81,5 @@ fun Application.emailQueue() =
         EmailHelper.listen(this)
     }
 
-fun PipelineContext<*, ApplicationCall>.sendEmail(to: String, subject: String, body: String) =
+fun RoutingContext.sendEmail(to: String, subject: String, body: String) =
     EmailHelper.queue(call.rb(), EmailInfo(to, subject, body))
