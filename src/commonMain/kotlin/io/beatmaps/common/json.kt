@@ -1,5 +1,6 @@
 package io.beatmaps.common
 
+import io.ktor.resources.ResourceSerializationException
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -60,7 +61,9 @@ open class OptionalPropertySerializer<T>(
             }
 
             OptionalProperty.Present(final)
-        } catch (e: SerializationException) {
+        } catch (e: ResourceSerializationException) {
+            OptionalProperty.WrongType
+        } catch (e: IllegalArgumentException) {
             OptionalProperty.WrongType
         }
 
