@@ -12,11 +12,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty1
-import kotlin.reflect.full.declaredMemberProperties
 
-object LenientInstantSerializer: KSerializer<Instant> {
+object LenientInstantSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
@@ -36,7 +34,7 @@ object LenientInstantSerializer: KSerializer<Instant> {
 
 class BadParameter(val paramName: String, val paramType: KClass<*>) : Throwable()
 
-data class ParamInfo<T, V: OptionalProperty<O>?, O : Any>(val parent: T, val param: KProperty1<T, V>, val paramType: KClass<O>) {
+data class ParamInfo<T, V : OptionalProperty<O>?, O : Any>(val parent: T, val param: KProperty1<T, V>, val paramType: KClass<O>) {
     fun require() {
         val value = param.get(parent)
         if (value is OptionalProperty.WrongType) {
