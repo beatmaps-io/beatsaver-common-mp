@@ -77,7 +77,7 @@ object Vivify {
         getFile(filename)?.let { f ->
             val file = createTemp(f.inputStream())
             try {
-                getAssets(file.path, crc).copy(filename = filename, compressedSize = f.compressedSize)
+                getAssets(file.path, crc).copy(compressedSize = f.compressedSize)
             } finally {
                 file.delete()
             }
@@ -88,14 +88,14 @@ object Vivify {
     @Serializable
     data class TotalBsRepoResponse(val hash: UInt, val downloadUrl: String, val createdDate: String)
 
-    private suspend fun tryGetBundleFromServer(filename: String, crc: UInt, client: HttpClient) =
+    private suspend fun tryGetBundleFromServer(crc: UInt, client: HttpClient) =
         try {
             val downloadUrl = client.get("$TOTALBS_REPO/$crc") { expectSuccess = true }.body<TotalBsRepoResponse>().downloadUrl
             val stream = client.get(downloadUrl) { expectSuccess = true }.bodyAsChannel().toInputStream()
 
             createTemp(stream).let { file ->
                 try {
-                    getAssets(file.path, crc).copy(filename = filename, compressedSize = 0)
+                    getAssets(file.path, crc).copy(compressedSize = 0)
                 } finally {
                     file.delete()
                 }
@@ -110,7 +110,7 @@ object Vivify {
                 allowedBundles.contains(key)
             }
 
-            tryGetBundleFromZip(filename, crc, getFile) ?: tryGetBundleFromServer(filename, crc, client) ?: VivifyFile.FAIL
+            (tryGetBundleFromZip(filename, crc, getFile) ?: tryGetBundleFromServer(crc, client) ?: VivifyFile.FAIL).copy(filename = filename)
         }
 
         val parsedFiles = vivifyFiles.filter { it.parsed }
@@ -120,15 +120,16 @@ object Vivify {
         info.vivifySize = vivifyFiles.sumOf { it.compressedSize }
 
         vivifyFiles.forEach { file ->
-            validate(AssetsRead(file.filename)) {
-                file.parsed
-            }
             validate(VivifyCrc(file.filename)) {
                 file.crcMatch
             }
             validate(VivifySize(file.filename, file.compressedSize, info.maxVivify)) {
                 file.compressedSize < info.maxVivify
             }
+        }
+        val failedToParse = vivifyFiles.filter { !it.parsed }.map { it.filename }.toSet()
+        validate(AssetsRead(failedToParse)) {
+            failedToParse.none()
         }
         validate(AssetsMatch) {
             parsedFiles.size <= 1 || parsedFiles.drop(1).all { it.assets == parsedFiles[0].assets }
