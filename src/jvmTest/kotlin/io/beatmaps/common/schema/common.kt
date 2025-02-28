@@ -8,10 +8,12 @@ import io.beatmaps.common.beatsaber.info.check
 import io.beatmaps.common.beatsaber.info.toJson
 import io.beatmaps.common.beatsaber.map.BSDiff
 import io.beatmaps.common.beatsaber.map.BSLights
+import io.beatmaps.common.jsonClient
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
+import kotlinx.coroutines.runBlocking
 import org.valiktor.Constraint
 import org.valiktor.ConstraintViolation
 import org.valiktor.ConstraintViolationException
@@ -29,43 +31,45 @@ object SchemaCommon {
         val str = readFromBytes(info.readAllBytes()).replace("\r\n", "\n")
         val jsonElement = jsonIgnoreUnknown.parseToJsonElement(str)
 
-        try {
-            val mapInfo = BaseMapInfo.parse(jsonElement).check()
+        return runBlocking {
+            try {
+                val mapInfo = BaseMapInfo.parse(jsonElement).check()
 
-            val extractedInfo = ExtractedInfo(files, mapInfo, 0)
-            mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio) {
-                if (files.contains(it)) {
-                    object : IZipPath {
-                        override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
-                            javaClass.getResourceAsStream("/$fn/$it")
+                val extractedInfo = ExtractedInfo(files, mapInfo, 0)
+                mapInfo.validate(files.map { it.lowercase() }.toSet(), extractedInfo, audio, audio, jsonClient) {
+                    if (files.contains(it)) {
+                        object : IZipPath {
+                            override fun inputStream() = (if (setOf("ogg", "png").contains(it.substringAfterLast("."))) "shared" else name).let { fn ->
+                                javaClass.getResourceAsStream("/$fn/$it")
+                            }
+
+                            override val fileName = it
+                            override val compressedSize = 0L
                         }
-
-                        override val fileName = it
-                        override val compressedSize = 0L
+                    } else {
+                        null
                     }
-                } else {
-                    null
                 }
+                diffValidators.forEach {
+                    val char = extractedInfo.diffs.filter { d -> d.key == it.characteristic }
+                    val charLights = extractedInfo.lights.filter { d -> d.key == it.characteristic }
+                    assert(char.size == 1 && charLights.size == 1) { "Missing or multiple characteristics for validator" }
+
+                    val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                    val diffLights = charLights.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
+                    assert(diff.size == 1 && diffLights.size == 1) { "Missing or multiple difficulty for validator" }
+
+                    it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
+                }
+
+                // Check encoded version matches original
+                assertEquals(str, mapInfo.toJson())
+
+                null
+            } catch (e: ConstraintViolationException) {
+                e
             }
-            diffValidators.forEach {
-                val char = extractedInfo.diffs.filter { d -> d.key == it.characteristic }
-                val charLights = extractedInfo.lights.filter { d -> d.key == it.characteristic }
-                assert(char.size == 1 && charLights.size == 1) { "Missing or multiple characteristics for validator" }
-
-                val diff = char.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
-                val diffLights = charLights.entries.first().value.filter { d -> d.key.enumValue() == it.difficulty }
-                assert(diff.size == 1 && diffLights.size == 1) { "Missing or multiple difficulty for validator" }
-
-                it.block.invoke(diff.values.first(), diffLights.values.first(), extractedInfo.songLengthInfo!!)
-            }
-
-            // Check encoded version matches original
-            assertEquals(str, mapInfo.toJson())
-        } catch (e: ConstraintViolationException) {
-            return e
         }
-
-        return null
     }
 
     inline fun <reified T : Constraint> violation(prop: String) =

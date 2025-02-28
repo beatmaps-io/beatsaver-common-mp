@@ -122,8 +122,8 @@ kotlin {
                 implementation("org.valiktor:valiktor-core:0.12.0")
 
                 // Asset bundles
-                implementation("io.beatmaps:kabt-base:1.0.7")
-                implementation("io.beatmaps:kabt:1.0.7")
+                implementation("io.beatmaps:kabt-base:1.0.8")
+                implementation("io.beatmaps:kabt:1.0.8")
             }
         }
     }
