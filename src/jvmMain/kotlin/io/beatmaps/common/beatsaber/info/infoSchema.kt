@@ -19,6 +19,7 @@ import io.beatmaps.common.beatsaber.map.parseBS
 import io.beatmaps.common.jsonIgnoreUnknown
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
+import io.ktor.client.HttpClient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
@@ -129,7 +130,7 @@ abstract class BaseMapInfo : BSCustomData<InfoCustomData> {
     protected open fun songLengthInfo(info: ExtractedInfo, getFile: (String) -> IZipPath?, constraintViolations: MutableSet<ConstraintViolation>): SongLengthInfo =
         LegacySongLengthInfo(info)
 
-    abstract fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?): BaseMapInfo
+    abstract suspend fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, client: HttpClient, getFile: (String) -> IZipPath?): BaseMapInfo
 
     abstract fun getColorSchemes(): List<BaseColorScheme>
     abstract fun getEnvironments(): List<EBeatsaberEnvironment>

@@ -73,7 +73,7 @@ open class ZipHelper(private val fs: ZipFile) : AutoCloseable {
     }
 
     companion object {
-        private fun <T> catchZipErrors(file: File, block: () -> T) = try {
+        private suspend fun <T> catchZipErrors(file: File, block: suspend () -> T) = try {
             block()
         } catch (e: ZipException) {
             if (file.exists()) {
@@ -84,12 +84,16 @@ open class ZipHelper(private val fs: ZipFile) : AutoCloseable {
             throw ZipHelperException("Error opening zip file")
         }
 
-        fun <T> openZipNoAudio(file: File, block: ZipHelper.() -> T) = catchZipErrors(file) {
-            ZipHelper(ZipFile(file)).use(block)
+        suspend fun <T> openZipNoAudio(file: File, block: suspend ZipHelper.() -> T) = catchZipErrors(file) {
+            ZipHelper(ZipFile(file)).use {
+                block(it)
+            }
         }
 
-        fun <T> openZip(file: File, block: ZipHelperWithAudio.() -> T) = catchZipErrors(file) {
-            ZipHelperWithAudio(ZipFile(file)).use(block)
+        suspend fun <T> openZip(file: File, block: suspend ZipHelperWithAudio.() -> T) = catchZipErrors(file) {
+            ZipHelperWithAudio(ZipFile(file)).use {
+                block(it)
+            }
         }
     }
 }

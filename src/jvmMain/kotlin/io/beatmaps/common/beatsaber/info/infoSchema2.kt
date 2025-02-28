@@ -60,6 +60,7 @@ import io.beatmaps.common.util.copyTo
 import io.beatmaps.common.zip.ExtractedInfo
 import io.beatmaps.common.zip.IZipPath
 import io.beatmaps.common.zip.readFromBytes
+import io.ktor.client.HttpClient
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -95,7 +96,7 @@ data class MapInfo(
     override val customData: OptionalProperty<MapCustomData?> = OptionalProperty.NotPresent,
     val _difficultyBeatmapSets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?> = OptionalProperty.NotPresent
 ) : BaseMapInfo() {
-    override fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, getFile: (String) -> IZipPath?) = validate(this) {
+    override suspend fun validate(files: Set<String>, info: ExtractedInfo, audio: File, preview: File, client: HttpClient, getFile: (String) -> IZipPath?) = validate(this) {
         info.songLengthInfo = songLengthInfo(info, getFile, constraintViolations)
         val ver = Version(version.orNull())
 
@@ -144,7 +145,7 @@ data class MapInfo(
             }
         }
         // Must be validated before beatmaps so data is available
-        validate(MapInfo::customData).validateVivify(info, getFile)
+        validate(MapInfo::customData).validateVivify(info, getFile, client)
         validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
 
         // V2.1

@@ -11,20 +11,27 @@ import io.beatmaps.kabt.file.UnityFileSystem
 import io.beatmaps.kabt.tree.ComplexAsset
 import io.beatmaps.kabt.tree.MapAsset
 import io.beatmaps.kabt.tree.StringAsset
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.expectSuccess
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.jvm.javaio.toInputStream
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
+import java.io.InputStream
 
 object Vivify {
-    private fun createTemp(path: IZipPath): File =
+    private fun createTemp(stream: InputStream): File =
         File.createTempFile("asset", ".vivify").also { file ->
             file.deleteOnExit()
 
-            path.inputStream().use { iss ->
-                file.outputStream().use {
-                    iss.copyTo(it, sizeLimit = FileLimits.VIVIFY_LIMIT)
-                }
+            file.outputStream().use {
+                stream.copyTo(it, sizeLimit = FileLimits.VIVIFY_LIMIT)
             }
         }
 
@@ -65,20 +72,44 @@ object Vivify {
 
     fun getFiles(info: MapInfo) = getFileInfo(info).map { it.second }
 
-    fun BMValidator<MapInfo>.BMProperty<*>.validateVivify(info: ExtractedInfo, getFile: (String) -> IZipPath?) {
+    private fun tryGetBundleFromZip(filename: String, crc: UInt, getFile: (String) -> IZipPath?) =
+        getFile(filename)?.let { f ->
+            val file = createTemp(f.inputStream())
+            try {
+                getAssets(file.path, crc).copy(compressedSize = f.compressedSize)
+            } finally {
+                file.delete()
+            }
+        }
+
+    private const val TOTALBS_REPO = "https://repo.totalbs.dev/api/v1/bundle"
+
+    @Serializable
+    data class TotalBsRepoResponse(val hash: UInt, val downloadUrl: String, val createdDate: String)
+
+    private suspend fun tryGetBundleFromServer(crc: UInt, client: HttpClient) =
+        try {
+            val downloadUrl = client.get("$TOTALBS_REPO/$crc") { expectSuccess = true }.body<TotalBsRepoResponse>().downloadUrl
+            val stream = client.get(downloadUrl) { expectSuccess = true }.bodyAsChannel().toInputStream()
+
+            createTemp(stream).let { file ->
+                try {
+                    getAssets(file.path, crc).copy(compressedSize = 0)
+                } finally {
+                    file.delete()
+                }
+            }
+        } catch (e: ResponseException) {
+            null
+        }
+
+    suspend fun BMValidator<MapInfo>.BMProperty<*>.validateVivify(info: ExtractedInfo, getFile: (String) -> IZipPath?, client: HttpClient) {
         val vivifyFiles = getFileInfo(obj).map { (key, filename, crc) ->
             validate(VivifyName(key, allowedBundles)) {
                 allowedBundles.contains(key)
             }
 
-            getFile(filename)?.let { f ->
-                val file = createTemp(f)
-                try {
-                    getAssets(file.path, crc).copy(filename = filename, compressedSize = f.compressedSize)
-                } finally {
-                    file.delete()
-                }
-            } ?: VivifyFile.FAIL
+            (tryGetBundleFromZip(filename, crc, getFile) ?: tryGetBundleFromServer(crc, client) ?: VivifyFile.FAIL).copy(filename = filename)
         }
 
         val parsedFiles = vivifyFiles.filter { it.parsed }
@@ -95,8 +126,9 @@ object Vivify {
                 file.compressedSize < info.maxVivify
             }
         }
-        validate(AssetsRead) {
-            vivifyFiles.all { it.parsed }
+        val failedToParse = vivifyFiles.filter { !it.parsed }.map { it.filename }.toSet()
+        validate(AssetsRead(failedToParse)) {
+            failedToParse.none()
         }
         validate(AssetsMatch) {
             parsedFiles.size <= 1 || parsedFiles.drop(1).all { it.assets == parsedFiles[0].assets }
