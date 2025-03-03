@@ -141,7 +141,7 @@ fun Application.installMetrics() {
     sendPipeline.intercept(ApplicationSendPipeline.After) {
         val mk = call.attributes[reqTime]
         mk.end("req")
-        context.response.header("Server-Timing", mk.getHeader())
+        if (!context.response.isCommitted) context.response.header("Server-Timing", mk.getHeader())
     }
 
     val appMicrometerRegistry = if (System.getenv("INFLUX_ENABLED") != null) {
