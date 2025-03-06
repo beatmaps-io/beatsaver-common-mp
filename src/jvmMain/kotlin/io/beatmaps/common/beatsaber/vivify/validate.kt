@@ -74,11 +74,13 @@ object Vivify {
 
     private fun tryGetBundleFromZip(filename: String, crc: UInt, getFile: (String) -> IZipPath?) =
         getFile(filename)?.let { f ->
-            val file = createTemp(f.inputStream())
-            try {
-                getAssets(file.path, crc).copy(compressedSize = f.compressedSize)
-            } finally {
-                file.delete()
+            f.inputStream().use { stream ->
+                val file = createTemp(stream)
+                try {
+                    getAssets(file.path, crc).copy(compressedSize = f.compressedSize)
+                } finally {
+                    file.delete()
+                }
             }
         }
 
@@ -90,13 +92,13 @@ object Vivify {
     private suspend fun tryGetBundleFromServer(crc: UInt, client: HttpClient) =
         try {
             val downloadUrl = client.get("$TOTALBS_REPO/$crc") { expectSuccess = true }.body<TotalBsRepoResponse>().downloadUrl
-            val stream = client.get(downloadUrl) { expectSuccess = true }.bodyAsChannel().toInputStream()
-
-            createTemp(stream).let { file ->
-                try {
-                    getAssets(file.path, crc).copy(compressedSize = 0)
-                } finally {
-                    file.delete()
+            client.get(downloadUrl) { expectSuccess = true }.bodyAsChannel().toInputStream().use { stream ->
+                createTemp(stream).let { file ->
+                    try {
+                        getAssets(file.path, crc).copy(compressedSize = 0)
+                    } finally {
+                        file.delete()
+                    }
                 }
             }
         } catch (e: ResponseException) {
@@ -134,7 +136,7 @@ object Vivify {
             parsedFiles.size <= 1 || parsedFiles.drop(1).all { it.assets == parsedFiles[0].assets }
         }
         validate(HasAssets) {
-            parsedFiles.isEmpty() || parsedFiles[0].assets.size > 1
+            parsedFiles.isEmpty() || parsedFiles[0].assets.isNotEmpty()
         }
     }
 
