@@ -134,7 +134,7 @@ object Vivify {
             parsedFiles.size <= 1 || parsedFiles.drop(1).all { it.assets == parsedFiles[0].assets }
         }
         validate(HasAssets) {
-            parsedFiles.isEmpty() || parsedFiles[0].assets.size > 1
+            parsedFiles.isEmpty() || parsedFiles[0].assets.isNotEmpty()
         }
     }
 
