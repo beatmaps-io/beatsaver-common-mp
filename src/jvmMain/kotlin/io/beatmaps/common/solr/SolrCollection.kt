@@ -42,6 +42,7 @@ abstract class SolrCollection {
     }
 
     internal fun add(docs: List<SolrInputDocument>) {
+        if (docs.isEmpty()) return
         SolrHelper.solr.add(collection, docs)
     }
 
