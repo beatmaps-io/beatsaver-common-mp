@@ -2,7 +2,9 @@ package io.beatmaps.common.beatsaber.leaderboard
 
 import io.beatmaps.common.api.ECharacteristic
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class BLGameMode(val idx: Int, val characteristic: ECharacteristic) {
     Standard(0, ECharacteristic.Standard),
     OneSaber(1, ECharacteristic.OneSaber),
