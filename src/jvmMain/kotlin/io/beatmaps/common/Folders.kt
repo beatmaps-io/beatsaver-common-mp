@@ -20,26 +20,29 @@ object Folders {
     private fun defaultBaseFolder() = File("data").createFolder()
 
     private val folderCache = mutableMapOf<StorageItem, File>()
-    private fun getFolder(si: StorageItem) = folderCache.getOrPut(si) {
-        val dir = envVals[si]?.let { File(it) } ?: File(defaultBaseFolder(), si.defaultFolder)
-        dir.createFolder()
+    private fun getFolder(si: StorageItem, create: Boolean = true) = folderCache.getOrPut(si) {
+        envVals[si]?.let { File(it) } ?: File(defaultBaseFolder(), si.defaultFolder).also { dir ->
+            if (create) dir.createFolder()
+        }
     }
 
     private val localFolders = mutableMapOf<Pair<StorageItem, String>, File>()
-    private fun getSubFolder(si: StorageItem, c: Char) = getSubFolder(si, c.toString())
-    private fun getSubFolder(si: StorageItem, c: String) = localFolders.getOrPut(si to c) {
-        File(getFolder(si), c).createFolder()
+    private fun getSubFolder(si: StorageItem, c: Char, create: Boolean = true) = getSubFolder(si, c.toString(), create)
+    private fun getSubFolder(si: StorageItem, c: String, create: Boolean) = localFolders.getOrPut(si to c) {
+        File(getFolder(si), c).also { dir ->
+            if (create) dir.createFolder()
+        }
     }
 
     fun uploadTempFolder() = getFolder(StorageItem.UPLOAD)
     fun localAvatarFolder() = getFolder(StorageItem.AVATAR)
-    fun localFolder(hash: String) = getSubFolder(StorageItem.ZIP, hash[0])
-    fun localCoverFolder(hash: String) = getSubFolder(StorageItem.COVER, hash[0])
-    fun localAudioFolder(hash: String) = getSubFolder(StorageItem.AUDIO, hash[0])
+    fun localFolder(hash: String, create: Boolean = true) = getSubFolder(StorageItem.ZIP, hash[0], create)
+    fun localCoverFolder(hash: String, create: Boolean = true) = getSubFolder(StorageItem.COVER, hash[0], create)
+    fun localAudioFolder(hash: String, create: Boolean = true) = getSubFolder(StorageItem.AUDIO, hash[0], create)
 
-    fun localPlaylistCoverFolder(size: Int = 256) = if (size != 256) {
-        getSubFolder(StorageItem.PLAYLIST_COVER, "$size")
+    fun localPlaylistCoverFolder(size: Int = 256, create: Boolean = true) = if (size != 256) {
+        getSubFolder(StorageItem.PLAYLIST_COVER, "$size", create)
     } else {
-        getFolder(StorageItem.PLAYLIST_COVER)
+        getFolder(StorageItem.PLAYLIST_COVER, create)
     }
 }
