@@ -124,5 +124,21 @@
       "beatmapDataFilename": "Easy.dat",
       "lightshowDataFilename": "Lights.dat"
     }
-  ]
+  ],
+  "customData": {
+    "contributors": [
+      {
+        "role": "Mapper",
+        "name": "Example",
+        "iconPath": "click.png"
+      }
+    ],
+    "characteristicData": [
+      {
+        "characteristic": "Lawless",
+        "label": "Example",
+        "iconPath": "click.png"
+      }
+    ]
+  }
 }
