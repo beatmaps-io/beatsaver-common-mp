@@ -170,13 +170,18 @@ data class MapInfoV4(
         )
 
     override fun getExtraFiles() =
-        (songFiles() + contributorsExtraFiles() + beatmapExtraFiles() + listOfNotNull(audioDataFilename)).toSet()
+        (songFiles() + customDataExtraFiles() + beatmapExtraFiles() + listOfNotNull(audioDataFilename)).toSet()
 
     private fun songFiles() =
         listOfNotNull(coverImageFilename.orNull(), getSongFilename(), songPreviewFilename.orNull())
 
+    private fun customDataExtraFiles() = contributorsExtraFiles() + characteristicsExtraFiles()
+
     private fun contributorsExtraFiles() =
         customData.orNull()?.contributors.orEmpty().mapNotNull { it.iconPath.orNull() }
+
+    private fun characteristicsExtraFiles() =
+        customData.orNull()?.characteristicData.orEmpty().mapNotNull { it.iconPath.orNull() }
 
     private fun beatmapExtraFiles() =
         difficultyBeatmaps.orEmpty().flatMap { diff ->
@@ -460,10 +465,14 @@ data class BeatmapAuthors(
 @Serializable
 data class InfoCustomDataV4(
     override val contributors: OptionalProperty<List<OptionalProperty<ContributorV4?>>?> = OptionalProperty.NotPresent,
+    val characteristicData: OptionalProperty<List<OptionalProperty<CustomCharacteristicV4?>>?> = OptionalProperty.NotPresent,
     override val additionalInformation: Map<String, JsonElement> = mapOf()
 ) : InfoCustomData, JAdditionalProperties() {
     fun validate(validator: BMValidator<InfoCustomDataV4>, files: Set<String>) = validator.apply {
         validate(InfoCustomDataV4::contributors).correctType().optionalNotNull().validateForEach {
+            it.validate(this, files)
+        }
+        validate(InfoCustomDataV4::characteristicData).correctType().optionalNotNull().validateForEach {
             it.validate(this, files)
         }
     }
@@ -482,6 +491,23 @@ data class ContributorV4(
         validate(ContributorV4::role).correctType().optionalNotNull()
         validate(ContributorV4::name).correctType().optionalNotNull()
         validate(ContributorV4::iconPath).correctType().optionalNotNull()
+            .validate(InFiles) { it == null || it.validate { q -> q.isNullOrEmpty() || files.contains(q.lowercase()) } }
+    }
+}
+
+@Serializable
+data class CustomCharacteristicV4(
+    val characteristic: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val label: OptionalProperty<String?> = OptionalProperty.NotPresent,
+    val iconPath: OptionalProperty<String?> = OptionalProperty.NotPresent
+) {
+    fun validate(
+        validator: BMValidator<CustomCharacteristicV4>,
+        files: Set<String>
+    ) = validator.apply {
+        validate(CustomCharacteristicV4::characteristic).correctType().optionalNotNull()
+        validate(CustomCharacteristicV4::label).correctType().optionalNotNull()
+        validate(CustomCharacteristicV4::iconPath).correctType().optionalNotNull()
             .validate(InFiles) { it == null || it.validate { q -> q.isNullOrEmpty() || files.contains(q.lowercase()) } }
     }
 }
