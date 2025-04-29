@@ -84,7 +84,7 @@ object Vivify {
             }
         }
 
-    private const val TOTALBS_REPO = "https://repo.totalbs.dev/api/v1/bundle"
+    private const val TOTALBS_REPO = "https://repo.totalbs.dev/api/v1/bundles"
 
     @Serializable
     data class TotalBsRepoResponse(val hash: UInt, val downloadUrl: String, val createdDate: String)
