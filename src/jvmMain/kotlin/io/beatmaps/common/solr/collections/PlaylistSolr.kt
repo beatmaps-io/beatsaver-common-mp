@@ -52,20 +52,20 @@ object PlaylistSolr : SolrCollection() {
                 PercentageMinimumMatchExpression(-0.5f)
             )
 
-    fun addSortArgs(q: SolrQuery, seed: Int?, searchOrder: SearchOrder): SolrQuery =
+    fun addSortArgs(q: SolrQuery, seed: Int?, searchOrder: SearchOrder, ascending: Boolean): SolrQuery =
         when (searchOrder) {
             SearchOrder.Relevance -> listOf(
-                SolrScore.desc()
+                SolrScore.sort(ascending)
             )
-            SearchOrder.Rating, SearchOrder.Latest -> listOf(
-                created.desc()
+            SearchOrder.Rating, SearchOrder.Duration, SearchOrder.Latest -> listOf(
+                created.sort(ascending)
             )
             SearchOrder.Curated -> listOf(
-                curated.desc(),
-                created.desc()
+                curated.sort(ascending),
+                created.sort(ascending)
             )
             SearchOrder.Random -> listOf(
-                SolrQuery.SortClause("random_$seed", SolrQuery.ORDER.desc)
+                SolrQuery.SortClause("random_$seed", if (ascending) SolrQuery.ORDER.asc else SolrQuery.ORDER.desc)
             )
         }.let {
             q.setSorts(it)
