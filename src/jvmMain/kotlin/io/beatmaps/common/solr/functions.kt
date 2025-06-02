@@ -63,6 +63,7 @@ object SolrBaseScore : SolrFunction<Float>() {
 abstract class SolrFunction<T> {
     abstract fun toText(): String
 
+    fun sort(ascending: Boolean) = sort(if (ascending) SolrQuery.ORDER.asc else SolrQuery.ORDER.desc)
     fun sort(order: SolrQuery.ORDER) = SolrQuery.SortClause(toText(), order)
     fun asc() = sort(SolrQuery.ORDER.asc)
     fun desc() = sort(SolrQuery.ORDER.desc)

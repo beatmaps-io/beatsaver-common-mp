@@ -24,6 +24,7 @@ data class SearchParamsPlaylist(
     val maxNps: Float? = null,
     val chroma: Boolean? = null,
     val sortOrder: SearchOrder = SearchOrder.Relevance,
+    val ascending: Boolean? = null,
     val from: Instant? = null,
     val to: Instant? = null,
     val noodle: Boolean? = null,
