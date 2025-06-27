@@ -63,8 +63,13 @@ class ZipHelperWithAudio(fs: ZipFile) : ZipHelper(fs) {
         ServiceLoader.load(IMapScorerProvider::class.java)
             .findFirst()
             .map { s ->
-                s.create().scoreMap(info, audioFile) {
-                    diff(it)
+                try {
+                    s.create().scoreMap(info, audioFile) {
+                        diff(it)
+                    }
+                } catch (e: Exception) {
+                    // There is something wrong with the diff so the score doesn't matter
+                    0
                 }
             }.orElse(0)
 
