@@ -7,6 +7,7 @@ import net.lingala.zip4j.ZipFile
 import net.sourceforge.lame.lowlevel.LameEncoder
 import net.sourceforge.lame.mp3.Lame
 import net.sourceforge.lame.mp3.MPEGMode
+import org.valiktor.ConstraintViolationException
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
@@ -67,7 +68,7 @@ class ZipHelperWithAudio(fs: ZipFile) : ZipHelper(fs) {
                     s.create().scoreMap(info, audioFile) {
                         diff(it)
                     }
-                } catch (e: Exception) {
+                } catch (e: ConstraintViolationException) {
                     // There is something wrong with the diff so the score doesn't matter
                     0
                 }
