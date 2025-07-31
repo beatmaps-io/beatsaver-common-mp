@@ -451,7 +451,7 @@ data class DifficultyBeatmap(
         validate(DifficultyBeatmap::customData).optionalNotNull().correctType().validate()
 
         // V2.1
-        validate(DifficultyBeatmap::beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(0)
+        validate(DifficultyBeatmap::beatmapColorSchemeIdx).optionalNotNull().isGreaterThanOrEqualTo(-1)
             .isLessThan(max(1, info.mapInfo.getColorSchemes().size)).notExistsBefore(ver, Schema2_1)
         validate(DifficultyBeatmap::environmentIndex).optionalNotNull().isGreaterThanOrEqualTo(0)
             .isLessThan(max(1, info.mapInfo.getEnvironments().size)).notExistsBefore(ver, Schema2_1)
