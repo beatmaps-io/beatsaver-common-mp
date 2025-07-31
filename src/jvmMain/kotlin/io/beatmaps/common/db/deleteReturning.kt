@@ -1,8 +1,6 @@
 package io.beatmaps.common.db
 
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ColumnSet
-import org.jetbrains.exposed.sql.FieldSet
 import org.jetbrains.exposed.sql.IColumnType
 import org.jetbrains.exposed.sql.ISqlExpressionBuilder
 import org.jetbrains.exposed.sql.Op
@@ -11,7 +9,6 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.append
 import org.jetbrains.exposed.sql.statements.Statement
 import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
@@ -22,7 +19,7 @@ class DeleteReturningStatement(
     private val table: Table,
     private val where: Op<Boolean>? = null,
     private val limit: Int? = 0,
-    private val returning: Array<out Column<*>>,
+    private val returning: Array<out Column<*>>
 ) : Iterable<ResultRow>, Statement<ResultSet>(StatementType.DELETE, listOf(table)) {
     private val transaction get() = TransactionManager.current()
 
