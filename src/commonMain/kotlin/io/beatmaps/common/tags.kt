@@ -19,6 +19,7 @@ enum class MapTag(val type: MapTagType, val human: String, val slug: String) {
     Challenge(MapTagType.Style, "Challenge", "challenge"),
     Accuracy(MapTagType.Style, "Accuracy", "accuracy"),
     Fitness(MapTagType.Style, "Fitness", "fitness"),
+    Poodle(MapTagType.Style, "Poodle", "poodle"),
 
     Swing(MapTagType.Genre, "Swing", "swing"),
     Nightcore(MapTagType.Genre, "Nightcore", "nightcore"),
