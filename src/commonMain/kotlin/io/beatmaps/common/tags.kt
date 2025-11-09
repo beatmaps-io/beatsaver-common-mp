@@ -56,7 +56,8 @@ enum class MapTag(val type: MapTagType, val human: String, val slug: String) {
     Dance(MapTagType.Genre, "Dance", "dance"),
     Rock(MapTagType.Genre, "Rock", "rock"),
     Pop(MapTagType.Genre, "Pop", "pop"),
-    Electronic(MapTagType.Genre, "Electronic", "electronic");
+    Electronic(MapTagType.Genre, "Electronic", "electronic"),
+    AIGenerated(MapTagType.Genre, "AI", "ai");
 
     companion object {
         private val map = entries.associateBy(MapTag::slug)
