@@ -24,7 +24,7 @@ enum class SearchOrder(val idx: Int, val targets: List<SortOrderTarget>) {
 
         fun fromString(str: String?) = try {
             valueOf(str ?: "")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
