@@ -11,7 +11,8 @@ enum class UserSearchSort {
     RANKED_MAPS,
     FIRST_UPLOAD,
     LAST_UPLOAD,
-    MAP_AGE;
+    MAP_AGE,
+    PLAYLISTS;
 
     companion object {
         fun fromString(str: String?) = try {

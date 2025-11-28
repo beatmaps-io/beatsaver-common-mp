@@ -38,6 +38,8 @@ object UserSolr : SolrCollection() {
     val lastUpload = pdate("lastUpload").optional()
     val mapAge = pint("mapAge")
 
+    val totalPlaylists = pint("totalPlaylists")
+
     // Copy fields
     val nameEn = string("name_en")
     val descriptionEn = string("description_en")
@@ -75,6 +77,7 @@ object UserSolr : SolrCollection() {
             UserSearchSort.FIRST_UPLOAD -> firstUpload to firstUpload.any()
             UserSearchSort.LAST_UPLOAD -> lastUpload to lastUpload.any()
             UserSearchSort.MAP_AGE -> mapAge to (mapAge greater 0)
+            UserSearchSort.PLAYLISTS -> totalPlaylists to (totalPlaylists greater 0)
         }
         val solrOrder = when (order) {
             ApiOrder.DESC -> SolrQuery.ORDER.desc
