@@ -5,6 +5,8 @@ import io.beatmaps.common.api.EBeatsaberEnvironment
 import io.beatmaps.common.api.ECharacteristic
 import io.beatmaps.common.api.EDifficulty
 import io.beatmaps.common.api.EMapState
+import io.beatmaps.common.db.countAsInt
+import io.beatmaps.common.db.countWithFilter
 import io.beatmaps.common.db.postgresEnumeration
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -20,8 +22,14 @@ import org.jetbrains.exposed.sql.QueryAlias
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.VarCharColumnType
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.avg
 import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.sql.max
+import org.jetbrains.exposed.sql.min
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.wrapAsExpression
 import java.math.BigDecimal
 import java.time.Instant
@@ -70,6 +78,20 @@ object Beatmap : IntIdTable("beatmap", "mapId") {
 
     val declaredAi = postgresEnumeration<AiDeclarationType>("declaredAi", "aiDeclarationType")
     val nsfw = bool("nsfw")
+
+    object Stats {
+        val count = countAsInt(id).alias("bmcnt")
+        val upVotes = upVotesInt.sum().alias("bmupv")
+        val downVotes = downVotesInt.sum().alias("bmdwv")
+        val bpm = Beatmap.bpm.avg().alias("avgbpm")
+        val score = Beatmap.score.avg(3).alias("avgscore")
+        val duration = Beatmap.duration.avg(0).alias("avgdur")
+        val rankedCount = countWithFilter(ranked or blRanked).alias("bmrcnt")
+        val minUpload = uploaded.min().alias("minup")
+        val maxUpload = uploaded.max().alias("maxup")
+
+        val allColumns = listOf(count, upVotes, downVotes, bpm, score, duration, rankedCount, minUpload, maxUpload)
+    }
 }
 
 data class BeatmapDao(val key: EntityID<Int>) : IntEntity(key) {
