@@ -100,7 +100,7 @@ fun <T> wrapAsOp(expr: Expression<T>) = object : Op<T>() {
     }
 }
 
-fun countAsInt(expr: Expression<*>): Expression<Int> = object : Function<Int>(IntegerColumnType()) {
+fun countAsInt(expr: Expression<*>): Expression<Int?> = object : Function<Int?>(IntegerColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT("
         +expr
@@ -108,7 +108,7 @@ fun countAsInt(expr: Expression<*>): Expression<Int> = object : Function<Int>(In
     }
 }
 
-fun countWithFilter(condition: Expression<Boolean>): Expression<Int> = object : Function<Int>(IntegerColumnType()) {
+fun countWithFilter(condition: Expression<Boolean>): Expression<Int?> = object : Function<Int?>(IntegerColumnType()) {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +"COUNT(*) FILTER (WHERE "
         +condition
