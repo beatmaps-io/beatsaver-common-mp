@@ -147,6 +147,7 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     BillieEnvironment("Billie", false, false),
     HalloweenEnvironment("Halloween", false, false),
     GagaEnvironment("Gaga", false, false),
+    Halloween2Environment("Spoooky", false, false),
 
     GlassDesertEnvironment("Glass Desert", true, false),
     MultiplayerEnvironment("Multiplayer", false, false, filterable = false),
@@ -169,7 +170,8 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     ColliderEnvironment("Collider", false, true),
     BritneyEnvironment("Britney", false, true),
     Monstercat2Environment("Monstercat 2", false, true),
-    MetallicaEnvironment("Metallica", false, true);
+    MetallicaEnvironment("Metallica", false, true),
+    GridEnvironment("Cube", false, true);
 
     fun color() = when {
         v3 -> "purple"

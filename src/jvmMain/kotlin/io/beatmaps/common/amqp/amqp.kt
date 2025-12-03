@@ -1,10 +1,8 @@
 package io.beatmaps.common.amqp
 
 import com.rabbitmq.client.AMQP
-import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
-import com.rabbitmq.client.DeliverCallback
 import io.beatmaps.common.jackson
 import io.beatmaps.common.json
 import io.ktor.server.application.Application
@@ -109,7 +107,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
         basicConsume(
             queue,
             false,
-            DeliverCallback { _, message ->
+            { _, message ->
                 runBlocking(es.asCoroutineDispatcher()) {
                     runCatching {
                         val mappedEntity = serializer(message.body.toString(Charsets.UTF_8))
@@ -126,7 +124,7 @@ fun <T : Any> RabbitMQInstance.consumeAck(
                     }
                 }
             },
-            CancelCallback {
+            {
                 logger.warning("Consume cancelled: $it")
             }
         )
