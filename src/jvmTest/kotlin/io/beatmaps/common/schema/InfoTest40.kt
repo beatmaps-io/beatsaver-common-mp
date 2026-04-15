@@ -5,6 +5,7 @@ import io.beatmaps.common.beatsaber.InFiles
 import io.beatmaps.common.beatsaber.MetadataLength
 import io.beatmaps.common.beatsaber.MultipleVersionsConstraint
 import io.beatmaps.common.beatsaber.NodePresent
+import io.beatmaps.common.beatsaber.UniqueDiff
 import io.beatmaps.common.schema.SchemaCommon.bpmViolation
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
@@ -87,11 +88,18 @@ class InfoTest40 {
                 infoViolation<Matches>("colorSchemes[0].saberBColor"),
 
                 infoViolation<In<String>>("difficultyBeatmaps[0].difficulty"),
+                infoViolation<UniqueDiff>("difficultyBeatmaps[0].difficulty"),
                 infoViolation<Less<Int>>("difficultyBeatmaps[0].environmentNameIdx"),
                 infoViolation<Less<Int>>("difficultyBeatmaps[0].beatmapColorSchemeIdx"),
 
                 infoViolation<InFiles>("difficultyBeatmaps[0].beatmapDataFilename"),
-                infoViolation<InFiles>("difficultyBeatmaps[0].lightshowDataFilename")
+                infoViolation<InFiles>("difficultyBeatmaps[0].lightshowDataFilename"),
+
+                infoViolation<In<String>>("difficultyBeatmaps[1].difficulty"),
+                infoViolation<UniqueDiff>("difficultyBeatmaps[1].difficulty"),
+
+                infoViolation<InFiles>("difficultyBeatmaps[1].beatmapDataFilename"),
+                infoViolation<InFiles>("difficultyBeatmaps[1].lightshowDataFilename"),
             ),
             ex.constraintViolations
         )

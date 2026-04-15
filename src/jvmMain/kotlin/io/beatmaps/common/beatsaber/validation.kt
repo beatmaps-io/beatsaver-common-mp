@@ -14,6 +14,7 @@ object ImageFormat : Constraint
 object AudioFormat : Constraint
 object CutDirection : Constraint
 object MisplacedCustomData : Constraint
+data class UniqueCharacteristic(val char: String?) : Constraint
 data class UniqueDiff(val diff: String?) : Constraint
 object MetadataLength : Constraint
 object IndexedConstraint : Constraint

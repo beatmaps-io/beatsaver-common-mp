@@ -44,6 +44,22 @@
       "noteJumpStartBeatOffset": 0.0,
       "beatmapDataFilename": "missing.dat",
       "lightshowDataFilename": "missing.dat"
+    },
+    {
+      "characteristic": "Bad",
+      "difficulty": "Mid",
+      "beatmapAuthors": {
+        "mappers": [
+        ],
+        "lighters": [
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 0.0,
+      "noteJumpStartBeatOffset": 0.0,
+      "beatmapDataFilename": "missing.dat",
+      "lightshowDataFilename": "missing.dat"
     }
   ]
 }
