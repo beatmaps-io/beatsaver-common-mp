@@ -411,7 +411,7 @@ data class DifficultyBeatmapV4(
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(difficulty.orNull())) {
                 mapInfo.difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
-                    it != self && it.difficulty == self.difficulty && it.characteristic == self.characteristic
+                    it !== self && it.difficulty == self.difficulty && it.characteristic == self.characteristic
                 } == false
             }
         validate(DifficultyBeatmapV4::beatmapAuthors).exists().correctType().optionalNotNull().validate()

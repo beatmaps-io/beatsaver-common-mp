@@ -17,6 +17,7 @@ import io.beatmaps.common.beatsaber.ImageSquare
 import io.beatmaps.common.beatsaber.InFiles
 import io.beatmaps.common.beatsaber.MetadataLength
 import io.beatmaps.common.beatsaber.Schema2_1
+import io.beatmaps.common.beatsaber.UniqueCharacteristic
 import io.beatmaps.common.beatsaber.UniqueDiff
 import io.beatmaps.common.beatsaber.Validatable
 import io.beatmaps.common.beatsaber.Version
@@ -114,24 +115,24 @@ data class MapInfo(
         validate(MapInfo::_previewStartTime).correctType().exists().isPositiveOrZero()
         validate(MapInfo::_previewDuration).correctType().exists().isPositiveOrZero()
         validate(MapInfo::_songFilename).correctType().exists().optionalNotNull()
-            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(AudioFormat) { it == null || audioValid(audio, info) == AudioType.OGG }
+            .validate(InFiles) { fname -> fname == null || fname.validate { q -> q == null || files.contains(q.lowercase()) } }
+            .validate(AudioFormat) { fname -> fname == null || audioValid(audio, info) == AudioType.OGG }
         val imageInfo = _coverImageFilename.orNull()?.let { imageInfo(getFile(it), info) }
         validate(MapInfo::_coverImageFilename).correctType().exists().optionalNotNull()
-            .validate(InFiles) { it == null || it.validate { q -> q == null || files.contains(q.lowercase()) } }
-            .validate(ImageFormat) {
+            .validate(InFiles) { fname -> fname == null || fname.validate { q -> q == null || files.contains(q.lowercase()) } }
+            .validate(ImageFormat) { fname ->
                 // Ignore if it will be picked up by another validation (null, not in files)
-                it == null || it.validate { q -> q == null || !files.contains(q.lowercase()) } ||
+                fname == null || fname.validate { q -> q == null || !files.contains(q.lowercase()) } ||
                     arrayOf("jpeg", "jpg", "png").contains(imageInfo?.format)
             }
             .validate(ImageSquare) { imageInfo == null || imageInfo.width == imageInfo.height }
             .validate(ImageSize) { imageInfo == null || imageInfo.width >= 256 && imageInfo.height >= 256 }
-        validate(MapInfo::customData).correctType().optionalNotNull().validateOptional {
+        validate(MapInfo::customData).correctType().optionalNotNull().validateOptional { cd ->
             extraFieldsViolation(
                 constraintViolations,
-                it.additionalInformation.keys
+                cd.additionalInformation.keys
             )
-            it.validate(this, files)
+            cd.validate(this, files)
         }
         validate(MapInfo::_environmentName).correctType().exists().isIn(EBeatsaberEnvironment.names)
         validate(MapInfo::_allDirectionsEnvironmentName).correctType().let { v ->
@@ -146,20 +147,22 @@ data class MapInfo(
         }
         // Must be validated before beatmaps so data is available
         validate(MapInfo::customData).validateVivify(info, getFile, client)
-        validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty().validateForEach { it.validate(this, files, getFile, info, ver) }
+        validate(MapInfo::_difficultyBeatmapSets).correctType().exists().optionalNotNull().isNotEmpty()
+            .validateForEach { set -> set.validate(this, _difficultyBeatmapSets, files, getFile, info, ver) }
 
         // V2.1
-        validate(MapInfo::_environmentNames).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1).validateForEach {
-            if (!EBeatsaberEnvironment.names.contains(it)) {
-                constraintViolations.add(
-                    BMConstraintViolation(
-                        propertyInfo = listOf(),
-                        value = it,
-                        constraint = In(EBeatsaberEnvironment.names)
+        validate(MapInfo::_environmentNames).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1)
+            .validateForEach { env ->
+                if (!EBeatsaberEnvironment.names.contains(env)) {
+                    constraintViolations.add(
+                        BMConstraintViolation(
+                            propertyInfo = listOf(),
+                            value = env,
+                            constraint = In(EBeatsaberEnvironment.names)
+                        )
                     )
-                )
+                }
             }
-        }
         validate(MapInfo::_colorSchemes).correctType().optionalNotNull().notExistsBefore(ver, Schema2_1).validateEach()
     }
 
@@ -323,21 +326,24 @@ data class DifficultyBeatmapSet(
     val _difficultyBeatmaps: OptionalProperty<List<OptionalProperty<DifficultyBeatmap?>>?>,
     val _customData: OptionalProperty<DifficultyBeatmapSetCustomData?> = OptionalProperty.NotPresent
 ) {
-    fun validate(validator: BMValidator<DifficultyBeatmapSet>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
+    fun validate(validator: BMValidator<DifficultyBeatmapSet>, sets: OptionalProperty<List<OptionalProperty<DifficultyBeatmapSet?>>?>, files: Set<String>, getFile: (String) -> IZipPath?, info: ExtractedInfo, ver: Version) = validator.apply {
         val allowedCharacteristics = ECharacteristic.entries.let {
             if (ver < Schema2_1) it.minus(ECharacteristic.Legacy) else it
         }.map { it.human() }.toSet()
 
         validate(DifficultyBeatmapSet::_beatmapCharacteristicName).exists().isIn(allowedCharacteristics)
+            .validate(UniqueCharacteristic(_beatmapCharacteristicName.orNull())) {
+                sets.orNull()?.mapNotNull { it.orNull() }?.any {
+                    it !== this@DifficultyBeatmapSet && it._beatmapCharacteristicName == this@DifficultyBeatmapSet._beatmapCharacteristicName
+                } == false
+            }
         validate(DifficultyBeatmapSet::_difficultyBeatmaps).exists().optionalNotNull().isNotEmpty().validateForEach {
-            it.validate(this, self(), files, getFile, info, ver)
+            it.validate(this, this@DifficultyBeatmapSet, files, getFile, info, ver)
         }
         validate(DifficultyBeatmapSet::_customData).correctType().optionalNotNull().validateOptional {
             it.validate(this, files)
         }
     }
-
-    private fun self() = this
 
     fun enumValue() = ECharacteristic.fromName(_beatmapCharacteristicName.or(""))
 }
@@ -428,13 +434,13 @@ data class DifficultyBeatmap(
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(difficulty.orNull())) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
-                    it != this@DifficultyBeatmap && it.difficulty == this@DifficultyBeatmap.difficulty
+                    it !== this@DifficultyBeatmap && it.difficulty == this@DifficultyBeatmap.difficulty
                 } == false
             }
         validate(DifficultyBeatmap::difficultyRank).exists().isIn(EDifficulty.entries.map { it.idx })
             .validate(UniqueDiff(EDifficulty.fromInt(difficultyRank.or(0))?.name ?: "Unknown")) {
                 characteristic._difficultyBeatmaps.orNull()?.mapNotNull { it.orNull() }?.any {
-                    it != this@DifficultyBeatmap && it.difficultyRank == this@DifficultyBeatmap.difficultyRank
+                    it !== this@DifficultyBeatmap && it.difficultyRank == this@DifficultyBeatmap.difficultyRank
                 } == false
             }
         validate(DifficultyBeatmap::beatmapFilename).exists().optionalNotNull()

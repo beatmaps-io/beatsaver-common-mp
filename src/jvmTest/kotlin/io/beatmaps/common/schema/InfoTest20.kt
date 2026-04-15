@@ -6,6 +6,7 @@ import io.beatmaps.common.beatsaber.MetadataLength
 import io.beatmaps.common.beatsaber.MisplacedCustomData
 import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
+import io.beatmaps.common.beatsaber.UniqueCharacteristic
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
@@ -185,10 +186,14 @@ class InfoTest20 {
                 infoViolation<Less<Int>>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
                 infoViolation<NodeNotPresent>("_difficultyBeatmapSets[0]._difficultyBeatmaps[0]._environmentNameIdx"),
 
+                infoViolation<UniqueCharacteristic>("_difficultyBeatmapSets[1]._beatmapCharacteristicName"),
                 infoViolation<NotEmpty>("_difficultyBeatmapSets[1]._difficultyBeatmaps"),
 
                 infoViolation<In<String>>("_difficultyBeatmapSets[2]._beatmapCharacteristicName"),
                 infoViolation<NotEmpty>("_difficultyBeatmapSets[2]._difficultyBeatmaps"),
+
+                infoViolation<UniqueCharacteristic>("_difficultyBeatmapSets[3]._beatmapCharacteristicName"),
+                infoViolation<NotEmpty>("_difficultyBeatmapSets[3]._difficultyBeatmaps"),
 
                 infoViolation<NodeNotPresent>("_environmentNames"),
                 infoViolation<In<String>>("_environmentNames[0]"),
