@@ -99,7 +99,7 @@ class InfoTest40 {
                 infoViolation<UniqueDiff>("difficultyBeatmaps[1].difficulty"),
 
                 infoViolation<InFiles>("difficultyBeatmaps[1].beatmapDataFilename"),
-                infoViolation<InFiles>("difficultyBeatmaps[1].lightshowDataFilename"),
+                infoViolation<InFiles>("difficultyBeatmaps[1].lightshowDataFilename")
             ),
             ex.constraintViolations
         )

@@ -7,7 +7,6 @@ import io.beatmaps.common.beatsaber.MisplacedCustomData
 import io.beatmaps.common.beatsaber.NodeNotPresent
 import io.beatmaps.common.beatsaber.NodePresent
 import io.beatmaps.common.beatsaber.UniqueCharacteristic
-import io.beatmaps.common.beatsaber.UniqueDiff
 import io.beatmaps.common.schema.SchemaCommon.infoViolation
 import io.beatmaps.common.schema.SchemaCommon.validateFolder
 import org.junit.Test
