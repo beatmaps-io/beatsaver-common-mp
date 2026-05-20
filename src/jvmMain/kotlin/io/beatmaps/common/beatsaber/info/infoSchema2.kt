@@ -413,6 +413,8 @@ data class DifficultyBeatmap(
             )
         } catch (e: ConstraintViolationException) {
             parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        } catch (_: IllegalArgumentException) {
+            // Characteristic was invalid
         }
     }
 
