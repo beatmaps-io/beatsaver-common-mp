@@ -87,6 +87,7 @@ class InfoTest40 {
                 infoViolation<Matches>("colorSchemes[0].saberAColor"),
                 infoViolation<Matches>("colorSchemes[0].saberBColor"),
 
+                infoViolation<In<String>>("difficultyBeatmaps[0].characteristic"),
                 infoViolation<In<String>>("difficultyBeatmaps[0].difficulty"),
                 infoViolation<UniqueDiff>("difficultyBeatmaps[0].difficulty"),
                 infoViolation<Less<Int>>("difficultyBeatmaps[0].environmentNameIdx"),
@@ -95,6 +96,7 @@ class InfoTest40 {
                 infoViolation<InFiles>("difficultyBeatmaps[0].beatmapDataFilename"),
                 infoViolation<InFiles>("difficultyBeatmaps[0].lightshowDataFilename"),
 
+                infoViolation<In<String>>("difficultyBeatmaps[1].characteristic"),
                 infoViolation<In<String>>("difficultyBeatmaps[1].difficulty"),
                 infoViolation<UniqueDiff>("difficultyBeatmaps[1].difficulty"),
 

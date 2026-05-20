@@ -29,6 +29,7 @@ import io.beatmaps.common.beatsaber.custom.IContributor
 import io.beatmaps.common.beatsaber.custom.InfoCustomData
 import io.beatmaps.common.beatsaber.exists
 import io.beatmaps.common.beatsaber.isBetween
+import io.beatmaps.common.beatsaber.isIn
 import io.beatmaps.common.beatsaber.isLessThan
 import io.beatmaps.common.beatsaber.isNotBlank
 import io.beatmaps.common.beatsaber.isNotEmpty
@@ -362,6 +363,8 @@ data class DifficultyBeatmapV4(
             )
         } catch (e: ConstraintViolationException) {
             parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        } catch (_: IllegalArgumentException) {
+            // Characteristic was invalid
         }
     }
 
@@ -389,6 +392,8 @@ data class DifficultyBeatmapV4(
             )
         } catch (e: ConstraintViolationException) {
             parent.addConstraintViolations(e.constraintViolations.addParent(path?.fileName))
+        } catch (_: IllegalArgumentException) {
+            // Characteristic was invalid
         }
     }
 
@@ -406,7 +411,7 @@ data class DifficultyBeatmapV4(
             additionalInformation.keys
         )
 
-        validate(DifficultyBeatmapV4::characteristic).exists().correctType().optionalNotNull()
+        validate(DifficultyBeatmapV4::characteristic).exists().correctType().optionalNotNull().isIn(ECharacteristic.entries.map { it.human() })
         validate(DifficultyBeatmapV4::difficulty).exists().correctType().optionalNotNull()
             .validate(In(allowedDiffNames)) { it == null || it.validate { q -> allowedDiffNames.any { dn -> dn.equals(q, true) } } }
             .validate(UniqueDiff(difficulty.orNull())) {
