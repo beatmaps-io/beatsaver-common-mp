@@ -32,6 +32,10 @@ class UploadLimitData(val newValue: Int, val newCurator: Boolean, val verifiedMa
 class SuspendData(val suspended: Boolean, val reason: String? = null) : IModLogOpAction
 
 @Serializable
+@SerialName("Silence")
+class SilenceData(val silenced: Boolean, val durationMinutes: Int? = null, val reason: String? = null) : IModLogOpAction
+
+@Serializable
 @SerialName("EditPlaylist")
 data class EditPlaylistData(val playlistId: Int, val oldTitle: String, val oldDescription: String, val oldPublic: Boolean, val newTitle: String, val newDescription: String, val newPublic: Boolean) : IModLogOpAction
 
@@ -71,7 +75,7 @@ enum class ModLogOpType(val actionClass: KClass<*>) {
     InfoEdit(InfoEditData::class), Delete(DeletedData::class), Unpublish(UnpublishData::class), UploadLimit(UploadLimitData::class),
     Suspend(SuspendData::class), EditPlaylist(EditPlaylistData::class), DeletedPlaylist(DeletedPlaylistData::class), ReviewModeration(ReviewModerationData::class),
     ReviewDelete(ReviewDeleteData::class), RevokeSessions(RevokeSessionsData::class), ReplyModeration(ReplyModerationData::class), ReplyDelete(ReplyDeleteData::class),
-    FlagsEdit(FlagsEditData::class), UnCurateMap(UnCurateMapData::class), UnCuratePlaylist(UnCuratePlaylistData::class);
+    FlagsEdit(FlagsEditData::class), UnCurateMap(UnCurateMapData::class), UnCuratePlaylist(UnCuratePlaylistData::class), Silence(SilenceData::class);
 
     companion object {
         private val map = entries.associateBy(ModLogOpType::actionClass)
