@@ -26,6 +26,7 @@ import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.math.BigDecimal
 import java.time.Instant
+import kotlin.time.DurationUnit
 
 fun incrementBy(column: Column<Int>, num: Int = 1) = object : Expression<Int>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) {
@@ -160,10 +161,12 @@ class DistinctOn<T>(private val expr: Column<T>, private val columns: Array<out 
     }
 }
 
-class DateMinusDays(private val dateExp: Expression<Instant>, private val d: Int) : Expression<Instant>() {
+class DateMinusDays(dateExp: Expression<Instant>, d: Int) : DateOffset<Instant>(dateExp, false, d, DurationUnit.DAYS)
+
+open class DateOffset<T : Instant?>(private val dateExp: Expression<T>, private val add: Boolean, private val c: Int, private val u: DurationUnit) : Expression<T>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         +dateExp
-        +" - INTERVAL '$d DAYS'"
+        +" ${if (add) "+" else "-"} INTERVAL '$c ${u.name}'"
     }
 }
 
