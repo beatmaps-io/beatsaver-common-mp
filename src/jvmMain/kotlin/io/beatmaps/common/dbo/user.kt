@@ -59,7 +59,6 @@ object User : IntIdTable("uploader", "id") {
     val seniorCurator = bool("seniorCurator")
     val curatorTab = bool("curatorTab")
     val verifiedMapper = bool("verifiedMapper")
-    val suspendedAt = timestamp("suspendedAt").nullable()
     val bookmarksId = reference("bookmarksId", Playlist).nullable()
     val emailChangedAt = timestamp("emailChangedAt")
     val patreonId = reference("patreonId", Patreon).nullable()
@@ -96,7 +95,6 @@ data class UserDao(val key: EntityID<Int>) : IntEntity(key) {
     val seniorCurator by User.seniorCurator
     val curatorTab by User.curatorTab
     val verifiedMapper by User.verifiedMapper
-    val suspendedAt by User.suspendedAt
     val bookmarksId by User.bookmarksId
     val emailChangedAt by User.emailChangedAt
     val blurnsfw by User.blurnsfw
