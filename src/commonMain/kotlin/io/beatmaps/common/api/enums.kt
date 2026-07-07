@@ -70,7 +70,8 @@ enum class EAlertType(val color: String, val icon: String, private val readableN
     Follow("success", "fa-user-plus"),
     Uncuration("danger", "fa-award"),
     Collaboration("warning", "fa-user-friends"),
-    Issue("info", "fa-flag");
+    Issue("info", "fa-flag"),
+    Standing("danger", "fa-gavel");
 
     fun readable(): String = readableName ?: name
 
