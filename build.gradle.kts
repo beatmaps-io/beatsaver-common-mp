@@ -15,7 +15,7 @@ version = System.getenv("BUILD_NUMBER")?.let { "1.0.$it" } ?: "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
+    maven { url = uri("https://repo.topc.at/releases") }
 }
 
 kotlin {
@@ -65,7 +65,7 @@ kotlin {
             repositories {
                 mavenCentral()
                 maven { url = uri("https://jitpack.io") }
-                maven { url = uri("https://artifactory.kirkstall.top-cat.me") }
+                maven { url = uri("https://repo.topc.at/releases") }
             }
             with(languageSettings) {
                 optIn("kotlinx.coroutines.DelicateCoroutinesApi")
@@ -144,7 +144,7 @@ publishing {
                 username = System.getenv("MAVEN_USERNAME")
                 password = System.getenv("MAVEN_PASSWORD")
             }
-            url = uri("https://artifactory.kirkstall.top-cat.me/")
+            url = uri("https://repo.topc.at/releases")
         }
     }
 }
