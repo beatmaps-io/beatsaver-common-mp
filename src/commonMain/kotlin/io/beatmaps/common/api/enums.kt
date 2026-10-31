@@ -174,7 +174,9 @@ enum class EBeatsaberEnvironment(private val short: String, val rotation: Boolea
     MetallicaEnvironment("Metallica", false, true),
     GridEnvironment("Cube", false, true),
     ColdplayEnvironment("Coldplay", false, true),
-    ProdigyEnvironment("Prodigy", false, true);
+    ProdigyEnvironment("Prodigy", false, true),
+    HipHopMixtape2Environment("HipHop 2", false, true),
+    Halloween2026Environment("Ghastly", false, true);
 
     fun color() = when {
         v3 -> "purple"
