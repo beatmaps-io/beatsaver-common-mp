@@ -1,6 +1,7 @@
 package io.beatmaps.common
 
 import io.beatmaps.common.api.EBeatsaberEnvironment
+import io.beatmaps.common.api.ECharacteristic
 
 enum class SortOrderTarget {
     UserMap, Map, Playlist;
@@ -78,4 +79,10 @@ typealias EnvironmentSet = Set<EBeatsaberEnvironment>
 
 fun String?.toEnvironmentSet(): EnvironmentSet = this?.split(",")?.mapNotNull {
     EBeatsaberEnvironment.fromString(it)
+}?.toSet() ?: emptySet()
+
+typealias CharacteristicSet = Set<ECharacteristic>
+
+fun String?.toCharacteristicSet(): CharacteristicSet = this?.split(",")?.mapNotNull {
+    ECharacteristic.fromNameOrNull(it)
 }?.toSet() ?: emptySet()

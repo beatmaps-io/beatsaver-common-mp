@@ -37,5 +37,6 @@ data class SearchParamsPlaylist(
     val vivify: Boolean? = null,
     val tags: MapTagSet = mapOf(),
     val mappers: List<Int> = listOf(),
-    val environments: EnvironmentSet = emptySet()
+    val environments: EnvironmentSet = emptySet(),
+    val characteristics: CharacteristicSet = emptySet()
 )
