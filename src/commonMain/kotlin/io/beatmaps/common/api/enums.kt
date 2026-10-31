@@ -12,22 +12,23 @@ enum class AiDeclarationType(val markAsBot: Boolean = true, val override: Boolea
 }
 
 @Serializable
-enum class ECharacteristic(private val ename: String, val color: String, val rotation: Boolean) : HumanEnum<ECharacteristic> {
-    Standard("Standard", "primary", false),
-    OneSaber("OneSaber", "info", false),
-    NoArrows("NoArrows", "info", false),
+enum class ECharacteristic(private val ename: String, private val _human: String? = null, val color: String, val rotation: Boolean) : HumanEnum<ECharacteristic> {
+    Standard("Standard", null, "blue", false),
+    OneSaber("OneSaber", "One Saber", "blue", false),
+    NoArrows("NoArrows", "No Arrows", "blue", false),
 
     @SerialName("90Degree")
-    Rotation90Degree("90Degree", "warning", true),
+    Rotation90Degree("90Degree", "90 Degree", "green", true),
 
     @SerialName("360Degree")
-    Rotation360Degree("360Degree", "warning", true),
+    Rotation360Degree("360Degree", "360 Degree", "green", true),
 
-    Lightshow("Lightshow", "danger", false),
-    Lawless("Lawless", "danger", false),
-    Legacy("Legacy", "danger", false);
+    Lightshow("Lightshow", null, "warning", false),
+    Lawless("Lawless", null, "warning", false),
+    Legacy("Legacy", null, "warning", false);
 
-    override fun human() = ename
+    fun internal() = ename
+    override fun human() = _human ?: ename
 
     companion object {
         private val map = entries.associateBy { it.ename }
